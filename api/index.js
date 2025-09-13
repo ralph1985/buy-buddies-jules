@@ -233,7 +233,7 @@ async function handleGetSummary(req, res, sheets) {
 async function handleGetLastModified(req, res, sheets) {
   const response = await sheets.spreadsheets.get({
     spreadsheetId: SPREADSHEET_ID,
-    fields: 'properties/modifiedTime',
+    fields: 'properties', // Request the whole properties object to be safe
   });
 
   res.status(200).json({ modifiedTime: response.data.properties.modifiedTime });
