@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import SummaryModal from './SummaryModal'; // Import the new component
+import SummaryModal from './SummaryModal';
 
-// A simple loading spinner component
 function Spinner() {
   return <div className="spinner"></div>;
 }
@@ -9,24 +8,23 @@ function Spinner() {
 function ShoppingList() {
   const [items, setItems] = useState([]);
   const [statusOptions, setStatusOptions] = useState([]);
+  const [summaryData, setSummaryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-
-  // State for the modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [summaryData, setSummaryData] = useState([]);
-  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
-      const [itemsData, optionsData] = await Promise.all([
+      const [itemsData, optionsData, summaryRes] = await Promise.all([
         fetch('/api').then(res => res.json()),
-        fetch('/api?action=get_options').then(res => res.json())
+        fetch('/api?action=get_options').then(res => res.json()),
+        fetch('/api?action=get_summary').then(res => res.json())
       ]);
       setItems(itemsData);
       setStatusOptions(optionsData.sort());
+      setSummaryData(summaryRes);
     } catch (err) {
       console.error("Fetch error:", err);
       setError("No se pudo cargar la lista de la compra. Inténtalo de nuevo más tarde.");
@@ -56,21 +54,6 @@ function ShoppingList() {
     }
   };
 
-  const handleOpenSummary = async () => {
-    setIsSummaryLoading(true);
-    setIsModalOpen(true);
-    try {
-      const summaryRes = await fetch('/api?action=get_summary');
-      const summary = await summaryRes.json();
-      setSummaryData(summary);
-    } catch (err) {
-      console.error("Failed to fetch summary:", err);
-      // Optionally show an error in the modal
-    } finally {
-      setIsSummaryLoading(false);
-    }
-  };
-
   const handleStatusChange = (rowIndex, newStatus) => handleUpdate('update_status', { rowIndex, newStatus });
   const handleQuantityChange = (rowIndex, newQuantity) => {
     if (newQuantity === '' || isNaN(newQuantity)) return;
@@ -90,6 +73,10 @@ function ShoppingList() {
     acc[group].push(item);
     return acc;
   }, {});
+
+  // Find the specific summary values to display on the main page
+  const totalPagado = summaryData.find(item => item.label === 'Total pagado')?.value || 'N/A';
+  const totalRestante = summaryData.find(item => item.label === 'Total restante')?.value || 'N/A';
 
   return (
     <div className={`app-container ${loading ? 'is-loading' : ''}`}>
@@ -114,11 +101,24 @@ function ShoppingList() {
           {statusOptions.map(option => <option key={option} value={option}>{option}</option>)}
         </select>
       </div>
+
+      <div className="main-summary-container">
+        <div className="main-summary-item">
+          <span className="main-summary-label">Total Pagado</span>
+          <span className="main-summary-value">{totalPagado}</span>
+        </div>
+        <div className="main-summary-item">
+          <span className="main-summary-label">Total Restante</span>
+          <span className="main-summary-value">{totalRestante}</span>
+        </div>
+      </div>
+
       <div className="summary-link-container">
-        <button onClick={handleOpenSummary} className="summary-link-button" disabled={loading}>
-          Ver Resumen del Presupuesto
+        <button onClick={() => setIsModalOpen(true)} className="summary-link-button" disabled={loading}>
+          Ver Resumen Completo
         </button>
       </div>
+
       {loading && items.length === 0 ? (
         <div className="loading">Cargando lista...</div>
       ) : Object.keys(groupedItems).length > 0 ? (
@@ -165,7 +165,7 @@ function ShoppingList() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         summaryData={summaryData}
-        isLoading={isSummaryLoading}
+        isLoading={false} // Loading is handled globally now
       />
     </div>
   );
