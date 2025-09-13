@@ -56,22 +56,24 @@ body {
 
 h1 {
   color: #ffa500;
+  font-size: 1.5rem; /* Reduced */
+  margin: 0 0 1rem 0; /* Reduced margin */
 }
 
 .filters-container {
-  display: flex;
-  gap: 1rem;
-  margin: 1rem 0 2rem 0;
+  margin: 1rem 0 1.5rem 0;
 }
 
 .search-input {
-  flex-grow: 1; /* Take up remaining space */
+  width: 100%;
   padding: 0.75rem;
-  font-size: 1rem; /* Reduced */
+  font-size: 1rem;
   border-radius: 8px;
   border: 2px solid #555;
   background-color: #2c2c2c;
   color: white;
+  box-sizing: border-box;
+  margin-bottom: 1rem; /* Space between inputs */
 }
 
 .search-input:focus {
@@ -80,13 +82,15 @@ h1 {
 }
 
 .status-filter-select {
+  width: 100%; /* Full width */
   padding: 0.75rem;
-  font-size: 1rem; /* Reduced */
+  font-size: 1rem;
   border-radius: 8px;
   border: 2px solid #555;
   background-color: #2c2c2c;
   color: white;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .status-filter-select:focus {
@@ -116,7 +120,7 @@ h1 {
 .shopping-list-item {
   background-color: #2c2c2c;
   border-radius: 8px;
-  padding: 0.8rem; /* Reduced padding */
+  padding: 0.8rem;
   margin-bottom: 0.75rem;
   display: flex;
   justify-content: space-between;
@@ -138,13 +142,13 @@ h1 {
 
 .item-name {
   font-weight: bold;
-  font-size: 1rem; /* Reduced */
+  font-size: 1rem;
 }
 
 .item-quantity-input {
   font-style: normal;
   color: white;
-  font-size: 0.9rem; /* Reduced */
+  font-size: 0.9rem;
   background-color: #444;
   border: 1px solid #777;
   border-radius: 4px;
@@ -167,12 +171,12 @@ h1 {
 
 .item-total {
   font-weight: bold;
-  font-size: 1.1rem; /* Reduced */
+  font-size: 1.1rem;
   color: #ffa500;
 }
 
 .item-status-select {
-  font-size: 0.8rem; /* Reduced */
+  font-size: 0.8rem;
   font-weight: bold;
   padding: 0.3rem 0.5rem;
   border-radius: 12px;
@@ -202,11 +206,10 @@ h1 {
 
 .error {
   margin-top: 2rem;
-  font-size: 1.1rem; /* Reduced */
+  font-size: 1.1rem;
   color: #ff6b6b;
 }
 
-/* Summary Link Styles */
 /* Main Summary Display Styles */
 .main-summary-container {
   display: flex;
