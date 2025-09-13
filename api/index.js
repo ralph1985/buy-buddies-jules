@@ -58,8 +58,11 @@ export default async function handler(request, response) {
         await handleUpdateStatus(response, sheets, body);
       }
     } else if (request.method === 'GET') {
-      if (request.query.action === 'get_options') {
+      const action = request.query.action;
+      if (action === 'get_options') {
         await handleGetStatusOptions(request, response, sheets);
+      } else if (action === 'get_summary') {
+        await handleGetSummary(request, response, sheets);
       } else {
         await handleGetItems(request, response, sheets);
       }
@@ -161,4 +164,25 @@ async function handleUpdateQuantity(res, sheets, body) {
   });
 
   res.status(200).json({ success: true, message: `Row ${rowIndex} quantity updated to ${newQuantity}` });
+}
+
+// Fetches and parses the budget summary from the top of the sheet
+async function handleGetSummary(req, res, sheets) {
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}!A1:D10`,
+  });
+
+  const rows = response.data.values;
+  if (!rows) {
+    return res.status(200).json([]);
+  }
+
+  const summaryData = rows.map(row => ({
+    label: row[0] || '',
+    // Find the first non-empty value in the other columns for that row
+    value: row.slice(1).find(val => val) || '',
+  })).filter(item => item.label && item.value); // Filter out rows without a label or a value
+
+  res.status(200).json(summaryData);
 }

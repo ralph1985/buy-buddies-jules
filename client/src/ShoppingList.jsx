@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import SummaryModal from './SummaryModal'; // Import the new component
 
 // A simple loading spinner component
 function Spinner() {
@@ -11,7 +12,12 @@ function ShoppingList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all' is the default
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  // State for the modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [summaryData, setSummaryData] = useState([]);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -20,7 +26,6 @@ function ShoppingList() {
         fetch('/api?action=get_options').then(res => res.json())
       ]);
       setItems(itemsData);
-      // Sort options alphabetically for better UX
       setStatusOptions(optionsData.sort());
     } catch (err) {
       console.error("Fetch error:", err);
@@ -51,20 +56,29 @@ function ShoppingList() {
     }
   };
 
-  const handleStatusChange = (rowIndex, newStatus) => {
-    handleUpdate('update_status', { rowIndex, newStatus });
+  const handleOpenSummary = async () => {
+    setIsSummaryLoading(true);
+    setIsModalOpen(true);
+    try {
+      const summaryRes = await fetch('/api?action=get_summary');
+      const summary = await summaryRes.json();
+      setSummaryData(summary);
+    } catch (err) {
+      console.error("Failed to fetch summary:", err);
+      // Optionally show an error in the modal
+    } finally {
+      setIsSummaryLoading(false);
+    }
   };
 
+  const handleStatusChange = (rowIndex, newStatus) => handleUpdate('update_status', { rowIndex, newStatus });
   const handleQuantityChange = (rowIndex, newQuantity) => {
     if (newQuantity === '' || isNaN(newQuantity)) return;
     handleUpdate('update_quantity', { rowIndex, newQuantity });
   };
 
-  if (error) {
-    return <div className="error">{error}</div>;
-  }
+  if (error) return <div className="error">{error}</div>;
 
-  // Chain filters: search first, then status
   const filteredItems = items
     .filter(item => item.Descripción?.toLowerCase().includes(searchTerm.toLowerCase()))
     .filter(item => statusFilter === 'all' || item.Estado === statusFilter);
@@ -97,10 +111,13 @@ function ShoppingList() {
           disabled={loading}
         >
           <option value="all">Todos los estados</option>
-          {statusOptions.map(option => (
-            <option key={option} value={option}>{option}</option>
-          ))}
+          {statusOptions.map(option => <option key={option} value={option}>{option}</option>)}
         </select>
+      </div>
+      <div className="summary-link-container">
+        <button onClick={handleOpenSummary} className="summary-link-button" disabled={loading}>
+          Ver Resumen del Presupuesto
+        </button>
       </div>
       {loading && items.length === 0 ? (
         <div className="loading">Cargando lista...</div>
@@ -133,9 +150,7 @@ function ShoppingList() {
                       {item.Estado && !statusOptions.includes(item.Estado) && (
                         <option value={item.Estado}>{item.Estado}</option>
                       )}
-                      {statusOptions.map(option => (
-                        <option key={option} value={option}>{option}</option>
-                      ))}
+                      {statusOptions.map(option => <option key={option} value={option}>{option}</option>)}
                     </select>
                   </div>
                 </li>
@@ -146,6 +161,12 @@ function ShoppingList() {
       ) : (
         <p>No se encontraron productos que coincidan con los filtros.</p>
       )}
+      <SummaryModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        summaryData={summaryData}
+        isLoading={isSummaryLoading}
+      />
     </div>
   );
 }
