@@ -34,10 +34,10 @@ export default async function handler(request, response) {
 
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // Fetch the data from the sheet
+    // Fetch the data from the sheet, starting from row 11
     const sheetResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A:Z`,
+      range: `${SHEET_NAME}!A11:Z`,
     });
 
     const rows = sheetResponse.data.values;
