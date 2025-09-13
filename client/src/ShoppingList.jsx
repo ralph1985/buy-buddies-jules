@@ -8,6 +8,7 @@ function Spinner() {
 function ShoppingList() {
   const [items, setItems] = useState([]);
   const [statusOptions, setStatusOptions] = useState([]);
+  const [summaryData, setSummaryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -60,6 +61,11 @@ function ShoppingList() {
   };
 
   if (error) return <div className="error">{error}</div>;
+
+  // Safety check to ensure items is an array before proceeding
+  if (!Array.isArray(items)) {
+    return <div className="loading">Cargando...</div>;
+  }
 
   const filteredItems = items
     .filter(item => item.Descripción?.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -125,7 +131,7 @@ function ShoppingList() {
             <h2 className="group-header">{groupName}</h2>
             <ul className="shopping-list">
               {groupItems.map(item => (
-                <li key={item.rowIndex} className={`shopping-list-item status-${(item.Estado || '').toLowerCase().replace(/ /g, '-')}`}>
+                <li key={item.rowIndex} className={`shopping-list-item status-${String(item.Estado || '').toLowerCase().replace(/ /g, '-')}`}>
                   <div className="item-details">
                     <span className="item-name">{item.Descripción}</span>
                     <input
@@ -139,27 +145,18 @@ function ShoppingList() {
                   </div>
                   <div className="item-pricing">
                     <span className="item-total">{item.Total}€</span>
-                    <div className="status-control-container">
-                      <select
-                        className="item-status-select"
-                        value={item.Estado || ''}
-                        onChange={(e) => handleStatusChange(item.rowIndex, e.target.value)}
-                        disabled={loading}
-                      >
-                        <option value="" disabled>- Seleccionar -</option>
-                        {statusOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                      </select>
-                      {item.Estado && (
-                        <button
-                          className="clear-status-button"
-                          onClick={() => handleStatusChange(item.rowIndex, '')}
-                          disabled={loading}
-                          aria-label="Limpiar estado"
-                        >
-                          &times;
-                        </button>
+                    <select
+                      className="item-status-select"
+                      value={item.Estado || ''}
+                      onChange={(e) => handleStatusChange(item.rowIndex, e.target.value)}
+                      disabled={loading}
+                    >
+                      <option value="">- Sin Estado -</option>
+                      {item.Estado && !statusOptions.includes(item.Estado) && (
+                        <option value={item.Estado}>{item.Estado}</option>
                       )}
-                    </div>
+                      {statusOptions.map(option => <option key={option} value={option}>{option}</option>)}
+                    </select>
                   </div>
                 </li>
               ))}

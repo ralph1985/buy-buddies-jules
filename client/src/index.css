@@ -175,12 +175,6 @@ h1 {
   color: #ffa500;
 }
 
-.status-control-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .item-status-select {
   font-size: 0.8rem;
   font-weight: bold;
@@ -191,24 +185,6 @@ h1 {
   border: 1px solid #777;
   text-align: center;
   cursor: pointer;
-}
-
-.clear-status-button {
-  background: #777;
-  border: none;
-  color: white;
-  font-weight: bold;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  line-height: 20px;
-  text-align: center;
-  cursor: pointer;
-  padding: 0;
-}
-
-.clear-status-button:hover {
-  background: #999;
 }
 
 /* Status-specific styles */
