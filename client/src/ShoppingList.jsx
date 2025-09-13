@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 function ShoppingList() {
   const [items, setItems] = useState([]);
@@ -7,22 +7,27 @@ function ShoppingList() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    Promise.all([
-      fetch('/api').then(res => res.json()),
-      fetch('/api?action=get_options').then(res => res.json())
-    ])
-    .then(([itemsData, optionsData]) => {
+  // Encapsulate fetching logic to be reusable
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [itemsData, optionsData] = await Promise.all([
+        fetch('/api').then(res => res.json()),
+        fetch('/api?action=get_options').then(res => res.json())
+      ]);
       setItems(itemsData);
       setStatusOptions(optionsData);
-      setLoading(false);
-    })
-    .catch(err => {
+    } catch (err) {
       console.error("Fetch error:", err);
       setError("No se pudo cargar la lista de la compra. Inténtalo de nuevo más tarde.");
+    } finally {
       setLoading(false);
-    });
+    }
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleStatusChange = async (rowIndex, newStatus) => {
     const originalItems = [...items];
@@ -32,20 +37,38 @@ function ShoppingList() {
     setItems(updatedItems);
 
     try {
-      const response = await fetch('/api', {
+      await fetch('/api', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rowIndex, newStatus }),
+        body: JSON.stringify({ action: 'update_status', rowIndex, newStatus }),
       });
-      if (!response.ok) {
-        throw new Error('Failed to update status in Google Sheet.');
-      }
     } catch (error) {
       console.error('Update failed:', error);
       setItems(originalItems);
       alert('Error: No se pudo actualizar el estado. Por favor, recarga la página.');
     }
   };
+
+  const handleQuantityChange = async (rowIndex, newQuantity) => {
+    // Prevent sending empty updates
+    if (newQuantity === '' || isNaN(newQuantity)) return;
+
+    setLoading(true); // Show loading overlay while we wait for refresh
+    try {
+      await fetch('/api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update_quantity', rowIndex, newQuantity }),
+      });
+      // After successful update, refetch all data to get new totals
+      await fetchData();
+    } catch (error) {
+      console.error('Update failed:', error);
+      alert('Error: No se pudo actualizar la cantidad. Por favor, recarga la página.');
+      setLoading(false);
+    }
+  };
+
 
   if (loading) {
     return <div className="loading">Cargando lista...</div>;
@@ -55,7 +78,6 @@ function ShoppingList() {
     return <div className="error">{error}</div>;
   }
 
-  // Filter items based on the search term before grouping
   const filteredItems = items.filter(item =>
     item.Descripción?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -89,7 +111,13 @@ function ShoppingList() {
                 <li key={item.rowIndex} className={`shopping-list-item status-${item.Estado?.toLowerCase().replace(' ', '-')}`}>
                   <div className="item-details">
                     <span className="item-name">{item.Descripción}</span>
-                    <span className="item-quantity">Cantidad: {item.Cantidad || 'N/A'}</span>
+                    <input
+                      type="number"
+                      className="item-quantity-input"
+                      defaultValue={item.Cantidad}
+                      onBlur={(e) => handleQuantityChange(item.rowIndex, e.target.value)}
+                      aria-label="Cantidad"
+                    />
                   </div>
                   <div className="item-pricing">
                     <span className="item-total">{item.Total}€</span>

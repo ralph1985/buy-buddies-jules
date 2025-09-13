@@ -99,10 +99,23 @@ h1 {
   font-size: 1.1rem;
 }
 
-.item-quantity {
+.item-quantity-input {
   font-style: italic;
   color: #aaa;
   font-size: 0.9rem;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0.2rem;
+  width: 50px; /* Adjust width as needed */
+  transition: all 0.2s ease-in-out;
+}
+
+.item-quantity-input:focus {
+  outline: none;
+  color: white;
+  background-color: #444;
+  border: 1px solid #ffa500;
 }
 
 .item-pricing {

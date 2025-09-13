@@ -44,7 +44,14 @@ export default async function handler(request, response) {
     const sheets = google.sheets({ version: 'v4', auth });
 
     if (request.method === 'POST') {
-      await handleUpdateStatus(request, response, sheets);
+      const body = await getJsonBody(request);
+      // Route POST requests based on an 'action' property in the body
+      if (body.action === 'update_quantity') {
+        await handleUpdateQuantity(response, sheets, body);
+      } else {
+        // Default POST action is to update status
+        await handleUpdateStatus(response, sheets, body);
+      }
     } else if (request.method === 'GET') {
       if (request.query.action === 'get_options') {
         await handleGetStatusOptions(request, response, sheets);
@@ -106,8 +113,8 @@ async function handleGetStatusOptions(req, res, sheets) {
 }
 
 // Updates the status of a specific row
-async function handleUpdateStatus(req, res, sheets) {
-  const { rowIndex, newStatus } = await getJsonBody(req);
+async function handleUpdateStatus(res, sheets, body) {
+  const { rowIndex, newStatus } = body;
 
   if (!rowIndex || newStatus === undefined) {
     return res.status(400).json({ error: 'rowIndex and newStatus are required.' });
@@ -125,5 +132,28 @@ async function handleUpdateStatus(req, res, sheets) {
     },
   });
 
-  res.status(200).json({ success: true, message: `Row ${rowIndex} updated to ${newStatus}` });
+  res.status(200).json({ success: true, message: `Row ${rowIndex} status updated to ${newStatus}` });
+}
+
+// Updates the quantity of a specific row
+async function handleUpdateQuantity(res, sheets, body) {
+  const { rowIndex, newQuantity } = body;
+
+  if (!rowIndex || newQuantity === undefined) {
+    return res.status(400).json({ error: 'rowIndex and newQuantity are required.' });
+  }
+
+  // 'Cantidad' is column G
+  const range = `${SHEET_NAME}!G${rowIndex}`;
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: range,
+    valueInputOption: 'USER_ENTERED',
+    resource: {
+      values: [[newQuantity]],
+    },
+  });
+
+  res.status(200).json({ success: true, message: `Row ${rowIndex} quantity updated to ${newQuantity}` });
 }
