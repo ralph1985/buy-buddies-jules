@@ -8,7 +8,6 @@ function Spinner() {
 function ShoppingList() {
   const [items, setItems] = useState([]);
   const [statusOptions, setStatusOptions] = useState([]);
-  const [summaryData, setSummaryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -74,7 +73,6 @@ function ShoppingList() {
     return acc;
   }, {});
 
-  // Find the specific summary values to display on the main page
   const totalPagado = summaryData.find(item => item.label === 'Total pagado')?.value || 'N/A';
   const totalRestante = summaryData.find(item => item.label === 'Total restante')?.value || 'N/A';
 
@@ -141,17 +139,27 @@ function ShoppingList() {
                   </div>
                   <div className="item-pricing">
                     <span className="item-total">{item.Total}€</span>
-                    <select
-                      className="item-status-select"
-                      value={item.Estado}
-                      onChange={(e) => handleStatusChange(item.rowIndex, e.target.value)}
-                      disabled={loading}
-                    >
-                      {item.Estado && !statusOptions.includes(item.Estado) && (
-                        <option value={item.Estado}>{item.Estado}</option>
+                    <div className="status-control-container">
+                      <select
+                        className="item-status-select"
+                        value={item.Estado || ''}
+                        onChange={(e) => handleStatusChange(item.rowIndex, e.target.value)}
+                        disabled={loading}
+                      >
+                        <option value="" disabled>- Seleccionar -</option>
+                        {statusOptions.map(option => <option key={option} value={option}>{option}</option>)}
+                      </select>
+                      {item.Estado && (
+                        <button
+                          className="clear-status-button"
+                          onClick={() => handleStatusChange(item.rowIndex, '')}
+                          disabled={loading}
+                          aria-label="Limpiar estado"
+                        >
+                          &times;
+                        </button>
                       )}
-                      {statusOptions.map(option => <option key={option} value={option}>{option}</option>)}
-                    </select>
+                    </div>
                   </div>
                 </li>
               ))}
@@ -165,7 +173,7 @@ function ShoppingList() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         summaryData={summaryData}
-        isLoading={false} // Loading is handled globally now
+        isLoading={false}
       />
     </div>
   );
