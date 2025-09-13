@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import SummaryModal from './SummaryModal';
+import EditModal from './EditModal'; // Import the new component
 
 function Spinner() {
   return <div className="spinner"></div>;
@@ -13,7 +14,12 @@ function ShoppingList() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+
+  // State for the new Edit Modal
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -54,6 +60,16 @@ function ShoppingList() {
     }
   };
 
+  const handleOpenEditModal = (item) => {
+    setEditingItem(item);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveDetails = (rowIndex, newDescription, newNotes) => {
+    setIsEditModalOpen(false);
+    handleUpdate('update_details', { rowIndex, newDescription, newNotes });
+  };
+
   const handleStatusChange = (rowIndex, newStatus) => handleUpdate('update_status', { rowIndex, newStatus });
   const handleQuantityChange = (rowIndex, newQuantity) => {
     if (newQuantity === '' || isNaN(newQuantity)) return;
@@ -61,11 +77,6 @@ function ShoppingList() {
   };
 
   if (error) return <div className="error">{error}</div>;
-
-  // Safety check to ensure items is an array before proceeding
-  if (!Array.isArray(items)) {
-    return <div className="loading">Cargando...</div>;
-  }
 
   const filteredItems = items
     .filter(item => item.Descripción?.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -118,7 +129,7 @@ function ShoppingList() {
       </div>
 
       <div className="summary-link-container">
-        <button onClick={() => setIsModalOpen(true)} className="summary-link-button" disabled={loading}>
+        <button onClick={() => setIsSummaryModalOpen(true)} className="summary-link-button" disabled={loading}>
           Ver Resumen Completo
         </button>
       </div>
@@ -133,7 +144,9 @@ function ShoppingList() {
               {groupItems.map(item => (
                 <li key={item.rowIndex} className={`shopping-list-item status-${String(item.Estado || '').toLowerCase().replace(/ /g, '-')}`}>
                   <div className="item-details">
-                    <span className="item-name">{item.Descripción}</span>
+                    <span className="item-name" onClick={() => handleOpenEditModal(item)}>
+                      {item.Descripción}
+                    </span>
                     <input
                       type="number"
                       className="item-quantity-input"
@@ -145,9 +158,6 @@ function ShoppingList() {
                   </div>
                   <div className="item-pricing">
                     <span className="item-total">{item.Total}€</span>
-                    {item['Precio unidad'] && (
-                      <span className="item-unit-price">({item['Precio unidad']}€/ud.)</span>
-                    )}
                     <select
                       className="item-status-select"
                       value={item.Estado || ''}
@@ -170,10 +180,16 @@ function ShoppingList() {
         <p>No se encontraron productos que coincidan con los filtros.</p>
       )}
       <SummaryModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isSummaryModalOpen}
+        onClose={() => setIsSummaryModalOpen(false)}
         summaryData={summaryData}
         isLoading={false}
+      />
+      <EditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        itemData={editingItem}
+        onSave={handleSaveDetails}
       />
     </div>
   );

@@ -53,6 +53,8 @@ export default async function handler(request, response) {
       // Route POST requests based on an 'action' property in the body
       if (body.action === 'update_quantity') {
         await handleUpdateQuantity(response, sheets, body);
+      } else if (body.action === 'update_details') {
+        await handleUpdateDetails(response, sheets, body);
       } else {
         // Default POST action is to update status
         await handleUpdateStatus(response, sheets, body);
@@ -164,6 +166,37 @@ async function handleUpdateQuantity(res, sheets, body) {
   });
 
   res.status(200).json({ success: true, message: `Row ${rowIndex} quantity updated to ${newQuantity}` });
+}
+
+// Updates the description and notes of a specific row
+async function handleUpdateDetails(res, sheets, body) {
+  const { rowIndex, newDescription, newNotes } = body;
+
+  if (!rowIndex || newDescription === undefined || newNotes === undefined) {
+    return res.status(400).json({ error: 'rowIndex, newDescription, and newNotes are required.' });
+  }
+
+  // Define the ranges for Description (F) and Notes (J)
+  const descriptionRange = `${SHEET_NAME}!F${rowIndex}`;
+  const notesRange = `${SHEET_NAME}!J${rowIndex}`;
+
+  // Perform both updates
+  await Promise.all([
+    sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: descriptionRange,
+      valueInputOption: 'USER_ENTERED',
+      resource: { values: [[newDescription]] },
+    }),
+    sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: notesRange,
+      valueInputOption: 'USER_ENTERED',
+      resource: { values: [[newNotes]] },
+    }),
+  ]);
+
+  res.status(200).json({ success: true, message: `Row ${rowIndex} details updated.` });
 }
 
 // Fetches and parses the budget summary from the top of the sheet
