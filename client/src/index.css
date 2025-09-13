@@ -148,6 +148,13 @@ h1 {
   text-decoration-color: #777;
 }
 
+.item-notes {
+  font-size: 0.8rem;
+  color: #ccc;
+  font-style: italic;
+  white-space: pre-wrap; /* Respect newlines in notes */
+}
+
 .item-name:hover {
   text-decoration-color: #ffa500;
 }

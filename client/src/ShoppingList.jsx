@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import SummaryModal from './SummaryModal';
-import EditModal from './EditModal'; // Import the new component
+import EditModal from './EditModal';
 
 function Spinner() {
   return <div className="spinner"></div>;
@@ -16,8 +16,6 @@ function ShoppingList() {
   const [statusFilter, setStatusFilter] = useState('all');
 
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
-
-  // State for the new Edit Modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
 
@@ -65,9 +63,9 @@ function ShoppingList() {
     setIsEditModalOpen(true);
   };
 
-  const handleSaveDetails = (rowIndex, newDescription, newNotes) => {
+  const handleSaveDetails = (rowIndex, newDescription, newNotes, newUnitPrice) => {
     setIsEditModalOpen(false);
-    handleUpdate('update_details', { rowIndex, newDescription, newNotes });
+    handleUpdate('update_details', { rowIndex, newDescription, newNotes, newUnitPrice });
   };
 
   const handleStatusChange = (rowIndex, newStatus) => handleUpdate('update_status', { rowIndex, newStatus });
@@ -147,6 +145,7 @@ function ShoppingList() {
                     <span className="item-name" onClick={() => handleOpenEditModal(item)}>
                       {item.Descripción}
                     </span>
+                    {item.Notas && <span className="item-notes">{item.Notas}</span>}
                     <input
                       type="number"
                       className="item-quantity-input"
@@ -158,6 +157,9 @@ function ShoppingList() {
                   </div>
                   <div className="item-pricing">
                     <span className="item-total">{item.Total}€</span>
+                    {item['Precio unidad'] && (
+                      <span className="item-unit-price">({item['Precio unidad']}€/ud.)</span>
+                    )}
                     <select
                       className="item-status-select"
                       value={item.Estado || ''}

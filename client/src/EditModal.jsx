@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 function EditModal({ isOpen, onClose, itemData, onSave }) {
   const [description, setDescription] = useState('');
   const [notes, setNotes] = useState('');
+  const [unitPrice, setUnitPrice] = useState('');
 
   // When the modal opens, populate the form with the item's current data
   useEffect(() => {
     if (itemData) {
       setDescription(itemData.Descripción || '');
       setNotes(itemData.Notas || '');
+      setUnitPrice(itemData['Precio unidad'] || '');
     }
   }, [itemData]);
 
@@ -17,7 +19,8 @@ function EditModal({ isOpen, onClose, itemData, onSave }) {
   }
 
   const handleSave = () => {
-    onSave(itemData.rowIndex, description, notes);
+    // Pass all three values back to the parent
+    onSave(itemData.rowIndex, description, notes, unitPrice);
   };
 
   return (
@@ -32,6 +35,16 @@ function EditModal({ isOpen, onClose, itemData, onSave }) {
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            className="form-input"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="unitprice-input">Precio unidad</label>
+          <input
+            id="unitprice-input"
+            type="text" // Use text to allow for currency symbols or commas
+            value={unitPrice}
+            onChange={(e) => setUnitPrice(e.target.value)}
             className="form-input"
           />
         </div>

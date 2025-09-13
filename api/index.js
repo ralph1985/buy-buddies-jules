@@ -168,25 +168,32 @@ async function handleUpdateQuantity(res, sheets, body) {
   res.status(200).json({ success: true, message: `Row ${rowIndex} quantity updated to ${newQuantity}` });
 }
 
-// Updates the description and notes of a specific row
+// Updates the description, notes, and unit price of a specific row
 async function handleUpdateDetails(res, sheets, body) {
-  const { rowIndex, newDescription, newNotes } = body;
+  const { rowIndex, newDescription, newNotes, newUnitPrice } = body;
 
-  if (!rowIndex || newDescription === undefined || newNotes === undefined) {
-    return res.status(400).json({ error: 'rowIndex, newDescription, and newNotes are required.' });
+  if (!rowIndex || newDescription === undefined || newNotes === undefined || newUnitPrice === undefined) {
+    return res.status(400).json({ error: 'rowIndex, newDescription, newNotes, and newUnitPrice are required.' });
   }
 
-  // Define the ranges for Description (F) and Notes (J)
+  // Define the ranges for Description (F), Unit Price (H), and Notes (J)
   const descriptionRange = `${SHEET_NAME}!F${rowIndex}`;
+  const unitPriceRange = `${SHEET_NAME}!H${rowIndex}`;
   const notesRange = `${SHEET_NAME}!J${rowIndex}`;
 
-  // Perform both updates
+  // Perform all updates
   await Promise.all([
     sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: descriptionRange,
       valueInputOption: 'USER_ENTERED',
       resource: { values: [[newDescription]] },
+    }),
+    sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: unitPriceRange,
+      valueInputOption: 'USER_ENTERED',
+      resource: { values: [[newUnitPrice]] },
     }),
     sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
