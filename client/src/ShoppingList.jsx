@@ -6,8 +6,6 @@ function ShoppingList() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // The API endpoint is relative, which will be correctly proxied by Vite's dev server
-    // and handled by Vercel's rewrites in production.
     fetch('/api')
       .then(res => {
         if (!res.ok) {
@@ -16,7 +14,6 @@ function ShoppingList() {
         return res.json();
       })
       .then(data => {
-        // Assuming the data is an array of objects from the Google Sheet
         setItems(data);
         setLoading(false);
       })
@@ -25,7 +22,7 @@ function ShoppingList() {
         setError("No se pudo cargar la lista de la compra. Inténtalo de nuevo más tarde.");
         setLoading(false);
       });
-  }, []); // The empty dependency array ensures this effect runs only once on mount
+  }, []);
 
   if (loading) {
     return <div className="loading">Cargando lista...</div>;
@@ -35,21 +32,45 @@ function ShoppingList() {
     return <div className="error">{error}</div>;
   }
 
+  // Filter out empty rows where 'Descripción' is missing, as these are separators in the sheet
+  const validItems = items.filter(item => item.Descripción);
+
+  // Group items by "Tipo de Elemento"
+  const groupedItems = validItems.reduce((acc, item) => {
+    const group = item['Tipo de Elemento'] || 'Otros'; // Default to 'Otros' if type is missing
+    if (!acc[group]) {
+      acc[group] = [];
+    }
+    acc[group].push(item);
+    return acc;
+  }, {});
+
   return (
     <div>
       <h1>Lista de la Compra 2025</h1>
-      <ul className="shopping-list">
-        {items.length > 0 ? items.map((item, index) => (
-          // Assuming the sheet has 'Producto' and 'Cantidad' columns.
-          // Using index as a key is okay here because the list is read-only.
-          <li key={index} className="shopping-list-item">
-            <span className="item-name">{item.Producto || 'Sin nombre'}</span>
-            <span className="item-quantity">{item.Cantidad || ''}</span>
-          </li>
-        )) : (
-          <p>La lista de la compra está vacía.</p>
-        )}
-      </ul>
+      {Object.keys(groupedItems).length > 0 ? (
+        Object.entries(groupedItems).map(([groupName, groupItems]) => (
+          <div key={groupName} className="group-container">
+            <h2 className="group-header">{groupName}</h2>
+            <ul className="shopping-list">
+              {groupItems.map((item, index) => (
+                <li key={index} className={`shopping-list-item status-${item.Estado?.toLowerCase().replace(' ', '-')}`}>
+                  <div className="item-details">
+                    <span className="item-name">{item.Descripción}</span>
+                    <span className="item-quantity">Cantidad: {item.Cantidad || 'N/A'}</span>
+                  </div>
+                  <div className="item-pricing">
+                    <span className="item-total">{item.Total}€</span>
+                    <span className="item-status">{item.Estado}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      ) : (
+        <p>La lista de la compra está vacía.</p>
+      )}
     </div>
   );
 }
