@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import SummaryModal from './SummaryModal';
 import EditModal from './EditModal';
 
@@ -19,58 +19,28 @@ function ShoppingList() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
 
-  // State to track the last modified time of the sheet
-  const [lastModified, setLastModified] = useState(null);
-
-  const fetchData = useCallback(async (isUpdate = false) => {
-    // Only show the global spinner on initial load or manual updates,
-    // not on background polling refreshes unless data is actually changing.
-    if (!isUpdate) setLoading(true);
-
+  const fetchData = useCallback(async () => {
+    setLoading(true);
     try {
-      const [itemsData, optionsData, summaryRes, modifiedRes] = await Promise.all([
+      const [itemsData, optionsData, summaryRes] = await Promise.all([
         fetch('/api').then(res => res.json()),
         fetch('/api?action=get_options').then(res => res.json()),
-        fetch('/api?action=get_summary').then(res => res.json()),
-        fetch('/api?action=get_last_modified').then(res => res.json()),
+        fetch('/api?action=get_summary').then(res => res.json())
       ]);
       setItems(itemsData);
       setStatusOptions(optionsData.sort());
       setSummaryData(summaryRes);
-      setLastModified(modifiedRes.modifiedTime); // Set the baseline modified time
     } catch (err) {
       console.error("Fetch error:", err);
       setError("No se pudo cargar la lista de la compra. Inténtalo de nuevo más tarde.");
     } finally {
-      if (!isUpdate) setLoading(false);
+      setLoading(false);
     }
   }, []);
 
-  // Effect for initial data load
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  // Effect for polling to check for updates
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch('/api?action=get_last_modified');
-        const { modifiedTime } = await res.json();
-        if (lastModified && modifiedTime !== lastModified) {
-          console.log('Sheet updated externally. Refreshing data...');
-          setLoading(true); // Show spinner during refresh
-          await fetchData(true); // Pass flag to indicate it's an update
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error('Polling failed:', err);
-      }
-    }, 30000); // Poll every 30 seconds
-
-    return () => clearInterval(interval); // Cleanup on unmount
-  }, [lastModified, fetchData]);
-
 
   const handleUpdate = async (action, payload) => {
     setLoading(true);
@@ -80,12 +50,11 @@ function ShoppingList() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, ...payload }),
       });
-      await fetchData(true);
+      await fetchData();
     } catch (error) {
       console.error('Update failed:', error);
       alert('Error: No se pudo realizar la actualización. Por favor, recarga la página.');
-    } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -106,6 +75,10 @@ function ShoppingList() {
   };
 
   if (error) return <div className="error">{error}</div>;
+
+  if (!Array.isArray(items)) {
+    return <div className="loading">Cargando...</div>;
+  }
 
   const filteredItems = items
     .filter(item => item.Descripción?.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -163,7 +136,7 @@ function ShoppingList() {
         </button>
       </div>
 
-      {loading && items.length === 0 && !error ? (
+      {loading && items.length === 0 ? (
         <div className="loading">Cargando lista...</div>
       ) : Object.keys(groupedItems).length > 0 ? (
         Object.entries(groupedItems).map(([groupName, groupItems]) => (

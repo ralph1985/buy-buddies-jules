@@ -65,8 +65,6 @@ export default async function handler(request, response) {
         await handleGetStatusOptions(request, response, sheets);
       } else if (action === 'get_summary') {
         await handleGetSummary(request, response, sheets);
-      } else if (action === 'get_last_modified') {
-        await handleGetLastModified(request, response, sheets);
       } else {
         await handleGetItems(request, response, sheets);
       }
@@ -227,15 +225,4 @@ async function handleGetSummary(req, res, sheets) {
   })).filter(item => item.label && item.value); // Filter out rows without a label or a value
 
   res.status(200).json(summaryData);
-}
-
-// Fetches the last modified time of the spreadsheet
-async function handleGetLastModified(req, res, sheets) {
-  // Removing the 'fields' parameter to fetch the full resource as a fallback.
-  // This is less efficient but more reliable if field masks are causing issues.
-  const response = await sheets.spreadsheets.get({
-    spreadsheetId: SPREADSHEET_ID,
-  });
-
-  res.status(200).json({ modifiedTime: response.data.properties.modifiedTime });
 }
