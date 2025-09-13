@@ -231,9 +231,10 @@ async function handleGetSummary(req, res, sheets) {
 
 // Fetches the last modified time of the spreadsheet
 async function handleGetLastModified(req, res, sheets) {
+  // Removing the 'fields' parameter to fetch the full resource as a fallback.
+  // This is less efficient but more reliable if field masks are causing issues.
   const response = await sheets.spreadsheets.get({
     spreadsheetId: SPREADSHEET_ID,
-    fields: 'properties', // Request the whole properties object to be safe
   });
 
   res.status(200).json({ modifiedTime: response.data.properties.modifiedTime });
