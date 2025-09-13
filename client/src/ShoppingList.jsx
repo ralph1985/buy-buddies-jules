@@ -5,9 +5,9 @@ function ShoppingList() {
   const [statusOptions, setStatusOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    // Fetch both items and status options at the same time
     Promise.all([
       fetch('/api').then(res => res.json()),
       fetch('/api?action=get_options').then(res => res.json())
@@ -25,14 +25,12 @@ function ShoppingList() {
   }, []);
 
   const handleStatusChange = async (rowIndex, newStatus) => {
-    // Optimistically update the UI
     const originalItems = [...items];
     const updatedItems = items.map(item =>
       item.rowIndex === rowIndex ? { ...item, Estado: newStatus } : item
     );
     setItems(updatedItems);
 
-    // Make the API call to update the sheet
     try {
       const response = await fetch('/api', {
         method: 'POST',
@@ -44,7 +42,6 @@ function ShoppingList() {
       }
     } catch (error) {
       console.error('Update failed:', error);
-      // If the update fails, revert the optimistic update
       setItems(originalItems);
       alert('Error: No se pudo actualizar el estado. Por favor, recarga la página.');
     }
@@ -58,7 +55,12 @@ function ShoppingList() {
     return <div className="error">{error}</div>;
   }
 
-  const validItems = items.filter(item => item.Descripción);
+  // Filter items based on the search term before grouping
+  const filteredItems = items.filter(item =>
+    item.Descripción?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const validItems = filteredItems.filter(item => item.Descripción);
   const groupedItems = validItems.reduce((acc, item) => {
     const group = item['Tipo de Elemento'] || 'Otros';
     if (!acc[group]) acc[group] = [];
@@ -69,6 +71,15 @@ function ShoppingList() {
   return (
     <div>
       <h1>Lista de la Compra 2025</h1>
+      <div className="search-container">
+        <input
+          type="text"
+          placeholder="Buscar producto..."
+          className="search-input"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
       {Object.keys(groupedItems).length > 0 ? (
         Object.entries(groupedItems).map(([groupName, groupItems]) => (
           <div key={groupName} className="group-container">
@@ -87,7 +98,6 @@ function ShoppingList() {
                       value={item.Estado}
                       onChange={(e) => handleStatusChange(item.rowIndex, e.target.value)}
                     >
-                      {/* Add a default empty option if the current status is not in the list */}
                       {item.Estado && !statusOptions.includes(item.Estado) && (
                         <option value={item.Estado}>{item.Estado}</option>
                       )}
@@ -102,7 +112,7 @@ function ShoppingList() {
           </div>
         ))
       ) : (
-        <p>La lista de la compra está vacía.</p>
+        <p>No se encontraron productos.</p>
       )}
     </div>
   );
