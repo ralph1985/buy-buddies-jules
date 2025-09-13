@@ -125,7 +125,7 @@ function ShoppingList() {
             <h2 className="group-header">{groupName}</h2>
             <ul className="shopping-list">
               {groupItems.map(item => (
-                <li key={item.rowIndex} className={`shopping-list-item status-${item.Estado?.toLowerCase().replace(/ /g, '-')}`}>
+                <li key={item.rowIndex} className={`shopping-list-item status-${(item.Estado || '').toLowerCase().replace(/ /g, '-')}`}>
                   <div className="item-details">
                     <span className="item-name">{item.Descripción}</span>
                     <input
