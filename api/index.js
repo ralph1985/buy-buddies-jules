@@ -88,11 +88,11 @@ async function handleGetItems(req, res, sheets) {
   res.status(200).json(data);
 }
 
-// Fetches unique, non-empty status options from the 'Estado' column (assuming it's column J)
+// Fetches unique, non-empty status options from the 'Estado' column (Column K)
 async function handleGetStatusOptions(req, res, sheets) {
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!J12:J`, // Start from row 12 to get only data
+    range: `${SHEET_NAME}!K12:K`, // Start from row 12 to get only data
   });
 
   const rows = response.data.values;
@@ -113,8 +113,8 @@ async function handleUpdateStatus(req, res, sheets) {
     return res.status(400).json({ error: 'rowIndex and newStatus are required.' });
   }
 
-  // Assuming 'Estado' is column J
-  const range = `${SHEET_NAME}!J${rowIndex}`;
+  // 'Estado' is column K
+  const range = `${SHEET_NAME}!K${rowIndex}`;
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
