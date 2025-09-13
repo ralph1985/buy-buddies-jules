@@ -98,28 +98,33 @@ h1 {
   color: #ffa500;
 }
 
-.item-status {
-  font-size: 0.8rem;
+.item-status-select {
+  font-size: 0.9rem;
   font-weight: bold;
-  padding: 0.2rem 0.5rem;
+  padding: 0.3rem 0.5rem;
   border-radius: 12px;
   color: white;
   background-color: #555;
+  border: 1px solid #777;
+  text-align: center;
+  cursor: pointer;
 }
 
 /* Status-specific styles */
 .status-pagado {
   border-left-color: #4caf50; /* Green */
 }
-.status-pagado .item-status {
+.status-pagado .item-status-select {
   background-color: #4caf50;
+  border-color: #388e3c;
 }
 
 .status-pendiente-pago {
   border-left-color: #f44336; /* Red */
 }
-.status-pendiente-pago .item-status {
+.status-pendiente-pago .item-status-select {
   background-color: #f44336;
+  border-color: #d32f2f;
 }
 
 

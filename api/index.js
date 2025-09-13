@@ -1,68 +1,129 @@
 import { google } from 'googleapis';
-// This function will be executed by Vercel
+
+// Helper to parse JSON body from requests
+async function getJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', chunk => body += chunk.toString());
+    req.on('end', () => resolve(JSON.parse(body)));
+    req.on('error', err => reject(err));
+  });
+}
+
+async function getAuth() {
+  if (!process.env.GOOGLE_CREDENTIALS) {
+    throw new Error('GOOGLE_CREDENTIALS environment variable not set.');
+  }
+  const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+  return new google.auth.GoogleAuth({
+    credentials: {
+      client_email: credentials.client_email,
+      private_key: credentials.private_key.replace(/\\n/g, '\n'),
+    },
+    // The scope must now allow writing
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
+}
+
+const SPREADSHEET_ID = '1JreOZme2oRPrsvXnxKsTZMGq3-GrbSUS2_M3nw3gM7U';
+const SHEET_NAME = "'Lista compra 2025'";
+
+// Main handler
 export default async function handler(request, response) {
-  // Set CORS headers to allow requests from any origin
+  // Set CORS headers for all responses
   response.setHeader('Access-Control-Allow-Origin', '*');
-  response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle preflight requests for CORS
   if (request.method === 'OPTIONS') {
-    response.status(200).end();
-    return;
+    return response.status(200).end();
   }
-
-  const SPREADSHEET_ID = '1JreOZme2oRPrsvXnxKsTZMGq3-GrbSUS2_M3nw3gM7U';
-  const SHEET_NAME = "'Lista compra 2025'";
 
   try {
-    // The credentials are now stored in a Vercel environment variable
-    if (!process.env.GOOGLE_CREDENTIALS) {
-      throw new Error('GOOGLE_CREDENTIALS environment variable not set.');
-    }
-
-    const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
-
-    // Authenticate with Google
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: credentials.client_email,
-        private_key: credentials.private_key.replace(/\\n/g, '\n'),
-      },
-      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-    });
-
+    const auth = await getAuth();
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // Fetch the data from the sheet, starting from row 11
-    const sheetResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A11:Z`,
-    });
-
-    const rows = sheetResponse.data.values;
-    if (rows && rows.length > 1) {
-      const header = rows[0];
-      const data = rows.slice(1).map(row => {
-        let rowData = {};
-        header.forEach((key, index) => {
-          if (key) { // Only process columns that have a header
-            rowData[key] = row[index] || '';
-          }
-        });
-        return rowData;
-      });
-      response.status(200).json(data);
+    if (request.method === 'POST') {
+      await handleUpdateStatus(request, response, sheets);
+    } else if (request.method === 'GET') {
+      if (request.query.action === 'get_options') {
+        await handleGetStatusOptions(request, response, sheets);
+      } else {
+        await handleGetItems(request, response, sheets);
+      }
     } else {
-      // No data found or only a header row exists
-      response.status(200).json([]);
+      response.status(405).send({ error: 'Method Not Allowed' });
     }
   } catch (error) {
-    console.error('The API returned an error:', error);
-    // Send a more structured error response
-    response.status(500).json({
-      error: 'Failed to fetch data from Google Sheets.',
-      details: error.message
-    });
+    console.error('API Error:', error);
+    response.status(500).json({ error: 'An API error occurred.', details: error.message });
   }
+}
+
+// Fetches all items and includes their row index
+async function handleGetItems(req, res, sheets) {
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}!A11:Z`,
+  });
+
+  const rows = response.data.values;
+  if (!rows || rows.length === 0) {
+    return res.status(200).json([]);
+  }
+
+  const header = rows[0];
+  const data = rows.slice(1).map((row, index) => {
+    const rowData = {};
+    header.forEach((key, i) => {
+      if (key) {
+        rowData[key] = row[i] || '';
+      }
+    });
+    // Add the actual row index from the sheet
+    rowData.rowIndex = 11 + 1 + index; // 11 (start) + 1 (for header) + index
+    return rowData;
+  });
+
+  res.status(200).json(data);
+}
+
+// Fetches unique, non-empty status options from the 'Estado' column (assuming it's column J)
+async function handleGetStatusOptions(req, res, sheets) {
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}!J12:J`, // Start from row 12 to get only data
+  });
+
+  const rows = response.data.values;
+  if (!rows) {
+    return res.status(200).json([]);
+  }
+
+  // Use a Set to get unique, non-empty values
+  const uniqueOptions = new Set(rows.flat().filter(val => val));
+  res.status(200).json([...uniqueOptions]);
+}
+
+// Updates the status of a specific row
+async function handleUpdateStatus(req, res, sheets) {
+  const { rowIndex, newStatus } = await getJsonBody(req);
+
+  if (!rowIndex || newStatus === undefined) {
+    return res.status(400).json({ error: 'rowIndex and newStatus are required.' });
+  }
+
+  // Assuming 'Estado' is column J
+  const range = `${SHEET_NAME}!J${rowIndex}`;
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: range,
+    valueInputOption: 'USER_ENTERED',
+    resource: {
+      values: [[newStatus]],
+    },
+  });
+
+  res.status(200).json({ success: true, message: `Row ${rowIndex} updated to ${newStatus}` });
 }
