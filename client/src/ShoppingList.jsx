@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
+// A simple loading spinner component
+function Spinner() {
+  return <div className="spinner"></div>;
+}
+
 function ShoppingList() {
   const [items, setItems] = useState([]);
   const [statusOptions, setStatusOptions] = useState([]);
@@ -7,9 +12,9 @@ function ShoppingList() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Encapsulate fetching logic to be reusable
   const fetchData = useCallback(async () => {
-    setLoading(true);
+    // Don't set loading to true here, let the callers do it
+    // to control the UX for initial load vs. updates.
     try {
       const [itemsData, optionsData] = await Promise.all([
         fetch('/api').then(res => res.json()),
@@ -26,41 +31,35 @@ function ShoppingList() {
   }, []);
 
   useEffect(() => {
+    setLoading(true);
     fetchData();
   }, [fetchData]);
 
   const handleStatusChange = async (rowIndex, newStatus) => {
-    const originalItems = [...items];
-    const updatedItems = items.map(item =>
-      item.rowIndex === rowIndex ? { ...item, Estado: newStatus } : item
-    );
-    setItems(updatedItems);
-
+    setLoading(true);
     try {
       await fetch('/api', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'update_status', rowIndex, newStatus }),
       });
+      await fetchData(); // Refetch to ensure data consistency
     } catch (error) {
       console.error('Update failed:', error);
-      setItems(originalItems);
       alert('Error: No se pudo actualizar el estado. Por favor, recarga la página.');
+      setLoading(false); // Ensure loading is turned off on error
     }
   };
 
   const handleQuantityChange = async (rowIndex, newQuantity) => {
-    // Prevent sending empty updates
     if (newQuantity === '' || isNaN(newQuantity)) return;
-
-    setLoading(true); // Show loading overlay while we wait for refresh
+    setLoading(true);
     try {
       await fetch('/api', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'update_quantity', rowIndex, newQuantity }),
       });
-      // After successful update, refetch all data to get new totals
       await fetchData();
     } catch (error) {
       console.error('Update failed:', error);
@@ -68,11 +67,6 @@ function ShoppingList() {
       setLoading(false);
     }
   };
-
-
-  if (loading) {
-    return <div className="loading">Cargando lista...</div>;
-  }
 
   if (error) {
     return <div className="error">{error}</div>;
@@ -91,7 +85,8 @@ function ShoppingList() {
   }, {});
 
   return (
-    <div>
+    <div className={`app-container ${loading ? 'is-loading' : ''}`}>
+      {loading && <Spinner />}
       <h1>Lista de la Compra 2025</h1>
       <div className="search-container">
         <input
@@ -100,6 +95,7 @@ function ShoppingList() {
           className="search-input"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          disabled={loading}
         />
       </div>
       {Object.keys(groupedItems).length > 0 ? (
@@ -117,6 +113,7 @@ function ShoppingList() {
                       defaultValue={item.Cantidad}
                       onBlur={(e) => handleQuantityChange(item.rowIndex, e.target.value)}
                       aria-label="Cantidad"
+                      disabled={loading}
                     />
                   </div>
                   <div className="item-pricing">
@@ -125,6 +122,7 @@ function ShoppingList() {
                       className="item-status-select"
                       value={item.Estado}
                       onChange={(e) => handleStatusChange(item.rowIndex, e.target.value)}
+                      disabled={loading}
                     >
                       {item.Estado && !statusOptions.includes(item.Estado) && (
                         <option value={item.Estado}>{item.Estado}</option>
