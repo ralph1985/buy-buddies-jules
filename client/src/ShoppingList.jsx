@@ -145,6 +145,9 @@ function ShoppingList() {
                   </div>
                   <div className="item-pricing">
                     <span className="item-total">{item.Total}€</span>
+                    {item['Precio unidad'] && (
+                      <span className="item-unit-price">({item['Precio unidad']}€/ud.)</span>
+                    )}
                     <select
                       className="item-status-select"
                       value={item.Estado || ''}
