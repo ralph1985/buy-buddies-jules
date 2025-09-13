@@ -1,0 +1,22 @@
+{
+  "name": "google-sheets-app",
+  "version": "1.0.0",
+  "description": "A web app to manage a Google Sheet.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "google-sheets",
+    "react",
+    "node"
+  ],
+  "author": "Jules",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0",
+    "googleapis": "^159.0.0"
+  }
+}
