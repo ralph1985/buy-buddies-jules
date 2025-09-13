@@ -35,6 +35,11 @@ export default async function handler(request, response) {
   response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
+  // Set cache-busting headers
+  response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  response.setHeader('Pragma', 'no-cache');
+  response.setHeader('Expires', '0');
+
   if (request.method === 'OPTIONS') {
     return response.status(200).end();
   }
