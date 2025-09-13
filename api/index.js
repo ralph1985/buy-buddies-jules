@@ -1,7 +1,4 @@
 import { google } from 'googleapis';
-import path from 'path';
-import { promises as fs } from 'fs';
-
 // This function will be executed by Vercel
 export default async function handler(request, response) {
   // Set CORS headers to allow requests from any origin
@@ -19,12 +16,12 @@ export default async function handler(request, response) {
   const SHEET_NAME = "'Lista compra 2025'";
 
   try {
-    // Vercel's working directory is the project root.
-    const keyFilePath = path.join(process.cwd(), 'credentials.json');
+    // The credentials are now stored in a Vercel environment variable
+    if (!process.env.GOOGLE_CREDENTIALS) {
+      throw new Error('GOOGLE_CREDENTIALS environment variable not set.');
+    }
 
-    // Read the key file content
-    const keyFileContent = await fs.readFile(keyFilePath, 'utf8');
-    const credentials = JSON.parse(keyFileContent);
+    const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
 
     // Authenticate with Google
     const auth = new google.auth.GoogleAuth({
