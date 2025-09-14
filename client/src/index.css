@@ -110,8 +110,8 @@ h1 {
   cursor: pointer;
 }
 
-.status-filter-select {
-  width: 100%; /* Full width */
+.filter-select {
+  width: 100%;
   padding: 0.75rem;
   font-size: 1rem;
   border-radius: 8px;
@@ -120,9 +120,10 @@ h1 {
   color: white;
   cursor: pointer;
   box-sizing: border-box;
+  margin-bottom: 1rem; /* For spacing between filters */
 }
 
-.status-filter-select:focus {
+.filter-select:focus {
   outline: none;
   border-color: #ffa500;
 }
