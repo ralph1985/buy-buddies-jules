@@ -301,4 +301,3 @@ async function handleGetSummary(req, res, sheets) {
 
   res.status(200).json(summaryData);
 }
-
