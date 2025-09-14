@@ -103,9 +103,14 @@ h1 {
 }
 
 .group-header {
+  position: sticky;
+  top: 0;
+  background-color: #1a1a1a; /* Match the body background */
+  z-index: 10;
   text-align: left;
   color: #ffa500;
   border-bottom: 2px solid #ffa500;
+  padding-top: 0.5rem; /* Add some padding at the top */
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
 }
