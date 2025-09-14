@@ -67,8 +67,6 @@ export default async function handler(request, response) {
         await handleGetStatusOptions(request, response, sheets);
       } else if (action === 'get_summary') {
         await handleGetSummary(request, response, sheets);
-      } else if (action === 'get_type_options') {
-        await handleGetTypeOptions(request, response, sheets);
       } else {
         await handleGetItems(request, response, sheets);
       }
@@ -174,14 +172,15 @@ async function handleUpdateQuantity(res, sheets, body) {
 
 // Updates the description, notes, unit price and type of a specific row
 async function handleUpdateDetails(res, sheets, body) {
-  const { rowIndex, newDescription, newNotes, newUnitPrice, newType } = body;
+  const { rowIndex, newDescription, newNotes, newUnitPrice, newType, newWhen } = body;
 
-  if (!rowIndex || newDescription === undefined || newNotes === undefined || newUnitPrice === undefined || newType === undefined) {
+  if (!rowIndex || newDescription === undefined || newNotes === undefined || newUnitPrice === undefined || newType === undefined || newWhen === undefined) {
     return res.status(400).json({ error: 'rowIndex and all new detail fields are required.' });
   }
 
-  // Define the ranges for Type (D), Description (F), Unit Price (H), and Notes (J)
+  // Define the ranges for Type (D), When (E), Description (F), Unit Price (H), and Notes (J)
   const typeRange = `${SHEET_NAME}!D${rowIndex}`;
+  const whenRange = `${SHEET_NAME}!E${rowIndex}`;
   const descriptionRange = `${SHEET_NAME}!F${rowIndex}`;
   const unitPriceRange = `${SHEET_NAME}!H${rowIndex}`;
   const notesRange = `${SHEET_NAME}!J${rowIndex}`;
@@ -193,6 +192,12 @@ async function handleUpdateDetails(res, sheets, body) {
       range: typeRange,
       valueInputOption: 'USER_ENTERED',
       resource: { values: [[newType]] },
+    }),
+    sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: whenRange,
+      valueInputOption: 'USER_ENTERED',
+      resource: { values: [[newWhen]] },
     }),
     sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
@@ -219,10 +224,10 @@ async function handleUpdateDetails(res, sheets, body) {
 
 // Appends a new product row to the sheet using a more robust get-then-update method
 async function handleAddNewProduct(res, sheets, body) {
-  const { newDescription, newType, newUnitPrice, newNotes } = body;
+  const { newDescription, newType, newUnitPrice, newNotes, newWhen } = body;
 
-  if (newDescription === undefined || newType === undefined || newUnitPrice === undefined || newNotes === undefined) {
-    return res.status(400).json({ error: 'newDescription, newType, newUnitPrice, and newNotes are required.' });
+  if (newDescription === undefined || newType === undefined || newUnitPrice === undefined || newNotes === undefined || newWhen === undefined) {
+    return res.status(400).json({ error: 'newDescription, newType, newUnitPrice, newNotes and newWhen are required.' });
   }
 
   // 1. Find the next empty row by checking the length of a column (e.g., F for Description)
@@ -242,7 +247,7 @@ async function handleAddNewProduct(res, sheets, body) {
     '', // B: Quién compró 2024
     '', // C: Quién compra en 2025
     newType, // D: Tipo de Elemento
-    '', // E: Placeholder/Empty
+    newWhen, // E: ¿Cúando se compra?
     newDescription, // F: Descripción
     '1', // G: Cantidad (default to 1)
     newUnitPrice, // H: Precio unidad
@@ -262,23 +267,6 @@ async function handleAddNewProduct(res, sheets, body) {
   });
 
   res.status(200).json({ success: true, message: 'Product added successfully.' });
-}
-
-// Fetches unique, non-empty type options from the 'Tipo de Elemento' column (Column D)
-async function handleGetTypeOptions(req, res, sheets) {
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!D12:D`, // Start from row 12 to get only data
-  });
-
-  const rows = response.data.values;
-  if (!rows) {
-    return res.status(200).json([]);
-  }
-
-  // Use a Set to get unique, non-empty values
-  const uniqueOptions = new Set(rows.flat().filter(val => val));
-  res.status(200).json([...uniqueOptions]);
 }
 
 // Fetches and parses the budget summary from the top of the sheet

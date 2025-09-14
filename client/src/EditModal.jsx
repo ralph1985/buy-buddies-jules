@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
-function EditModal({ isOpen, onClose, itemData, onSave, typeOptions }) {
+function EditModal({ isOpen, onClose, itemData, onSave, typeOptions, whenOptions }) {
   const [description, setDescription] = useState('');
   const [notes, setNotes] = useState('');
   const [unitPrice, setUnitPrice] = useState('');
   const [type, setType] = useState('');
+  const [when, setWhen] = useState('');
 
   // When the modal opens or itemData changes, populate the form.
   // If itemData is null (for creating a new item), it resets the form.
@@ -14,12 +15,14 @@ function EditModal({ isOpen, onClose, itemData, onSave, typeOptions }) {
       setNotes(itemData.Notas || '');
       setUnitPrice(itemData['Precio unidad'] || '');
       setType(itemData['Tipo de Elemento'] || '');
+      setWhen(itemData['¿Cúando se compra?'] || '');
     } else {
       // Reset form for new product
       setDescription('');
       setNotes('');
       setUnitPrice('');
       setType('');
+      setWhen('');
     }
   }, [isOpen, itemData]);
 
@@ -34,7 +37,8 @@ function EditModal({ isOpen, onClose, itemData, onSave, typeOptions }) {
       newDescription: description,
       newNotes: notes,
       newUnitPrice: unitPrice,
-      newType: type
+      newType: type,
+      newWhen: when
     });
   };
 
@@ -63,6 +67,20 @@ function EditModal({ isOpen, onClose, itemData, onSave, typeOptions }) {
           >
             <option value="">- Seleccionar tipo -</option>
             {typeOptions.map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="when-select">¿Cúando se compra?</label>
+          <select
+            id="when-select"
+            value={when}
+            onChange={(e) => setWhen(e.target.value)}
+            className="form-input"
+          >
+            <option value="">- Seleccionar fecha -</option>
+            {whenOptions.map(option => (
               <option key={option} value={option}>{option}</option>
             ))}
           </select>

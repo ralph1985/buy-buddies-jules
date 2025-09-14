@@ -9,12 +9,14 @@ function Spinner() {
 function ShoppingList() {
   const [items, setItems] = useState([]);
   const [statusOptions, setStatusOptions] = useState([]);
-  const [typeOptions, setTypeOptions] = useState([]);
   const [summaryData, setSummaryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [whenFilter, setWhenFilter] = useState('all');
+  const [groupBy, setGroupBy] = useState('type'); // 'type' or 'when'
 
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -22,16 +24,14 @@ function ShoppingList() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [itemsData, statusOpts, summaryRes, typeOpts] = await Promise.all([
+      const [itemsData, statusOpts, summaryRes] = await Promise.all([
         fetch('/api').then(res => res.json()),
         fetch('/api?action=get_options').then(res => res.json()),
-        fetch('/api?action=get_summary').then(res => res.json()),
-        fetch('/api?action=get_type_options').then(res => res.json())
+        fetch('/api?action=get_summary').then(res => res.json())
       ]);
       setItems(itemsData);
       setStatusOptions(statusOpts.sort());
       setSummaryData(summaryRes);
-      setTypeOptions(typeOpts.sort());
     } catch (err) {
       console.error("Fetch error:", err);
       setError("No se pudo cargar la lista de la compra. Inténtalo de nuevo más tarde.");
@@ -87,11 +87,22 @@ function ShoppingList() {
 
   const filteredItems = items
     .filter(item => item.Descripción?.toLowerCase().includes(searchTerm.toLowerCase()))
-    .filter(item => statusFilter === 'all' || item.Estado === statusFilter);
+    .filter(item => statusFilter === 'all' || item.Estado === statusFilter)
+    .filter(item => typeFilter === 'all' || item['Tipo de Elemento'] === typeFilter)
+    .filter(item => whenFilter === 'all' || item['¿Cúando se compra?'] === whenFilter);
 
   const validItems = filteredItems.filter(item => item.Descripción);
+
+  const whenOptions = [...new Set(items.map(item => item['¿Cúando se compra?']).filter(Boolean))].sort();
+  const typeOptions = [...new Set(items.map(item => item['Tipo de Elemento']).filter(Boolean))].sort();
+
   const groupedItems = validItems.reduce((acc, item) => {
-    const group = item['Tipo de Elemento'] || 'Otros';
+    let group;
+    if (groupBy === 'type') {
+      group = item['Tipo de Elemento'] || 'Otros';
+    } else { // groupBy === 'when'
+      group = item['¿Cúando se compra?'] || 'Sin fecha';
+    }
     if (!acc[group]) acc[group] = [];
     acc[group].push(item);
     return acc;
@@ -114,7 +125,7 @@ function ShoppingList() {
           disabled={loading}
         />
         <select
-          className="status-filter-select"
+          className="filter-select"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           disabled={loading}
@@ -122,6 +133,52 @@ function ShoppingList() {
           <option value="all">Todos los estados</option>
           {statusOptions.map(option => <option key={option} value={option}>{option}</option>)}
         </select>
+
+        <select
+          className="filter-select"
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          disabled={loading}
+        >
+          <option value="all">Todos los tipos</option>
+          {typeOptions.map(option => <option key={option} value={option}>{option}</option>)}
+        </select>
+
+        <select
+          className="filter-select"
+          value={whenFilter}
+          onChange={(e) => setWhenFilter(e.target.value)}
+          disabled={loading}
+        >
+          <option value="all">Todas las fechas</option>
+          {whenOptions.map(option => <option key={option} value={option}>{option}</option>)}
+        </select>
+
+        <div className="grouping-container">
+          <span className="grouping-label">Agrupar por:</span>
+          <label>
+            <input
+              type="radio"
+              name="groupBy"
+              value="type"
+              checked={groupBy === 'type'}
+              onChange={(e) => setGroupBy(e.target.value)}
+              disabled={loading}
+            />
+            Tipo
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="groupBy"
+              value="when"
+              checked={groupBy === 'when'}
+              onChange={(e) => setGroupBy(e.target.value)}
+              disabled={loading}
+            />
+            Fecha
+          </label>
+        </div>
       </div>
 
       <div className="main-summary-container">
@@ -202,6 +259,7 @@ function ShoppingList() {
         itemData={editingItem}
         onSave={handleSaveDetails}
         typeOptions={typeOptions}
+        whenOptions={whenOptions}
       />
       <button className="fab-add-button" onClick={() => handleOpenEditModal(null)} disabled={loading}>
         +
