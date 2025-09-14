@@ -67,8 +67,6 @@ export default async function handler(request, response) {
         await handleGetStatusOptions(request, response, sheets);
       } else if (action === 'get_summary') {
         await handleGetSummary(request, response, sheets);
-      } else if (action === 'get_type_options') {
-        await handleGetTypeOptions(request, response, sheets);
       } else {
         await handleGetItems(request, response, sheets);
       }
@@ -262,23 +260,6 @@ async function handleAddNewProduct(res, sheets, body) {
   });
 
   res.status(200).json({ success: true, message: 'Product added successfully.' });
-}
-
-// Fetches unique, non-empty type options from the 'Tipo de Elemento' column (Column D)
-async function handleGetTypeOptions(req, res, sheets) {
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!D12:D`, // Start from row 12 to get only data
-  });
-
-  const rows = response.data.values;
-  if (!rows) {
-    return res.status(200).json([]);
-  }
-
-  // Use a Set to get unique, non-empty values
-  const uniqueOptions = new Set(rows.flat().filter(val => val));
-  res.status(200).json([...uniqueOptions]);
 }
 
 // Fetches and parses the budget summary from the top of the sheet

@@ -81,8 +81,37 @@ h1 {
   border-color: #ffa500;
 }
 
-.status-filter-select {
-  width: 100%; /* Full width */
+.grouping-container {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem; /* Increased gap */
+  padding: 0.75rem;
+  background-color: #2c2c2c;
+  border-radius: 8px;
+}
+
+.grouping-label {
+  font-weight: bold;
+  color: #ccc;
+}
+
+.grouping-container label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  color: white;
+  font-size: 1rem;
+}
+
+.grouping-container input[type="radio"] {
+  cursor: pointer;
+}
+
+.filter-select {
+  width: 100%;
   padding: 0.75rem;
   font-size: 1rem;
   border-radius: 8px;
@@ -91,9 +120,10 @@ h1 {
   color: white;
   cursor: pointer;
   box-sizing: border-box;
+  margin-bottom: 1rem; /* For spacing between filters */
 }
 
-.status-filter-select:focus {
+.filter-select:focus {
   outline: none;
   border-color: #ffa500;
 }
@@ -103,9 +133,14 @@ h1 {
 }
 
 .group-header {
+  position: sticky;
+  top: 0;
+  background-color: #1a1a1a; /* Match the body background */
+  z-index: 10;
   text-align: left;
   color: #ffa500;
   border-bottom: 2px solid #ffa500;
+  padding-top: 0.5rem; /* Add some padding at the top */
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
 }
