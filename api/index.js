@@ -55,6 +55,8 @@ export default async function handler(request, response) {
         await handleUpdateQuantity(response, sheets, body);
       } else if (body.action === 'update_details') {
         await handleUpdateDetails(response, sheets, body);
+      } else if (body.action === 'add_product') {
+        await handleAddNewProduct(response, sheets, body);
       } else {
         // Default POST action is to update status
         await handleUpdateStatus(response, sheets, body);
@@ -213,6 +215,44 @@ async function handleUpdateDetails(res, sheets, body) {
   ]);
 
   res.status(200).json({ success: true, message: `Row ${rowIndex} details updated.` });
+}
+
+// Appends a new product row to the sheet
+async function handleAddNewProduct(res, sheets, body) {
+  const { newDescription, newType, newUnitPrice, newNotes } = body;
+
+  if (newDescription === undefined || newType === undefined || newUnitPrice === undefined || newNotes === undefined) {
+    return res.status(400).json({ error: 'newDescription, newType, newUnitPrice, and newNotes are required.' });
+  }
+
+  // Construct the new row in the correct column order.
+  // A, B, C are empty. D is Type. E is empty. F is Description. G is Cantidad (default 1).
+  // H is Precio Unidad. I is Total (formula, so empty). J is Notes. K is Estado (empty).
+  const newRow = [
+    '', // A: Lugar de Compra
+    '', // B: Quién compró 2024
+    '', // C: Quién compra en 2025
+    newType, // D: Tipo de Elemento
+    '', // E: Placeholder/Empty
+    newDescription, // F: Descripción
+    '1', // G: Cantidad (default to 1)
+    newUnitPrice, // H: Precio unidad
+    '', // I: Total (calculated by formula)
+    newNotes, // J: Notas
+    '', // K: Estado
+  ];
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}!A:K`, // Append to the sheet
+    valueInputOption: 'USER_ENTERED',
+    insertDataOption: 'INSERT_ROWS',
+    resource: {
+      values: [newRow],
+    },
+  });
+
+  res.status(200).json({ success: true, message: 'Product added successfully.' });
 }
 
 // Fetches unique, non-empty type options from the 'Tipo de Elemento' column (Column D)

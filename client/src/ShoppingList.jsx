@@ -9,7 +9,7 @@ function Spinner() {
 function ShoppingList() {
   const [items, setItems] = useState([]);
   const [statusOptions, setStatusOptions] = useState([]);
-  const [typeOptions, setTypeOptions] = useState([]); // New state for type options
+  const [typeOptions, setTypeOptions] = useState([]);
   const [summaryData, setSummaryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,12 +26,12 @@ function ShoppingList() {
         fetch('/api').then(res => res.json()),
         fetch('/api?action=get_options').then(res => res.json()),
         fetch('/api?action=get_summary').then(res => res.json()),
-        fetch('/api?action=get_type_options').then(res => res.json()) // Fetch type options
+        fetch('/api?action=get_type_options').then(res => res.json())
       ]);
       setItems(itemsData);
       setStatusOptions(statusOpts.sort());
       setSummaryData(summaryRes);
-      setTypeOptions(typeOpts.sort()); // Set type options
+      setTypeOptions(typeOpts.sort());
     } catch (err) {
       console.error("Fetch error:", err);
       setError("No se pudo cargar la lista de la compra. Inténtalo de nuevo más tarde.");
@@ -62,13 +62,15 @@ function ShoppingList() {
   };
 
   const handleOpenEditModal = (item) => {
-    setEditingItem(item);
+    setEditingItem(item); // If item is null, it's for creation
     setIsEditModalOpen(true);
   };
 
-  const handleSaveDetails = (rowIndex, newDescription, newNotes, newUnitPrice, newType) => {
+  const handleSaveDetails = (payload) => {
     setIsEditModalOpen(false);
-    handleUpdate('update_details', { rowIndex, newDescription, newNotes, newUnitPrice, newType });
+    // If rowIndex exists, it's an update; otherwise, it's an add.
+    const action = payload.rowIndex ? 'update_details' : 'add_product';
+    handleUpdate(action, payload);
   };
 
   const handleStatusChange = (rowIndex, newStatus) => handleUpdate('update_status', { rowIndex, newStatus });
@@ -199,8 +201,11 @@ function ShoppingList() {
         onClose={() => setIsEditModalOpen(false)}
         itemData={editingItem}
         onSave={handleSaveDetails}
-        typeOptions={typeOptions} // Pass options to the modal
+        typeOptions={typeOptions}
       />
+      <button className="fab-add-button" onClick={() => handleOpenEditModal(null)} disabled={loading}>
+        +
+      </button>
     </div>
   );
 }

@@ -6,30 +6,43 @@ function EditModal({ isOpen, onClose, itemData, onSave, typeOptions }) {
   const [unitPrice, setUnitPrice] = useState('');
   const [type, setType] = useState('');
 
-  // When the modal opens, populate the form with the item's current data
+  // When the modal opens or itemData changes, populate the form.
+  // If itemData is null (for creating a new item), it resets the form.
   useEffect(() => {
-    if (itemData) {
+    if (isOpen && itemData) {
       setDescription(itemData.Descripción || '');
       setNotes(itemData.Notas || '');
       setUnitPrice(itemData['Precio unidad'] || '');
       setType(itemData['Tipo de Elemento'] || '');
+    } else {
+      // Reset form for new product
+      setDescription('');
+      setNotes('');
+      setUnitPrice('');
+      setType('');
     }
-  }, [itemData]);
+  }, [isOpen, itemData]);
 
   if (!isOpen) {
     return null;
   }
 
   const handleSave = () => {
-    // Pass all four values back to the parent
-    onSave(itemData.rowIndex, description, notes, unitPrice, type);
+    // Pass rowIndex if it exists (for edits), otherwise it's undefined (for adds)
+    onSave({
+      rowIndex: itemData?.rowIndex,
+      newDescription: description,
+      newNotes: notes,
+      newUnitPrice: unitPrice,
+      newType: type
+    });
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close-button" onClick={onClose}>&times;</button>
-        <h2>Editar Producto</h2>
+        <h2>{itemData ? 'Editar Producto' : 'Añadir Nuevo Producto'}</h2>
         <div className="form-group">
           <label htmlFor="description-input">Descripción</label>
           <input
@@ -46,7 +59,7 @@ function EditModal({ isOpen, onClose, itemData, onSave, typeOptions }) {
             id="type-select"
             value={type}
             onChange={(e) => setType(e.target.value)}
-            className="form-input" // Reusing style for consistency
+            className="form-input"
           >
             <option value="">- Seleccionar tipo -</option>
             {typeOptions.map(option => (

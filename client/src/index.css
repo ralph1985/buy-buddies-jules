@@ -337,6 +337,34 @@ h1 {
   font-weight: bold;
 }
 
+/* Floating Action Button */
+.fab-add-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #ffa500;
+  color: #1a1a1a;
+  border: none;
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  transition: transform 0.2s ease-in-out;
+  z-index: 1000;
+}
+
+.fab-add-button:hover {
+  transform: scale(1.1);
+}
+
+.fab-add-button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
 /* Edit Modal Form Styles */
 .form-group {
   margin-bottom: 1.5rem;
