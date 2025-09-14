@@ -331,6 +331,7 @@ function ShoppingList() {
         itemData={editingItem}
         onSave={handleSaveDetails}
         typeOptions={typeOptions}
+        whenOptions={whenOptions}
       />
       <button
         className="fab-add-button"
