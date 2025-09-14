@@ -15,6 +15,7 @@ function ShoppingList() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [groupBy, setGroupBy] = useState('type'); // 'type' or 'when'
 
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -91,7 +92,12 @@ function ShoppingList() {
 
   const validItems = filteredItems.filter(item => item.Descripción);
   const groupedItems = validItems.reduce((acc, item) => {
-    const group = item['Tipo de Elemento'] || 'Otros';
+    let group;
+    if (groupBy === 'type') {
+      group = item['Tipo de Elemento'] || 'Otros';
+    } else { // groupBy === 'when'
+      group = item['¿Cúando se compra?'] || 'Sin fecha';
+    }
     if (!acc[group]) acc[group] = [];
     acc[group].push(item);
     return acc;
@@ -122,6 +128,32 @@ function ShoppingList() {
           <option value="all">Todos los estados</option>
           {statusOptions.map(option => <option key={option} value={option}>{option}</option>)}
         </select>
+
+        <div className="grouping-container">
+          <span className="grouping-label">Agrupar por:</span>
+          <label>
+            <input
+              type="radio"
+              name="groupBy"
+              value="type"
+              checked={groupBy === 'type'}
+              onChange={(e) => setGroupBy(e.target.value)}
+              disabled={loading}
+            />
+            Tipo
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="groupBy"
+              value="when"
+              checked={groupBy === 'when'}
+              onChange={(e) => setGroupBy(e.target.value)}
+              disabled={loading}
+            />
+            Fecha
+          </label>
+        </div>
       </div>
 
       <div className="main-summary-container">
