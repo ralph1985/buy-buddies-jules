@@ -217,7 +217,7 @@ async function handleUpdateDetails(res, sheets, body) {
   res.status(200).json({ success: true, message: `Row ${rowIndex} details updated.` });
 }
 
-// Appends a new product row to the sheet
+// Appends a new product row to the sheet using a more robust get-then-update method
 async function handleAddNewProduct(res, sheets, body) {
   const { newDescription, newType, newUnitPrice, newNotes } = body;
 
@@ -225,9 +225,15 @@ async function handleAddNewProduct(res, sheets, body) {
     return res.status(400).json({ error: 'newDescription, newType, newUnitPrice, and newNotes are required.' });
   }
 
-  // Construct the new row in the correct column order.
-  // A, B, C are empty. D is Type. E is empty. F is Description. G is Cantidad (default 1).
-  // H is Precio Unidad. I is Total (formula, so empty). J is Notes. K is Estado (empty).
+  // 1. Find the next empty row by checking the length of a column (e.g., F for Description)
+  const getResponse = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}!F11:F`, // Check from F11 downwards
+  });
+  const numRows = getResponse.data.values ? getResponse.data.values.length : 0;
+  const newRowIndex = 11 + numRows; // The new row will be after the last data row
+
+  // 2. Construct the new row in the correct column order.
   const newRow = [
     '', // A: Lugar de Compra
     '', // B: Quién compró 2024
@@ -242,11 +248,11 @@ async function handleAddNewProduct(res, sheets, body) {
     '', // K: Estado
   ];
 
-  await sheets.spreadsheets.values.append({
+  // 3. Update the specific new row
+  await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A:K`, // Append to the sheet
+    range: `${SHEET_NAME}!A${newRowIndex}:K${newRowIndex}`,
     valueInputOption: 'USER_ENTERED',
-    insertDataOption: 'INSERT_ROWS',
     resource: {
       values: [newRow],
     },
