@@ -233,7 +233,10 @@ async function handleAddNewProduct(res, sheets, body) {
   const numRows = getResponse.data.values ? getResponse.data.values.length : 0;
   const newRowIndex = 11 + numRows; // The new row will be after the last data row
 
-  // 2. Construct the new row in the correct column order.
+  // 2. Construct the formula for the Total column (I)
+  const totalFormula = `=G${newRowIndex}*H${newRowIndex}`;
+
+  // 3. Construct the new row in the correct column order.
   const newRow = [
     '', // A: Lugar de Compra
     '', // B: Quién compró 2024
@@ -243,7 +246,7 @@ async function handleAddNewProduct(res, sheets, body) {
     newDescription, // F: Descripción
     '1', // G: Cantidad (default to 1)
     newUnitPrice, // H: Precio unidad
-    '', // I: Total (calculated by formula)
+    totalFormula, // I: Total (calculated by formula)
     newNotes, // J: Notas
     '', // K: Estado
   ];
