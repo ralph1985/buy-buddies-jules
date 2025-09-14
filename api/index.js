@@ -65,6 +65,8 @@ export default async function handler(request, response) {
         await handleGetStatusOptions(request, response, sheets);
       } else if (action === 'get_summary') {
         await handleGetSummary(request, response, sheets);
+      } else if (action === 'get_type_options') {
+        await handleGetTypeOptions(request, response, sheets);
       } else {
         await handleGetItems(request, response, sheets);
       }
@@ -168,21 +170,28 @@ async function handleUpdateQuantity(res, sheets, body) {
   res.status(200).json({ success: true, message: `Row ${rowIndex} quantity updated to ${newQuantity}` });
 }
 
-// Updates the description, notes, and unit price of a specific row
+// Updates the description, notes, unit price and type of a specific row
 async function handleUpdateDetails(res, sheets, body) {
-  const { rowIndex, newDescription, newNotes, newUnitPrice } = body;
+  const { rowIndex, newDescription, newNotes, newUnitPrice, newType } = body;
 
-  if (!rowIndex || newDescription === undefined || newNotes === undefined || newUnitPrice === undefined) {
-    return res.status(400).json({ error: 'rowIndex, newDescription, newNotes, and newUnitPrice are required.' });
+  if (!rowIndex || newDescription === undefined || newNotes === undefined || newUnitPrice === undefined || newType === undefined) {
+    return res.status(400).json({ error: 'rowIndex and all new detail fields are required.' });
   }
 
-  // Define the ranges for Description (F), Unit Price (H), and Notes (J)
+  // Define the ranges for Type (D), Description (F), Unit Price (H), and Notes (J)
+  const typeRange = `${SHEET_NAME}!D${rowIndex}`;
   const descriptionRange = `${SHEET_NAME}!F${rowIndex}`;
   const unitPriceRange = `${SHEET_NAME}!H${rowIndex}`;
   const notesRange = `${SHEET_NAME}!J${rowIndex}`;
 
   // Perform all updates
   await Promise.all([
+    sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: typeRange,
+      valueInputOption: 'USER_ENTERED',
+      resource: { values: [[newType]] },
+    }),
     sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: descriptionRange,
@@ -204,6 +213,23 @@ async function handleUpdateDetails(res, sheets, body) {
   ]);
 
   res.status(200).json({ success: true, message: `Row ${rowIndex} details updated.` });
+}
+
+// Fetches unique, non-empty type options from the 'Tipo de Elemento' column (Column D)
+async function handleGetTypeOptions(req, res, sheets) {
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}!D12:D`, // Start from row 12 to get only data
+  });
+
+  const rows = response.data.values;
+  if (!rows) {
+    return res.status(200).json([]);
+  }
+
+  // Use a Set to get unique, non-empty values
+  const uniqueOptions = new Set(rows.flat().filter(val => val));
+  res.status(200).json([...uniqueOptions]);
 }
 
 // Fetches and parses the budget summary from the top of the sheet

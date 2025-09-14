@@ -9,6 +9,7 @@ function Spinner() {
 function ShoppingList() {
   const [items, setItems] = useState([]);
   const [statusOptions, setStatusOptions] = useState([]);
+  const [typeOptions, setTypeOptions] = useState([]); // New state for type options
   const [summaryData, setSummaryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,16 +21,17 @@ function ShoppingList() {
   const [editingItem, setEditingItem] = useState(null);
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
     try {
-      const [itemsData, optionsData, summaryRes] = await Promise.all([
+      const [itemsData, statusOpts, summaryRes, typeOpts] = await Promise.all([
         fetch('/api').then(res => res.json()),
         fetch('/api?action=get_options').then(res => res.json()),
-        fetch('/api?action=get_summary').then(res => res.json())
+        fetch('/api?action=get_summary').then(res => res.json()),
+        fetch('/api?action=get_type_options').then(res => res.json()) // Fetch type options
       ]);
       setItems(itemsData);
-      setStatusOptions(optionsData.sort());
+      setStatusOptions(statusOpts.sort());
       setSummaryData(summaryRes);
+      setTypeOptions(typeOpts.sort()); // Set type options
     } catch (err) {
       console.error("Fetch error:", err);
       setError("No se pudo cargar la lista de la compra. Inténtalo de nuevo más tarde.");
@@ -39,6 +41,7 @@ function ShoppingList() {
   }, []);
 
   useEffect(() => {
+    setLoading(true);
     fetchData();
   }, [fetchData]);
 
@@ -63,9 +66,9 @@ function ShoppingList() {
     setIsEditModalOpen(true);
   };
 
-  const handleSaveDetails = (rowIndex, newDescription, newNotes, newUnitPrice) => {
+  const handleSaveDetails = (rowIndex, newDescription, newNotes, newUnitPrice, newType) => {
     setIsEditModalOpen(false);
-    handleUpdate('update_details', { rowIndex, newDescription, newNotes, newUnitPrice });
+    handleUpdate('update_details', { rowIndex, newDescription, newNotes, newUnitPrice, newType });
   };
 
   const handleStatusChange = (rowIndex, newStatus) => handleUpdate('update_status', { rowIndex, newStatus });
@@ -196,6 +199,7 @@ function ShoppingList() {
         onClose={() => setIsEditModalOpen(false)}
         itemData={editingItem}
         onSave={handleSaveDetails}
+        typeOptions={typeOptions} // Pass options to the modal
       />
     </div>
   );
