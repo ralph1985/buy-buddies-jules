@@ -1,81 +1,83 @@
-import { google } from 'googleapis';
+import { google } from "googleapis";
 
 // Helper to parse JSON body from requests
 async function getJsonBody(req) {
   return new Promise((resolve, reject) => {
-    let body = '';
-    req.on('data', chunk => body += chunk.toString());
-    req.on('end', () => resolve(JSON.parse(body)));
-    req.on('error', err => reject(err));
+    let body = "";
+    req.on("data", (chunk) => (body += chunk.toString()));
+    req.on("end", () => resolve(JSON.parse(body)));
+    req.on("error", (err) => reject(err));
   });
 }
 
 async function getAuth() {
   if (!process.env.GOOGLE_CREDENTIALS) {
-    throw new Error('GOOGLE_CREDENTIALS environment variable not set.');
+    throw new Error("GOOGLE_CREDENTIALS environment variable not set.");
   }
   const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
   return new google.auth.GoogleAuth({
     credentials: {
       client_email: credentials.client_email,
-      private_key: credentials.private_key.replace(/\\n/g, '\n'),
+      private_key: credentials.private_key.replace(/\\n/g, "\n"),
     },
     // The scope must now allow writing
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 }
 
-const SPREADSHEET_ID = '1JreOZme2oRPrsvXnxKsTZMGq3-GrbSUS2_M3nw3gM7U';
+const SPREADSHEET_ID = "1JreOZme2oRPrsvXnxKsTZMGq3-GrbSUS2_M3nw3gM7U";
 const SHEET_NAME = "'Lista compra 2025'";
 
 // Main handler
 export default async function handler(request, response) {
   // Set CORS headers for all responses
-  response.setHeader('Access-Control-Allow-Origin', '*');
-  response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  response.setHeader("Access-Control-Allow-Origin", "*");
+  response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  response.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   // Set cache-busting headers
-  response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  response.setHeader('Pragma', 'no-cache');
-  response.setHeader('Expires', '0');
+  response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  response.setHeader("Pragma", "no-cache");
+  response.setHeader("Expires", "0");
 
-  if (request.method === 'OPTIONS') {
+  if (request.method === "OPTIONS") {
     return response.status(200).end();
   }
 
   try {
     const auth = await getAuth();
-    const sheets = google.sheets({ version: 'v4', auth });
+    const sheets = google.sheets({ version: "v4", auth });
 
-    if (request.method === 'POST') {
+    if (request.method === "POST") {
       const body = await getJsonBody(request);
       // Route POST requests based on an 'action' property in the body
-      if (body.action === 'update_quantity') {
+      if (body.action === "update_quantity") {
         await handleUpdateQuantity(response, sheets, body);
-      } else if (body.action === 'update_details') {
+      } else if (body.action === "update_details") {
         await handleUpdateDetails(response, sheets, body);
-      } else if (body.action === 'add_product') {
+      } else if (body.action === "add_product") {
         await handleAddNewProduct(response, sheets, body);
       } else {
         // Default POST action is to update status
         await handleUpdateStatus(response, sheets, body);
       }
-    } else if (request.method === 'GET') {
+    } else if (request.method === "GET") {
       const action = request.query.action;
-      if (action === 'get_options') {
+      if (action === "get_options") {
         await handleGetStatusOptions(request, response, sheets);
-      } else if (action === 'get_summary') {
+      } else if (action === "get_summary") {
         await handleGetSummary(request, response, sheets);
       } else {
         await handleGetItems(request, response, sheets);
       }
     } else {
-      response.status(405).send({ error: 'Method Not Allowed' });
+      response.status(405).send({ error: "Method Not Allowed" });
     }
   } catch (error) {
-    console.error('API Error:', error);
-    response.status(500).json({ error: 'An API error occurred.', details: error.message });
+    console.error("API Error:", error);
+    response
+      .status(500)
+      .json({ error: "An API error occurred.", details: error.message });
   }
 }
 
@@ -96,7 +98,7 @@ async function handleGetItems(req, res, sheets) {
     const rowData = {};
     header.forEach((key, i) => {
       if (key) {
-        rowData[key] = row[i] || '';
+        rowData[key] = row[i] || "";
       }
     });
     // Add the actual row index from the sheet
@@ -120,7 +122,7 @@ async function handleGetStatusOptions(req, res, sheets) {
   }
 
   // Use a Set to get unique, non-empty values
-  const uniqueOptions = new Set(rows.flat().filter(val => val));
+  const uniqueOptions = new Set(rows.flat().filter((val) => val));
   res.status(200).json([...uniqueOptions]);
 }
 
@@ -129,7 +131,9 @@ async function handleUpdateStatus(res, sheets, body) {
   const { rowIndex, newStatus } = body;
 
   if (!rowIndex || newStatus === undefined) {
-    return res.status(400).json({ error: 'rowIndex and newStatus are required.' });
+    return res
+      .status(400)
+      .json({ error: "rowIndex and newStatus are required." });
   }
 
   // 'Estado' is column I
@@ -138,13 +142,16 @@ async function handleUpdateStatus(res, sheets, body) {
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
     range: range,
-    valueInputOption: 'USER_ENTERED',
+    valueInputOption: "USER_ENTERED",
     resource: {
       values: [[newStatus]],
     },
   });
 
-  res.status(200).json({ success: true, message: `Row ${rowIndex} status updated to ${newStatus}` });
+  res.status(200).json({
+    success: true,
+    message: `Row ${rowIndex} status updated to ${newStatus}`,
+  });
 }
 
 // Updates the quantity of a specific row
@@ -152,7 +159,9 @@ async function handleUpdateQuantity(res, sheets, body) {
   const { rowIndex, newQuantity } = body;
 
   if (!rowIndex || newQuantity === undefined) {
-    return res.status(400).json({ error: 'rowIndex and newQuantity are required.' });
+    return res
+      .status(400)
+      .json({ error: "rowIndex and newQuantity are required." });
   }
 
   // 'Cantidad' is column E
@@ -161,21 +170,34 @@ async function handleUpdateQuantity(res, sheets, body) {
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
     range: range,
-    valueInputOption: 'USER_ENTERED',
+    valueInputOption: "USER_ENTERED",
     resource: {
       values: [[newQuantity]],
     },
   });
 
-  res.status(200).json({ success: true, message: `Row ${rowIndex} quantity updated to ${newQuantity}` });
+  res.status(200).json({
+    success: true,
+    message: `Row ${rowIndex} quantity updated to ${newQuantity}`,
+  });
 }
 
 // Updates the description, notes, unit price, type and when of a specific row
 async function handleUpdateDetails(res, sheets, body) {
-  const { rowIndex, newDescription, newNotes, newUnitPrice, newType, newWhen } = body;
+  const { rowIndex, newDescription, newNotes, newUnitPrice, newType, newWhen } =
+    body;
 
-  if (!rowIndex || newDescription === undefined || newNotes === undefined || newUnitPrice === undefined || newType === undefined || newWhen === undefined) {
-    return res.status(400).json({ error: 'rowIndex and all new detail fields are required.' });
+  if (
+    !rowIndex ||
+    newDescription === undefined ||
+    newNotes === undefined ||
+    newUnitPrice === undefined ||
+    newType === undefined ||
+    newWhen === undefined
+  ) {
+    return res
+      .status(400)
+      .json({ error: "rowIndex and all new detail fields are required." });
   }
 
   // Define the ranges for Type (B), When (C), Description (D), Unit Price (F), and Notes (H)
@@ -190,44 +212,55 @@ async function handleUpdateDetails(res, sheets, body) {
     sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: typeRange,
-      valueInputOption: 'USER_ENTERED',
+      valueInputOption: "USER_ENTERED",
       resource: { values: [[newType]] },
     }),
     sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: whenRange,
-      valueInputOption: 'USER_ENTERED',
+      valueInputOption: "USER_ENTERED",
       resource: { values: [[newWhen]] },
     }),
     sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: descriptionRange,
-      valueInputOption: 'USER_ENTERED',
+      valueInputOption: "USER_ENTERED",
       resource: { values: [[newDescription]] },
     }),
     sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: unitPriceRange,
-      valueInputOption: 'USER_ENTERED',
+      valueInputOption: "USER_ENTERED",
       resource: { values: [[newUnitPrice]] },
     }),
     sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: notesRange,
-      valueInputOption: 'USER_ENTERED',
+      valueInputOption: "USER_ENTERED",
       resource: { values: [[newNotes]] },
     }),
   ]);
 
-  res.status(200).json({ success: true, message: `Row ${rowIndex} details updated.` });
+  res
+    .status(200)
+    .json({ success: true, message: `Row ${rowIndex} details updated.` });
 }
 
 // Appends a new product row to the sheet using a more robust get-then-update method
 async function handleAddNewProduct(res, sheets, body) {
   const { newDescription, newType, newUnitPrice, newNotes, newWhen } = body;
 
-  if (newDescription === undefined || newType === undefined || newUnitPrice === undefined || newNotes === undefined || newWhen === undefined) {
-    return res.status(400).json({ error: 'newDescription, newType, newUnitPrice, newNotes and newWhen are required.' });
+  if (
+    newDescription === undefined ||
+    newType === undefined ||
+    newUnitPrice === undefined ||
+    newNotes === undefined ||
+    newWhen === undefined
+  ) {
+    return res.status(400).json({
+      error:
+        "newDescription, newType, newUnitPrice, newNotes and newWhen are required.",
+    });
   }
 
   // 1. Find the next empty row by checking the length of a column (e.g., D for Description)
@@ -243,28 +276,30 @@ async function handleAddNewProduct(res, sheets, body) {
 
   // 3. Construct the new row in the correct column order (A-I).
   const newRow = [
-    '', // A: Lugar de Compra
+    "", // A: Lugar de Compra
     newType, // B: Tipo de Elemento
     newWhen, // C: ¿Cúando se compra?
     newDescription, // D: Descripción
-    '1', // E: Cantidad (default to 1)
+    "1", // E: Cantidad (default to 1)
     newUnitPrice, // F: Precio unidad
     totalFormula, // G: Total (calculated by formula)
     newNotes, // H: Notas
-    '', // I: Estado
+    "", // I: Estado
   ];
 
   // 3. Update the specific new row
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
     range: `${SHEET_NAME}!A${newRowIndex}:I${newRowIndex}`,
-    valueInputOption: 'USER_ENTERED',
+    valueInputOption: "USER_ENTERED",
     resource: {
       values: [newRow],
     },
   });
 
-  res.status(200).json({ success: true, message: 'Product added successfully.' });
+  res
+    .status(200)
+    .json({ success: true, message: "Product added successfully." });
 }
 
 // Fetches and parses the budget summary from the top of the sheet
@@ -280,11 +315,13 @@ async function handleGetSummary(req, res, sheets) {
     return res.status(200).json([]);
   }
 
-  const summaryData = rows.map(row => ({
-    label: row[0] || '',
-    // Find the first non-empty value in the other columns for that row
-    value: row.slice(1).find(val => val) || '',
-  })).filter(item => item.label && item.value); // Filter out rows without a label or a value
+  const summaryData = rows
+    .map((row) => ({
+      label: row[0] || "",
+      // Find the first non-empty value in the other columns for that row
+      value: row.slice(1).find((val) => val) || "",
+    }))
+    .filter((item) => item.label && item.value); // Filter out rows without a label or a value
 
   res.status(200).json(summaryData);
 }

@@ -1,28 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
-function EditModal({ isOpen, onClose, itemData, onSave, typeOptions, whenOptions }) {
-  const [description, setDescription] = useState('');
-  const [notes, setNotes] = useState('');
-  const [unitPrice, setUnitPrice] = useState('');
-  const [type, setType] = useState('');
-  const [when, setWhen] = useState('');
+function EditModal({
+  isOpen,
+  onClose,
+  itemData,
+  onSave,
+  typeOptions,
+  whenOptions,
+}) {
+  const [description, setDescription] = useState("");
+  const [notes, setNotes] = useState("");
+  const [unitPrice, setUnitPrice] = useState("");
+  const [type, setType] = useState("");
+  const [when, setWhen] = useState("");
 
   // When the modal opens or itemData changes, populate the form.
   // If itemData is null (for creating a new item), it resets the form.
   useEffect(() => {
     if (isOpen && itemData) {
-      setDescription(itemData.Descripción || '');
-      setNotes(itemData.Notas || '');
-      setUnitPrice(itemData['Precio unidad'] || '');
-      setType(itemData['Tipo de Elemento'] || '');
-      setWhen(itemData['¿Cúando se compra?'] || '');
+      setDescription(itemData.Descripción || "");
+      setNotes(itemData.Notas || "");
+      setUnitPrice(itemData["Precio unidad"] || "");
+      setType(itemData["Tipo de Elemento"] || "");
+      setWhen(itemData["¿Cúando se compra?"] || "");
     } else {
       // Reset form for new product
-      setDescription('');
-      setNotes('');
-      setUnitPrice('');
-      setType('');
-      setWhen('');
+      setDescription("");
+      setNotes("");
+      setUnitPrice("");
+      setType("");
+      setWhen("");
     }
   }, [isOpen, itemData]);
 
@@ -38,15 +45,26 @@ function EditModal({ isOpen, onClose, itemData, onSave, typeOptions, whenOptions
       newNotes: notes,
       newUnitPrice: unitPrice,
       newType: type,
-      newWhen: when
+      newWhen: when,
     });
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close-button" onClick={onClose}>&times;</button>
-        <h2>{itemData ? 'Editar Producto' : 'Añadir Nuevo Producto'}</h2>
+    <div
+      className="modal-overlay"
+      onClick={onClose}
+    >
+      <div
+        className="modal-content"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          className="modal-close-button"
+          onClick={onClose}
+        >
+          &times;
+        </button>
+        <h2>{itemData ? "Editar Producto" : "Añadir Nuevo Producto"}</h2>
         <div className="form-group">
           <label htmlFor="description-input">Descripción</label>
           <input
@@ -66,8 +84,13 @@ function EditModal({ isOpen, onClose, itemData, onSave, typeOptions, whenOptions
             className="form-input"
           >
             <option value="">- Seleccionar tipo -</option>
-            {typeOptions.map(option => (
-              <option key={option} value={option}>{option}</option>
+            {typeOptions.map((option) => (
+              <option
+                key={option}
+                value={option}
+              >
+                {option}
+              </option>
             ))}
           </select>
         </div>
@@ -80,8 +103,13 @@ function EditModal({ isOpen, onClose, itemData, onSave, typeOptions, whenOptions
             className="form-input"
           >
             <option value="">- Seleccionar fecha -</option>
-            {whenOptions.map(option => (
-              <option key={option} value={option}>{option}</option>
+            {whenOptions.map((option) => (
+              <option
+                key={option}
+                value={option}
+              >
+                {option}
+              </option>
             ))}
           </select>
         </div>
@@ -106,7 +134,12 @@ function EditModal({ isOpen, onClose, itemData, onSave, typeOptions, whenOptions
           />
         </div>
         <div className="form-actions">
-          <button onClick={handleSave} className="form-save-button">Guardar Cambios</button>
+          <button
+            onClick={handleSave}
+            className="form-save-button"
+          >
+            Guardar Cambios
+          </button>
         </div>
       </div>
     </div>
