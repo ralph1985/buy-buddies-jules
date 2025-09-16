@@ -100,13 +100,13 @@ function ShoppingList() {
     )
     .filter(
       (item) =>
-        whenFilter === "all" || item["¿Cúando se compra?"] === whenFilter
+        whenFilter === "all" || item["¿Cuándo se compra?"] === whenFilter
     );
 
   const validItems = filteredItems.filter((item) => item.Descripción);
 
   const whenOptions = [
-    ...new Set(items.map((item) => item["¿Cúando se compra?"]).filter(Boolean)),
+    ...new Set(items.map((item) => item["¿Cuándo se compra?"]).filter(Boolean)),
   ].sort();
   const typeOptions = [
     ...new Set(items.map((item) => item["Tipo de Elemento"]).filter(Boolean)),
@@ -118,7 +118,7 @@ function ShoppingList() {
       group = item["Tipo de Elemento"] || "Otros";
     } else {
       // groupBy === 'when'
-      group = item["¿Cúando se compra?"] || "Sin fecha";
+      group = item["¿Cuándo se compra?"] || "Sin fecha";
     }
     if (!acc[group]) acc[group] = [];
     acc[group].push(item);

@@ -22,7 +22,7 @@ function EditModal({
       setNotes(itemData.Notas || "");
       setUnitPrice(itemData["Precio unidad"] || "");
       setType(itemData["Tipo de Elemento"] || "");
-      setWhen(itemData["¿Cúando se compra?"] || "");
+      setWhen(itemData["¿Cuándo se compra?"] || "");
     } else {
       // Reset form for new product
       setDescription("");

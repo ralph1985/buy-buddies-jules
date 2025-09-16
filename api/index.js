@@ -278,7 +278,7 @@ async function handleAddNewProduct(res, sheets, body) {
   const newRow = [
     "", // A: Lugar de Compra
     newType, // B: Tipo de Elemento
-    newWhen, // C: ¿Cúando se compra?
+    newWhen, // C: ¿Cuándo se compra?
     newDescription, // D: Descripción
     "1", // E: Cantidad (default to 1)
     newUnitPrice, // F: Precio unidad
