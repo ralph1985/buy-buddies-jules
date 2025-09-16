@@ -107,11 +107,11 @@ async function handleGetItems(req, res, sheets) {
   res.status(200).json(data);
 }
 
-// Fetches unique, non-empty status options from the 'Estado' column (Column K)
+// Fetches unique, non-empty status options from the 'Estado' column (Column I)
 async function handleGetStatusOptions(req, res, sheets) {
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!K12:K`, // Start from row 12 to get only data
+    range: `${SHEET_NAME}!I12:I`, // Start from row 12 to get only data
   });
 
   const rows = response.data.values;
@@ -132,8 +132,8 @@ async function handleUpdateStatus(res, sheets, body) {
     return res.status(400).json({ error: 'rowIndex and newStatus are required.' });
   }
 
-  // 'Estado' is column K
-  const range = `${SHEET_NAME}!K${rowIndex}`;
+  // 'Estado' is column I
+  const range = `${SHEET_NAME}!I${rowIndex}`;
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
@@ -155,8 +155,8 @@ async function handleUpdateQuantity(res, sheets, body) {
     return res.status(400).json({ error: 'rowIndex and newQuantity are required.' });
   }
 
-  // 'Cantidad' is column G
-  const range = `${SHEET_NAME}!G${rowIndex}`;
+  // 'Cantidad' is column E
+  const range = `${SHEET_NAME}!E${rowIndex}`;
 
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
@@ -178,12 +178,12 @@ async function handleUpdateDetails(res, sheets, body) {
     return res.status(400).json({ error: 'rowIndex and all new detail fields are required.' });
   }
 
-  // Define the ranges for Type (D), When (E), Description (F), Unit Price (H), and Notes (J)
-  const typeRange = `${SHEET_NAME}!D${rowIndex}`;
-  const whenRange = `${SHEET_NAME}!E${rowIndex}`;
-  const descriptionRange = `${SHEET_NAME}!F${rowIndex}`;
-  const unitPriceRange = `${SHEET_NAME}!H${rowIndex}`;
-  const notesRange = `${SHEET_NAME}!J${rowIndex}`;
+  // Define the ranges for Type (B), When (C), Description (D), Unit Price (F), and Notes (H)
+  const typeRange = `${SHEET_NAME}!B${rowIndex}`;
+  const whenRange = `${SHEET_NAME}!C${rowIndex}`;
+  const descriptionRange = `${SHEET_NAME}!D${rowIndex}`;
+  const unitPriceRange = `${SHEET_NAME}!F${rowIndex}`;
+  const notesRange = `${SHEET_NAME}!H${rowIndex}`;
 
   // Perform all updates
   await Promise.all([
@@ -230,36 +230,34 @@ async function handleAddNewProduct(res, sheets, body) {
     return res.status(400).json({ error: 'newDescription, newType, newUnitPrice, newNotes and newWhen are required.' });
   }
 
-  // 1. Find the next empty row by checking the length of a column (e.g., F for Description)
+  // 1. Find the next empty row by checking the length of a column (e.g., D for Description)
   const getResponse = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!F11:F`, // Check from F11 downwards
+    range: `${SHEET_NAME}!D11:D`, // Check from D11 downwards (formerly F)
   });
   const numRows = getResponse.data.values ? getResponse.data.values.length : 0;
   const newRowIndex = 11 + numRows; // The new row will be after the last data row
 
-  // 2. Construct the formula for the Total column (I)
-  const totalFormula = `=G${newRowIndex}*H${newRowIndex}`;
+  // 2. Construct the formula for the Total column (G)
+  const totalFormula = `=E${newRowIndex}*F${newRowIndex}`;
 
-  // 3. Construct the new row in the correct column order.
+  // 3. Construct the new row in the correct column order (A-I).
   const newRow = [
     '', // A: Lugar de Compra
-    '', // B: Quién compró 2024
-    '', // C: Quién compra en 2025
-    newType, // D: Tipo de Elemento
-    newWhen, // E: ¿Cúando se compra?
-    newDescription, // F: Descripción
-    '1', // G: Cantidad (default to 1)
-    newUnitPrice, // H: Precio unidad
-    totalFormula, // I: Total (calculated by formula)
-    newNotes, // J: Notas
-    '', // K: Estado
+    newType, // B: Tipo de Elemento
+    newWhen, // C: ¿Cuándo se compra?
+    newDescription, // D: Descripción
+    '1', // E: Cantidad (default to 1)
+    newUnitPrice, // F: Precio unidad
+    totalFormula, // G: Total (calculated by formula)
+    newNotes, // H: Notas
+    '', // I: Estado
   ];
 
   // 3. Update the specific new row
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A${newRowIndex}:K${newRowIndex}`,
+    range: `${SHEET_NAME}!A${newRowIndex}:I${newRowIndex}`,
     valueInputOption: 'USER_ENTERED',
     resource: {
       values: [newRow],
@@ -273,7 +271,8 @@ async function handleAddNewProduct(res, sheets, body) {
 async function handleGetSummary(req, res, sheets) {
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A1:D10`,
+    // The range is now A1:B10 because columns B and C were deleted.
+    range: `${SHEET_NAME}!A1:B10`,
   });
 
   const rows = response.data.values;
