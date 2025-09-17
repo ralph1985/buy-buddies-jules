@@ -27,6 +27,15 @@ This is a full-stack web application that provides a user-friendly interface to 
 *   **Deployment:**
     *   Vercel
 
+## Project Structure
+
+The project is organized into two main directories:
+
+*   `/client`: Contains the React frontend application.
+*   `/api`: Contains the Node.js serverless function that connects to the Google Sheets API.
+
+The `vercel.json` file in the root configures Vercel to build the client and deploy the serverless function, with rewrite rules to direct traffic appropriately.
+
 ## Prerequisites
 
 Before you begin, ensure you have the following installed:
@@ -51,16 +60,21 @@ You will also need a Google Cloud Platform project with the **Google Sheets API*
     *   Download the JSON key file for the service account.
     *   Open the Google Sheet you want to use and share it with the `client_email` found in the downloaded JSON file, giving it "Editor" permissions.
     *   Get your **Spreadsheet ID** from the URL of your Google Sheet: `https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit`
+    *   Take note of the **Sheet Name** (the name of the tab in your spreadsheet, e.g., 'Sheet1').
 
 3.  **Configure Environment Variables:**
-    *   In the `api/index.js` file, replace the placeholder `SPREADSHEET_ID` with your actual spreadsheet ID.
-    ```javascript
-    const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID';
-    ```
     *   Create a `.env` file in the root of the project.
-    *   Copy the contents of the downloaded JSON key file and add it to the `.env` file as a single line:
+    *   Add the following variables to the `.env` file:
+
     ```
+    # The full content of the JSON key file downloaded from Google Cloud
     GOOGLE_CREDENTIALS=PASTE_JSON_CONTENT_HERE
+
+    # The ID of your Google Sheet
+    SPREADSHEET_ID=YOUR_SPREADSHEET_ID
+
+    # The name of the sheet (tab) you want to use
+    SHEET_NAME='Your Sheet Name'
     ```
     > **Important:** The private key within the JSON content has newline characters (`\n`). These must be preserved when pasting into the `.env` file. The backend script handles their conversion.
 
@@ -94,5 +108,37 @@ This application is designed to be deployed on Vercel.
 3.  **Configure Environment Variables in Vercel:**
     *   Go to your project's settings in the Vercel dashboard.
     *   Navigate to the "Environment Variables" section.
-    *   Add the `GOOGLE_CREDENTIALS` variable with the content of your service account JSON key.
+    *   Add the following environment variables:
+        *   `GOOGLE_CREDENTIALS`: The content of your service account JSON key.
+        *   `SPREADSHEET_ID`: The ID of your Google Sheet.
+        *   `SHEET_NAME`: The name of your sheet.
 4.  Deploy! Vercel will automatically detect the `vercel.json` configuration and deploy the frontend and the serverless function.
+
+## API Endpoints
+
+The backend API is a single serverless function that handles different actions based on the request method and body.
+
+*   **`GET /api`**
+    *   **Description:** Fetches all items from the shopping list.
+    *   **Response:** A JSON array of item objects.
+
+*   **`GET /api?action=get_options`**
+    *   **Description:** Fetches the unique status options from the 'Estado' column.
+    *   **Response:** A JSON array of strings.
+
+*   **`GET /api?action=get_summary`**
+    *   **Description:** Fetches the summary data from the top of the sheet.
+    *   **Response:** A JSON array of key-value pairs.
+
+*   **`POST /api`**
+    *   **Description:** Performs an update or add action based on the `action` field in the request body.
+    *   **Common Body Shape:** `{ "action": "action_name", ...payload }`
+    *   **Actions:**
+        *   `update_status`: Updates the status of an item.
+            *   **Payload:** `{ "rowIndex": number, "newStatus": string }`
+        *   `update_quantity`: Updates the quantity of an item.
+            *   **Payload:** `{ "rowIndex": number, "newQuantity": number }`
+        *   `update_details`: Updates the details of an item.
+            *   **Payload:** `{ "rowIndex": number, "newDescription": string, "newNotes": string, "newUnitPrice": number, "newType": string, "newWhen": string }`
+        *   `add_product`: Adds a new product to the list.
+            *   **Payload:** `{ "newDescription": string, "newNotes": "string", "newUnitPrice": number, "newType": string, "newWhen": string }`
