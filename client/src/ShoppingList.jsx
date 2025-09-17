@@ -265,7 +265,9 @@ function ShoppingList() {
             >
               <h2 className="group-header">
                 <span>{groupName}</span>
-                <span className="group-total">{groupTotal.toFixed(2)}€</span>
+                <span className="group-total">
+                  {groupTotal.toFixed(2).replace(".", ",")}€
+                </span>
               </h2>
               <ul className="shopping-list">
                 {groupItems.map((item) => (
