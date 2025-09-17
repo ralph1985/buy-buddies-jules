@@ -254,7 +254,8 @@ function ShoppingList() {
       ) : Object.keys(groupedItems).length > 0 ? (
         Object.entries(groupedItems).map(([groupName, groupItems]) => {
           const groupTotal = groupItems.reduce(
-            (sum, item) => sum + (Number(item.Cantidad) || 0),
+            (sum, item) =>
+              sum + (Number(String(item.Total).replace(",", ".")) || 0),
             0
           );
           return (
@@ -264,7 +265,7 @@ function ShoppingList() {
             >
               <h2 className="group-header">
                 <span>{groupName}</span>
-                <span className="group-total">{groupTotal}</span>
+                <span className="group-total">{groupTotal.toFixed(2)}€</span>
               </h2>
               <ul className="shopping-list">
                 {groupItems.map((item) => (
