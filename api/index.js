@@ -25,11 +25,18 @@ async function getAuth() {
   });
 }
 
-const SPREADSHEET_ID = "1JreOZme2oRPrsvXnxKsTZMGq3-GrbSUS2_M3nw3gM7U";
-const SHEET_NAME = "'Lista compra 2025'";
+const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
+const SHEET_NAME = process.env.SHEET_NAME;
 
 // Main handler
 export default async function handler(request, response) {
+  // Validate environment variables
+  if (!SPREADSHEET_ID || !SHEET_NAME) {
+    console.error("Missing SPREADSHEET_ID or SHEET_NAME in environment variables.");
+    return response.status(500).json({
+      error: "Server configuration error: Missing spreadsheet configuration.",
+    });
+  }
   // Set CORS headers for all responses
   response.setHeader("Access-Control-Allow-Origin", "*");
   response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
