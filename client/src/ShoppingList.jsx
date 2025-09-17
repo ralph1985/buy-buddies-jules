@@ -252,16 +252,24 @@ function ShoppingList() {
       {loading && items.length === 0 ? (
         <div className="loading">Cargando lista...</div>
       ) : Object.keys(groupedItems).length > 0 ? (
-        Object.entries(groupedItems).map(([groupName, groupItems]) => (
-          <div
-            key={groupName}
-            className="group-container"
-          >
-            <h2 className="group-header">{groupName}</h2>
-            <ul className="shopping-list">
-              {groupItems.map((item) => (
-                <li
-                  key={item.rowIndex}
+        Object.entries(groupedItems).map(([groupName, groupItems]) => {
+          const groupTotal = groupItems.reduce(
+            (sum, item) => sum + (Number(item.Cantidad) || 0),
+            0
+          );
+          return (
+            <div
+              key={groupName}
+              className="group-container"
+            >
+              <h2 className="group-header">
+                <span>{groupName}</span>
+                <span className="group-total">{groupTotal}</span>
+              </h2>
+              <ul className="shopping-list">
+                {groupItems.map((item) => (
+                  <li
+                    key={item.rowIndex}
                   className={`shopping-list-item status-${String(
                     item.Estado || ""
                   )
@@ -322,7 +330,8 @@ function ShoppingList() {
               ))}
             </ul>
           </div>
-        ))
+          );
+        })
       ) : (
         <p>No se encontraron productos que coincidan con los filtros.</p>
       )}
