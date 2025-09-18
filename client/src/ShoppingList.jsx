@@ -73,31 +73,9 @@ function ShoppingList() {
 
   const handleSaveDetails = (payload) => {
     setIsEditModalOpen(false);
-    const {
-      rowIndex,
-      newDescription,
-      newNotes,
-      newUnitPrice,
-      newQuantity,
-      newType,
-      newWhen,
-    } = payload;
-
-    // Determine action based on whether it's a new item or an existing one
-    const action = rowIndex ? "update_details" : "add_product";
-
-    // Prepare payload for the API
-    const apiPayload = {
-      rowIndex,
-      newDescription,
-      newNotes,
-      newUnitPrice: newUnitPrice.replace(",", "."),
-      newQuantity: newQuantity.replace(",", "."),
-      newType,
-      newWhen,
-    };
-
-    handleUpdate(action, apiPayload);
+    // If rowIndex exists, it's an update; otherwise, it's an add.
+    const action = payload.rowIndex ? "update_details" : "add_product";
+    handleUpdate(action, payload);
   };
 
   const handleStatusChange = (rowIndex, newStatus) =>
