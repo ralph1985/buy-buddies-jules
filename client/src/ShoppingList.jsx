@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import SummaryModal from "./SummaryModal";
 import EditModal from "./EditModal";
+import { validateDecimal } from "./utils/validation";
 
 function Spinner() {
   return <div className="spinner"></div>;
@@ -72,9 +73,31 @@ function ShoppingList() {
 
   const handleSaveDetails = (payload) => {
     setIsEditModalOpen(false);
-    // If rowIndex exists, it's an update; otherwise, it's an add.
-    const action = payload.rowIndex ? "update_details" : "add_product";
-    handleUpdate(action, payload);
+    const {
+      rowIndex,
+      newDescription,
+      newNotes,
+      newUnitPrice,
+      newQuantity,
+      newType,
+      newWhen,
+    } = payload;
+
+    // Determine action based on whether it's a new item or an existing one
+    const action = rowIndex ? "update_details" : "add_product";
+
+    // Prepare payload for the API
+    const apiPayload = {
+      rowIndex,
+      newDescription,
+      newNotes,
+      newUnitPrice: newUnitPrice.replace(",", "."),
+      newQuantity: newQuantity.replace(",", "."),
+      newType,
+      newWhen,
+    };
+
+    handleUpdate(action, apiPayload);
   };
 
   const handleStatusChange = (rowIndex, newStatus) =>
@@ -97,9 +120,7 @@ function ShoppingList() {
     currentValue,
     originalQuantity
   ) => {
-    const validFormat = /^\d+([,]\d*)?$/;
-
-    if (currentValue === "" || !validFormat.test(currentValue)) {
+    if (currentValue === "" || !validateDecimal(currentValue)) {
       const errorMessage = `Valor "${currentValue}" no es válido. Ejemplos: 1, 100, 0,95.`;
       setQuantityErrors((prev) => ({ ...prev, [rowIndex]: errorMessage }));
       // Revert to original value after a short delay to allow the user to see the error on the invalid value
@@ -108,6 +129,7 @@ function ShoppingList() {
           ...prev,
           [rowIndex]: originalQuantity,
         }));
+        setQuantityErrors((prev) => ({ ...prev, [rowIndex]: null }));
       }, 1500);
     } else {
       setQuantityErrors((prev) => ({ ...prev, [rowIndex]: null }));

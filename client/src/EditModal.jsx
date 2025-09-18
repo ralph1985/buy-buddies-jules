@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { validateDecimal } from "./utils/validation";
 
 function EditModal({
   isOpen,
@@ -11,25 +12,29 @@ function EditModal({
   const [description, setDescription] = useState("");
   const [notes, setNotes] = useState("");
   const [unitPrice, setUnitPrice] = useState("");
+  const [quantity, setQuantity] = useState("");
   const [type, setType] = useState("");
   const [when, setWhen] = useState("");
+  const [errors, setErrors] = useState({});
 
-  // When the modal opens or itemData changes, populate the form.
-  // If itemData is null (for creating a new item), it resets the form.
   useEffect(() => {
-    if (isOpen && itemData) {
-      setDescription(itemData.Descripción || "");
-      setNotes(itemData.Notas || "");
-      setUnitPrice(itemData["Precio unidad"] || "");
-      setType(itemData["Tipo de Elemento"] || "");
-      setWhen(itemData["¿Cuándo se compra?"] || "");
-    } else {
-      // Reset form for new product
-      setDescription("");
-      setNotes("");
-      setUnitPrice("");
-      setType("");
-      setWhen("");
+    if (isOpen) {
+      if (itemData) {
+        setDescription(itemData.Descripción || "");
+        setNotes(itemData.Notas || "");
+        setUnitPrice(itemData["Precio unidad"] || "");
+        setQuantity(itemData.Cantidad || "1");
+        setType(itemData["Tipo de Elemento"] || "");
+        setWhen(itemData["¿Cuándo se compra?"] || "");
+      } else {
+        setDescription("");
+        setNotes("");
+        setUnitPrice("");
+        setQuantity("1");
+        setType("");
+        setWhen("");
+      }
+      setErrors({}); // Reset errors when modal opens
     }
   }, [isOpen, itemData]);
 
@@ -37,13 +42,38 @@ function EditModal({
     return null;
   }
 
+  const validateField = (name, value) => {
+    if (value !== "" && !validateDecimal(value)) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: `Formato inválido. Ej: 1, 1,99.`,
+      }));
+    } else {
+      setErrors((prev) => ({ ...prev, [name]: null }));
+    }
+  };
+
   const handleSave = () => {
-    // Pass rowIndex if it exists (for edits), otherwise it's undefined (for adds)
+    // Final validation before saving
+    const finalErrors = {};
+    if (unitPrice !== "" && !validateDecimal(unitPrice)) {
+      finalErrors.unitPrice = "Formato de precio inválido.";
+    }
+    if (quantity !== "" && !validateDecimal(quantity)) {
+      finalErrors.quantity = "Formato de cantidad inválido.";
+    }
+
+    if (Object.keys(finalErrors).length > 0) {
+      setErrors(finalErrors);
+      return;
+    }
+
     onSave({
       rowIndex: itemData?.rowIndex,
       newDescription: description,
       newNotes: notes,
       newUnitPrice: unitPrice,
+      newQuantity: quantity,
       newType: type,
       newWhen: when,
     });
@@ -73,6 +103,7 @@ function EditModal({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="form-input"
+            required
           />
         </div>
         <div className="form-group">
@@ -114,14 +145,34 @@ function EditModal({
           </select>
         </div>
         <div className="form-group">
+          <label htmlFor="quantity-input">Cantidad</label>
+          <input
+            id="quantity-input"
+            type="text"
+            inputMode="decimal"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            onBlur={(e) => validateField("quantity", e.target.value)}
+            className={`form-input ${errors.quantity ? "input-error" : ""}`}
+          />
+          {errors.quantity && (
+            <span className="item-error-message">{errors.quantity}</span>
+          )}
+        </div>
+        <div className="form-group">
           <label htmlFor="unitprice-input">Precio unidad</label>
           <input
             id="unitprice-input"
             type="text"
+            inputMode="decimal"
             value={unitPrice}
             onChange={(e) => setUnitPrice(e.target.value)}
-            className="form-input"
+            onBlur={(e) => validateField("unitPrice", e.target.value)}
+            className={`form-input ${errors.unitPrice ? "input-error" : ""}`}
           />
+          {errors.unitPrice && (
+            <span className="item-error-message">{errors.unitPrice}</span>
+          )}
         </div>
         <div className="form-group">
           <label htmlFor="notes-textarea">Notas</label>
@@ -137,6 +188,7 @@ function EditModal({
           <button
             onClick={handleSave}
             className="form-save-button"
+            disabled={!description || errors.quantity || errors.unitPrice}
           >
             Guardar Cambios
           </button>
