@@ -191,14 +191,22 @@ async function handleUpdateQuantity(res, sheets, body) {
 
 // Updates the description, notes, unit price, type and when of a specific row
 async function handleUpdateDetails(res, sheets, body) {
-  const { rowIndex, newDescription, newNotes, newUnitPrice, newType, newWhen } =
-    body;
+  const {
+    rowIndex,
+    newDescription,
+    newNotes,
+    newUnitPrice,
+    newQuantity,
+    newType,
+    newWhen,
+  } = body;
 
   if (
     !rowIndex ||
     newDescription === undefined ||
     newNotes === undefined ||
     newUnitPrice === undefined ||
+    newQuantity === undefined ||
     newType === undefined ||
     newWhen === undefined
   ) {
@@ -207,10 +215,11 @@ async function handleUpdateDetails(res, sheets, body) {
       .json({ error: "rowIndex and all new detail fields are required." });
   }
 
-  // Define the ranges for Type (B), When (C), Description (D), Unit Price (F), and Notes (H)
+  // Define the ranges for Type (B), When (C), Description (D), Quantity (E), Unit Price (F), and Notes (H)
   const typeRange = `${SHEET_NAME}!B${rowIndex}`;
   const whenRange = `${SHEET_NAME}!C${rowIndex}`;
   const descriptionRange = `${SHEET_NAME}!D${rowIndex}`;
+  const quantityRange = `${SHEET_NAME}!E${rowIndex}`;
   const unitPriceRange = `${SHEET_NAME}!F${rowIndex}`;
   const notesRange = `${SHEET_NAME}!H${rowIndex}`;
 
@@ -236,6 +245,12 @@ async function handleUpdateDetails(res, sheets, body) {
     }),
     sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
+      range: quantityRange,
+      valueInputOption: "USER_ENTERED",
+      resource: { values: [[newQuantity]] },
+    }),
+    sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
       range: unitPriceRange,
       valueInputOption: "USER_ENTERED",
       resource: { values: [[newUnitPrice]] },
@@ -255,25 +270,33 @@ async function handleUpdateDetails(res, sheets, body) {
 
 // Appends a new product row to the sheet using a more robust get-then-update method
 async function handleAddNewProduct(res, sheets, body) {
-  const { newDescription, newType, newUnitPrice, newNotes, newWhen } = body;
+  const {
+    newDescription,
+    newType,
+    newUnitPrice,
+    newQuantity,
+    newNotes,
+    newWhen,
+  } = body;
 
   if (
     newDescription === undefined ||
     newType === undefined ||
     newUnitPrice === undefined ||
+    newQuantity === undefined ||
     newNotes === undefined ||
     newWhen === undefined
   ) {
     return res.status(400).json({
       error:
-        "newDescription, newType, newUnitPrice, newNotes and newWhen are required.",
+        "newDescription, newType, newUnitPrice, newQuantity, newNotes and newWhen are required.",
     });
   }
 
   // 1. Find the next empty row by checking the length of a column (e.g., D for Description)
   const getResponse = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!D11:D`, // Check from D11 downwards (formerly F)
+    range: `${SHEET_NAME}!D11:D`, // Check from D11 downwards
   });
   const numRows = getResponse.data.values ? getResponse.data.values.length : 0;
   const newRowIndex = 11 + numRows; // The new row will be after the last data row
@@ -287,14 +310,14 @@ async function handleAddNewProduct(res, sheets, body) {
     newType, // B: Tipo de Elemento
     newWhen, // C: ¿Cuándo se compra?
     newDescription, // D: Descripción
-    "1", // E: Cantidad (default to 1)
+    newQuantity, // E: Cantidad
     newUnitPrice, // F: Precio unidad
     totalFormula, // G: Total (calculated by formula)
     newNotes, // H: Notas
     "", // I: Estado
   ];
 
-  // 3. Update the specific new row
+  // 4. Update the specific new row
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID,
     range: `${SHEET_NAME}!A${newRowIndex}:I${newRowIndex}`,
