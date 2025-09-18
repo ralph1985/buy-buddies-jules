@@ -79,9 +79,51 @@ function ShoppingList() {
 
   const handleStatusChange = (rowIndex, newStatus) =>
     handleUpdate("update_status", { rowIndex, newStatus });
-  const handleQuantityChange = (rowIndex, newQuantity) => {
-    if (newQuantity === "" || isNaN(newQuantity)) return;
-    handleUpdate("update_quantity", { rowIndex, newQuantity });
+  const [quantityValues, setQuantityValues] = useState({});
+  const [quantityErrors, setQuantityErrors] = useState({});
+
+  useEffect(() => {
+    if (items.length > 0) {
+      const initialQuantities = items.reduce((acc, item) => {
+        acc[item.rowIndex] = item.Cantidad;
+        return acc;
+      }, {});
+      setQuantityValues(initialQuantities);
+    }
+  }, [items]);
+
+  const handleQuantityValidation = (
+    rowIndex,
+    currentValue,
+    originalQuantity
+  ) => {
+    const validFormat = /^\d+([,]\d*)?$/;
+
+    if (currentValue === "" || !validFormat.test(currentValue)) {
+      const errorMessage = `Valor "${currentValue}" no es válido. Ejemplos: 1, 100, 0,95.`;
+      setQuantityErrors((prev) => ({ ...prev, [rowIndex]: errorMessage }));
+      // Revert to original value after a short delay to allow the user to see the error on the invalid value
+      setTimeout(() => {
+        setQuantityValues((prev) => ({
+          ...prev,
+          [rowIndex]: originalQuantity,
+        }));
+      }, 1500);
+    } else {
+      setQuantityErrors((prev) => ({ ...prev, [rowIndex]: null }));
+      const formattedValue = currentValue.endsWith(",")
+        ? currentValue.slice(0, -1)
+        : currentValue;
+
+      if (formattedValue !== originalQuantity) {
+        handleUpdate("update_quantity", {
+          rowIndex,
+          newQuantity: formattedValue,
+        });
+      }
+      // Also update the displayed value in case we stripped a trailing comma
+      setQuantityValues((prev) => ({ ...prev, [rowIndex]: formattedValue }));
+    }
   };
 
   if (error) return <div className="error">{error}</div>;
@@ -289,18 +331,37 @@ function ShoppingList() {
                     {item.Notas && (
                       <span className="item-notes">{item.Notas}</span>
                     )}
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      step="any"
-                      className="item-quantity-input"
-                      defaultValue={item.Cantidad}
-                      onBlur={(e) =>
-                        handleQuantityChange(item.rowIndex, e.target.value)
-                      }
-                      aria-label="Cantidad"
-                      disabled={loading}
-                    />
+                    <div className="quantity-container">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        className={`item-quantity-input ${
+                          quantityErrors[item.rowIndex] ? "input-error" : ""
+                        }`}
+                        value={quantityValues[item.rowIndex] || ""}
+                        onChange={(e) => {
+                          const newValues = {
+                            ...quantityValues,
+                            [item.rowIndex]: e.target.value,
+                          };
+                          setQuantityValues(newValues);
+                        }}
+                        onBlur={(e) =>
+                          handleQuantityValidation(
+                            item.rowIndex,
+                            e.target.value,
+                            item.Cantidad
+                          )
+                        }
+                        aria-label="Cantidad"
+                        disabled={loading}
+                      />
+                      {quantityErrors[item.rowIndex] && (
+                        <span className="item-error-message">
+                          {quantityErrors[item.rowIndex]}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="item-pricing">
                     <span className="item-total">{item.Total}€</span>
