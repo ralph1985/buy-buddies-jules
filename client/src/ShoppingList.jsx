@@ -290,7 +290,9 @@ function ShoppingList() {
                       <span className="item-notes">{item.Notas}</span>
                     )}
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
+                      step="any"
                       className="item-quantity-input"
                       defaultValue={item.Cantidad}
                       onBlur={(e) =>
