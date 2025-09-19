@@ -144,11 +144,7 @@ function ShoppingList() {
     }
   };
 
-  const handleUnitPriceValidation = (
-    rowIndex,
-    currentValue,
-    originalPrice
-  ) => {
+  const handleUnitPriceValidation = (rowIndex, currentValue, originalPrice) => {
     if (currentValue === "" || !validateDecimal(currentValue)) {
       const errorMessage = `Valor "${currentValue}" no es válido. Ej: 1, 1.99.`;
       setUnitPriceErrors((prev) => ({ ...prev, [rowIndex]: errorMessage }));
@@ -216,8 +212,8 @@ function ShoppingList() {
   const totalRestante =
     summaryData.find((item) => item.label === "Total restante")?.value || "N/A";
   const totalRestanteSabado =
-    summaryData.find((item) => item.label === "Total restante sábado")
-      ?.value || "N/A";
+    summaryData.find((item) => item.label === "Total restante sábado")?.value ||
+    "N/A";
 
   return (
     <div className={`app-container ${pageLoading ? "is-loading" : ""}`}>
@@ -521,4 +517,5 @@ function ShoppingList() {
     </div>
   );
 }
-// No changes needed in the final block, but keeping it for context
+
+export default ShoppingList;
