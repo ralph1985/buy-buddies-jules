@@ -81,17 +81,9 @@ h1 {
   border-color: #ffa500;
 }
 
-.quantity-container {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+/* .quantity-container is no longer used */
 
-.item-quantity-input.input-error {
-  border-color: #f44336;
-  background-color: #4d3a3a;
-}
+/* This is now handled by .editable-input.input-error */
 
 .item-error-message {
   color: #ff6b6b;
@@ -231,7 +223,26 @@ h1 {
   text-decoration-color: #ffa500;
 }
 
-.item-quantity-input {
+.item-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.editable-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.editable-field-label {
+  font-size: 0.75rem;
+  color: #ccc;
+  font-weight: bold;
+  text-align: left;
+}
+
+.editable-input {
   font-style: normal;
   color: white;
   font-size: 0.9rem;
@@ -243,9 +254,14 @@ h1 {
   text-align: center;
 }
 
-.item-quantity-input:focus {
+.editable-input:focus {
   outline: none;
   border-color: #ffa500;
+}
+
+.editable-input.input-error {
+  border-color: #f44336;
+  background-color: #4d3a3a;
 }
 
 .item-pricing {
