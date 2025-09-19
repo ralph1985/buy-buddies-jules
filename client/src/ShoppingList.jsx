@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import CryptoJS from "crypto-js";
 import SummaryModal from "./SummaryModal";
 import EditModal from "./EditModal";
+import ChangesModal from "./ChangesModal";
 import { validateDecimal } from "./utils/validation";
 
 function Spinner() {
@@ -45,6 +46,10 @@ function ShoppingList() {
   const [editingItem, setEditingItem] = useState(null);
   const [countdown, setCountdown] = useState(30);
 
+  const [isChangesModalOpen, setIsChangesModalOpen] = useState(false);
+  const [changes, setChanges] = useState({ added: [], edited: [], deleted: [] });
+  const isLocalUpdate = useRef(false);
+
   const fetchData = useCallback(async () => {
     try {
       const [itemsData, statusOpts, summaryRes] = await Promise.all([
@@ -53,10 +58,34 @@ function ShoppingList() {
         fetch("/api?action=get_summary").then((res) => res.json()),
       ]);
 
+      const oldItems = JSON.parse(localStorage.getItem("items") || "[]");
+
+      if (!isLocalUpdate.current && oldItems.length > 0) {
+        const newItems = itemsData;
+        const oldItemsMap = new Map(oldItems.map(item => [item.rowIndex, item]));
+        const newItemsMap = new Map(newItems.map(item => [item.rowIndex, item]));
+
+        const added = newItems.filter(item => !oldItemsMap.has(item.rowIndex));
+        const deleted = oldItems.filter(item => !newItemsMap.has(item.rowIndex));
+        const edited = newItems.filter(item => {
+          if (!oldItemsMap.has(item.rowIndex)) return false;
+          const oldItem = oldItemsMap.get(item.rowIndex);
+          return JSON.stringify(oldItem) !== JSON.stringify(item);
+        });
+
+        if (added.length > 0 || deleted.length > 0 || edited.length > 0) {
+          setChanges({ added, edited, deleted });
+          setIsChangesModalOpen(true);
+        }
+      } else {
+        // If it's a local update or first load, just update localStorage
+        localStorage.setItem("items", JSON.stringify(itemsData));
+      }
+
       // Create a hash of the items data and store it
       const dataString = JSON.stringify(itemsData);
       const newHash = CryptoJS.SHA256(dataString).toString();
-      sessionStorage.setItem("dataHash", newHash);
+      localStorage.setItem("dataHash", newHash);
 
       setItems(itemsData);
       setStatusOptions(statusOpts.sort());
@@ -69,6 +98,7 @@ function ShoppingList() {
     } finally {
       setPageLoading(false);
       setUpdatingField(null);
+      isLocalUpdate.current = false; // Reset the flag
     }
   }, []);
 
@@ -87,10 +117,11 @@ function ShoppingList() {
             try {
               const response = await fetch("/api?action=get_hash");
               const { hash: newHash } = await response.json();
-              const oldHash = sessionStorage.getItem("dataHash");
+              const oldHash = localStorage.getItem("dataHash");
 
               if (oldHash && newHash !== oldHash) {
                 console.log("Change detected, refreshing data...");
+                isLocalUpdate.current = false; // This is an external change
                 await fetchData(); // Soft refresh
               }
             } catch (error) {
@@ -107,6 +138,7 @@ function ShoppingList() {
   }, [fetchData]);
 
   const handleUpdate = async (action, payload, field = null) => {
+    isLocalUpdate.current = true;
     // For inline edits, we set the specific field being updated.
     // For modal edits (add/update details), we show the full spinner.
     if (field) {
@@ -630,6 +662,15 @@ function ShoppingList() {
         onSave={handleSaveDetails}
         typeOptions={typeOptions}
         whenOptions={whenOptions}
+      />
+      <ChangesModal
+        isOpen={isChangesModalOpen}
+        onClose={() => {
+          setIsChangesModalOpen(false);
+          // After closing the modal, update localStorage with the latest items
+          localStorage.setItem("items", JSON.stringify(items));
+        }}
+        changes={changes}
       />
       <button
         className="fab-add-button"
