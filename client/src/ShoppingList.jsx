@@ -43,6 +43,7 @@ function ShoppingList() {
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [countdown, setCountdown] = useState(30);
 
   const fetchData = useCallback(async () => {
     try {
@@ -78,23 +79,32 @@ function ShoppingList() {
 
   // Effect for polling for changes
   useEffect(() => {
-    const intervalId = setInterval(async () => {
-      try {
-        const response = await fetch("/api?action=get_hash");
-        const { hash: newHash } = await response.json();
-        const oldHash = sessionStorage.getItem("dataHash");
+    const intervalId = setInterval(() => {
+      setCountdown((prevCountdown) => {
+        if (prevCountdown <= 1) {
+          // When countdown reaches zero, check for hash changes
+          (async () => {
+            try {
+              const response = await fetch("/api?action=get_hash");
+              const { hash: newHash } = await response.json();
+              const oldHash = sessionStorage.getItem("dataHash");
 
-        if (oldHash && newHash !== oldHash) {
-          console.log("Change detected, reloading page...");
-          window.location.reload();
+              if (oldHash && newHash !== oldHash) {
+                console.log("Change detected, refreshing data...");
+                await fetchData(); // Soft refresh
+              }
+            } catch (error) {
+              console.error("Polling error:", error);
+            }
+          })();
+          return 30; // Reset countdown
         }
-      } catch (error) {
-        console.error("Polling error:", error);
-      }
-    }, 30000); // Poll every 30 seconds
+        return prevCountdown - 1;
+      });
+    }, 1000); // Tick every second
 
     return () => clearInterval(intervalId); // Cleanup on unmount
-  }, []);
+  }, [fetchData]);
 
   const handleUpdate = async (action, payload, field = null) => {
     // For inline edits, we set the specific field being updated.
@@ -124,6 +134,12 @@ function ShoppingList() {
         setPageLoading(false);
       }
     }
+  };
+
+  const handleManualRefresh = async () => {
+    setPageLoading(true);
+    await fetchData();
+    setCountdown(30); // Reset countdown on manual refresh
   };
 
   const handleOpenEditModal = (item) => {
@@ -378,7 +394,7 @@ function ShoppingList() {
         </div>
       </div>
 
-      <div className="summary-link-container">
+      <div className="summary-actions-container">
         <button
           onClick={() => setIsSummaryModalOpen(true)}
           className="summary-link-button"
@@ -386,6 +402,16 @@ function ShoppingList() {
         >
           Ver Resumen Completo
         </button>
+        <div className="refresh-container">
+          <button
+            onClick={handleManualRefresh}
+            className="summary-link-button"
+            disabled={pageLoading}
+          >
+            Actualizar
+          </button>
+          <span className="countdown-timer">({countdown}s)</span>
+        </div>
       </div>
 
       {pageLoading && items.length === 0 ? (

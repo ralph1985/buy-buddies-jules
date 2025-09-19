@@ -570,3 +570,26 @@ h2 {
 .form-save-button:hover {
   background-color: #ffc966;
 }
+
+/* New styles for summary actions */
+.summary-actions-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.25rem;
+  background-color: #2c2c2c;
+  border-radius: 8px;
+}
+
+.refresh-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.countdown-timer {
+  font-size: 0.8rem;
+  color: #ccc;
+  font-weight: bold;
+}
