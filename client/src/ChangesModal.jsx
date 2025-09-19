@@ -17,37 +17,70 @@ function ChangesModal({ isOpen, onClose, changes }) {
           {added.length > 0 && (
             <div className="change-section">
               <h3>Productos Añadidos</h3>
-              <ul className="changes-list">
-                {added.map(item => <li key={item.rowIndex}>{item.Descripción}</li>)}
-              </ul>
+              <table className="changes-table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {added.map(item => (
+                    <tr key={item.rowIndex}>
+                      <td>{item.Descripción}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
           {edited.length > 0 && (
             <div className="change-section">
               <h3>Productos Editados</h3>
-              <ul className="changes-list">
-                {edited.map(item => (
-                  <li key={item.rowIndex}>
-                    <strong className="edited-item-name">{item.Descripción}</strong>
-                    <ul className="edited-fields-list">
-                      {item.changedFields.map(change => (
-                        <li key={change.field}>
-                          <span className="field-name">{change.field}:</span>
-                          <span className="field-change">de "{change.from}" a "{change.to}"</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                ))}
-              </ul>
+              <table className="changes-table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Campo</th>
+                    <th>Valor Anterior</th>
+                    <th>Valor Nuevo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {edited.flatMap(item =>
+                    item.changedFields.map((change, index) => (
+                      <tr key={`${item.rowIndex}-${change.field}`}>
+                        {index === 0 ? (
+                          <td rowSpan={item.changedFields.length}>
+                            <strong>{item.Descripción}</strong>
+                          </td>
+                        ) : null}
+                        <td>{change.field}</td>
+                        <td>"{change.from}"</td>
+                        <td>"{change.to}"</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           )}
           {deleted.length > 0 && (
             <div className="change-section">
               <h3>Productos Eliminados</h3>
-              <ul className="changes-list">
-                {deleted.map(item => <li key={item.rowIndex}>{item.Descripción}</li>)}
-              </ul>
+              <table className="changes-table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {deleted.map(item => (
+                    <tr key={item.rowIndex}>
+                      <td>{item.Descripción}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
