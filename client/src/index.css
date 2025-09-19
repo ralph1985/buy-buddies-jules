@@ -450,6 +450,9 @@ h2 {
   width: 90%;
   position: relative;
   box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
 }
 
 .modal-close-button {
@@ -638,6 +641,9 @@ h2 {
 /* Changes Modal Table Styles */
 .changes-summary {
   text-align: left;
+  overflow-y: auto; /* Make this part scrollable */
+  padding-right: 0.5rem; /* Add some space for the scrollbar */
+  flex: 1; /* Allow the summary to grow and fill available space */
 }
 
 .changes-table {
