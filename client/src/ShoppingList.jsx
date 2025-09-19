@@ -120,8 +120,10 @@ function ShoppingList() {
     currentValue,
     originalQuantity
   ) => {
-    if (currentValue === "" || !validateDecimal(currentValue)) {
-      const errorMessage = `Valor "${currentValue}" no es válido. Ej: 1, 1.99.`;
+    const formattedValue = String(currentValue).replace(".", ",");
+
+    if (formattedValue === "" || !validateDecimal(formattedValue)) {
+      const errorMessage = `Valor "${currentValue}" no es válido. Ej: 1,99`;
       setQuantityErrors((prev) => ({ ...prev, [rowIndex]: errorMessage }));
       setTimeout(() => {
         setQuantityValues((prev) => ({
@@ -132,7 +134,6 @@ function ShoppingList() {
       }, 1500);
     } else {
       setQuantityErrors((prev) => ({ ...prev, [rowIndex]: null }));
-      const formattedValue = currentValue.replace(",", ".");
       if (formattedValue !== originalQuantity) {
         handleUpdate(
           "update_quantity",
@@ -140,6 +141,7 @@ function ShoppingList() {
           "quantity"
         );
       }
+      // Update display to show the comma-separated value
       setQuantityValues((prev) => ({ ...prev, [rowIndex]: formattedValue }));
     }
   };
@@ -149,8 +151,10 @@ function ShoppingList() {
     currentValue,
     originalPrice
   ) => {
-    if (currentValue === "" || !validateDecimal(currentValue)) {
-      const errorMessage = `Valor "${currentValue}" no es válido. Ej: 1, 1.99.`;
+    const formattedValue = String(currentValue).replace(".", ",");
+
+    if (formattedValue === "" || !validateDecimal(formattedValue)) {
+      const errorMessage = `Valor "${currentValue}" no es válido. Ej: 1,99`;
       setUnitPriceErrors((prev) => ({ ...prev, [rowIndex]: errorMessage }));
       setTimeout(() => {
         setUnitPriceValues((prev) => ({ ...prev, [rowIndex]: originalPrice }));
@@ -158,7 +162,6 @@ function ShoppingList() {
       }, 1500);
     } else {
       setUnitPriceErrors((prev) => ({ ...prev, [rowIndex]: null }));
-      const formattedValue = currentValue.replace(",", ".");
       if (formattedValue !== originalPrice) {
         handleUpdate(
           "update_unit_price",
@@ -166,6 +169,7 @@ function ShoppingList() {
           "unitPrice"
         );
       }
+      // Update display to show the comma-separated value
       setUnitPriceValues((prev) => ({ ...prev, [rowIndex]: formattedValue }));
     }
   };
