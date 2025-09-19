@@ -607,3 +607,32 @@ h2 {
   color: #ccc;
   font-weight: bold;
 }
+
+/* Changes Modal Table Styles */
+.changes-summary {
+  text-align: left;
+}
+
+.changes-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+
+.changes-table th,
+.changes-table td {
+  border: 1px solid #444;
+  padding: 0.375rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.changes-table th {
+  background-color: #3a3a3a;
+  color: #ffa500;
+  font-weight: bold;
+}
+
+.changes-table td strong {
+  color: #ffa500;
+}
