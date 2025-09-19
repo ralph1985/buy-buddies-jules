@@ -7,8 +7,9 @@ function Spinner() {
   return <div className="spinner"></div>;
 }
 
-function Skeleton() {
-  return <div className="skeleton"></div>;
+function Skeleton({ type = "input" }) {
+  // type can be 'input' or 'select'
+  return <div className={`skeleton skeleton-${type}`}></div>;
 }
 
 function ShoppingList() {
@@ -392,7 +393,7 @@ function ShoppingList() {
                             </label>
                             {isUpdating &&
                             updatingField.field === "quantity" ? (
-                              <Skeleton />
+                              <Skeleton type="input" />
                             ) : (
                               <input
                                 id={`quantity-${item.rowIndex}`}
@@ -436,7 +437,7 @@ function ShoppingList() {
                             </label>
                             {isUpdating &&
                             updatingField.field === "unitPrice" ? (
-                              <Skeleton />
+                              <Skeleton type="input" />
                             ) : (
                               <input
                                 id={`unit-price-${item.rowIndex}`}
@@ -476,7 +477,7 @@ function ShoppingList() {
                       <div className="item-pricing">
                         <span className="item-total">{item.Total}€</span>
                         {isUpdating && updatingField.field === "status" ? (
-                          <Skeleton />
+                          <Skeleton type="select" />
                         ) : (
                           <select
                             className="item-status-select"
