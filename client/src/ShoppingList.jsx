@@ -204,11 +204,7 @@ function ShoppingList() {
     }
   };
 
-  const handleUnitPriceValidation = (
-    rowIndex,
-    currentValue,
-    originalPrice
-  ) => {
+  const handleUnitPriceValidation = (rowIndex, currentValue, originalPrice) => {
     const formattedValue = String(currentValue).replace(".", ",");
 
     if (formattedValue === "" || !validateDecimal(formattedValue)) {
@@ -281,13 +277,20 @@ function ShoppingList() {
     summaryData.find((item) => item.label === "Total pagado sábado")?.value ||
     "N/A";
   const totalRestanteSabado =
-    summaryData.find((item) => item.label === "Total restante sábado")
-      ?.value || "N/A";
+    summaryData.find((item) => item.label === "Total restante sábado")?.value ||
+    "N/A";
 
   return (
     <div className={`app-container ${pageLoading ? "is-loading" : ""}`}>
       {pageLoading && <Spinner />}
-      <h1>Lista de la Compra 2025</h1>
+      <div className="header-container">
+        <img
+          src="/logo.png"
+          alt="Logo"
+          className="header-logo"
+        />
+        <h1>Lista de la Compra 2025</h1>
+      </div>
       <div className="filters-container">
         <input
           type="text"

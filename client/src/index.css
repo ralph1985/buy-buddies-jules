@@ -79,11 +79,25 @@ body {
   100% { background-color: #3a3a3a; }
 }
 
+/* Header styles */
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.header-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
 
 h1 {
   color: #ffa500;
   font-size: 1.1rem; /* Reduced */
-  margin: 0 0 0.5rem 0; /* Reduced margin */
+  margin: 0; /* Remove all margins since it's now in a flex container */
 }
 
 h2 {
