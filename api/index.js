@@ -62,6 +62,8 @@ export default async function handler(request, response) {
         await handleUpdateQuantity(response, sheets, body);
       } else if (body.action === "update_details") {
         await handleUpdateDetails(response, sheets, body);
+      } else if (body.action === "update_unit_price") {
+        await handleUpdateUnitPrice(response, sheets, body);
       } else if (body.action === "add_product") {
         await handleAddNewProduct(response, sheets, body);
       } else {
@@ -186,6 +188,34 @@ async function handleUpdateQuantity(res, sheets, body) {
   res.status(200).json({
     success: true,
     message: `Row ${rowIndex} quantity updated to ${newQuantity}`,
+  });
+}
+
+// Updates the unit price of a specific row
+async function handleUpdateUnitPrice(res, sheets, body) {
+  const { rowIndex, newUnitPrice } = body;
+
+  if (!rowIndex || newUnitPrice === undefined) {
+    return res
+      .status(400)
+      .json({ error: "rowIndex and newUnitPrice are required." });
+  }
+
+  // 'Precio unidad' is column F
+  const range = `${SHEET_NAME}!F${rowIndex}`;
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SPREADSHEET_ID,
+    range: range,
+    valueInputOption: "USER_ENTERED",
+    resource: {
+      values: [[newUnitPrice]],
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: `Row ${rowIndex} unit price updated to ${newUnitPrice}`,
   });
 }
 
