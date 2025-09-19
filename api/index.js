@@ -135,7 +135,7 @@ async function handleGetStatusOptions(req, res, sheets) {
 
   // Always ensure the default statuses are present.
   // The Set will handle duplicates automatically.
-  const defaultStatuses = ["Pagado", "Pendiente de pago", "Comprado"];
+  const defaultStatuses = ["Pagado", "Pendiente pago", "Comprado"];
   defaultStatuses.forEach((status) => uniqueOptions.add(status));
 
   res.status(200).json([...uniqueOptions]);
