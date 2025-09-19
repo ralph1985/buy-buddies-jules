@@ -465,6 +465,30 @@ h2 {
   font-weight: bold;
 }
 
+/* Summary Modal Specific Styles */
+.summary-item-bold {
+  font-size: 1.1rem;
+}
+
+.summary-item-bold .summary-label,
+.summary-item-bold .summary-value {
+  font-weight: bold;
+}
+
+.summary-item-italic {
+  font-size: 0.9rem;
+  padding-left: 1rem; /* Indent sub-items */
+}
+
+.summary-item-italic .summary-label {
+  font-style: italic;
+  color: #bbb; /* Lighter color for less emphasis */
+}
+
+.summary-item-italic .summary-value {
+  font-weight: normal; /* Override the default bold */
+}
+
 /* Floating Action Button */
 .fab-add-button {
   position: fixed;

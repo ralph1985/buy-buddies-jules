@@ -15,7 +15,7 @@ function SummaryModal({ isOpen, onClose, summaryData, isLoading }) {
         ) : (
           <ul className="summary-list">
             {summaryData.map((item, index) => (
-              <li key={index} className="summary-item">
+              <li key={index} className={`summary-item summary-item-${item.type}`}>
                 <span className="summary-label">{item.label}</span>
                 <span className="summary-value">{item.value}</span>
               </li>
