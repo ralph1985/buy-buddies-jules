@@ -142,6 +142,14 @@ function ShoppingList() {
     setCountdown(30); // Reset countdown on manual refresh
   };
 
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setTypeFilter("all");
+    setWhenFilter("all");
+    setGroupBy("type");
+  };
+
   const handleOpenEditModal = (item) => {
     setEditingItem(item); // If item is null, it's for creation
     setIsEditModalOpen(true);
@@ -292,14 +300,25 @@ function ShoppingList() {
         <h1>Lista de la Compra 2025</h1>
       </div>
       <div className="filters-container">
-        <input
-          type="text"
-          placeholder="Buscar producto..."
-          className="search-input"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          disabled={pageLoading}
-        />
+        <div className="search-input-container">
+          <input
+            type="text"
+            placeholder="Buscar producto..."
+            className="search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            disabled={pageLoading}
+          />
+          {searchTerm && (
+            <button
+              className="clear-search-button"
+              onClick={() => setSearchTerm("")}
+              aria-label="Limpiar búsqueda"
+            >
+              &times;
+            </button>
+          )}
+        </div>
         <select
           className="filter-select"
           value={statusFilter}
@@ -376,6 +395,12 @@ function ShoppingList() {
             Fecha
           </label>
         </div>
+      </div>
+
+      <div className="clear-filters-container">
+        <button onClick={handleClearFilters} className="summary-link-button">
+          Limpiar filtros
+        </button>
       </div>
 
       <div className="main-summary-container">
