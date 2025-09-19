@@ -39,6 +39,7 @@ function ShoppingList() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [whenFilter, setWhenFilter] = useState("all");
+  const [locationFilter, setLocationFilter] = useState("all");
   const [groupBy, setGroupBy] = useState("type"); // 'type' or 'when'
 
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
@@ -211,6 +212,7 @@ function ShoppingList() {
     setStatusFilter("all");
     setTypeFilter("all");
     setWhenFilter("all");
+    setLocationFilter("all");
     setGroupBy("type");
   };
 
@@ -317,6 +319,10 @@ function ShoppingList() {
     .filter(
       (item) =>
         whenFilter === "all" || item["¿Cuándo se compra?"] === whenFilter
+    )
+    .filter(
+      (item) =>
+        locationFilter === "all" || item["Lugar de Compra"] === locationFilter
     );
 
   const validItems = filteredItems.filter((item) => item.Descripción);
@@ -326,6 +332,10 @@ function ShoppingList() {
   ].sort();
   const typeOptions = [
     ...new Set(items.map((item) => item["Tipo de Elemento"]).filter(Boolean)),
+  ].sort();
+
+  const locationOptions = [
+    ...new Set(items.map((item) => item["Lugar de Compra"]).filter(Boolean)),
   ].sort();
 
   const groupedItems = validItems.reduce((acc, item) => {
@@ -425,6 +435,23 @@ function ShoppingList() {
         >
           <option value="all">Todas las fechas</option>
           {whenOptions.map((option) => (
+            <option
+              key={option}
+              value={option}
+            >
+              {option}
+            </option>
+          ))}
+        </select>
+
+        <select
+          className="filter-select"
+          value={locationFilter}
+          onChange={(e) => setLocationFilter(e.target.value)}
+          disabled={pageLoading}
+        >
+          <option value="all">Todos los lugares</option>
+          {locationOptions.map((option) => (
             <option
               key={option}
               value={option}
