@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import CryptoJS from "crypto-js";
 import SummaryModal from "./SummaryModal";
 import EditModal from "./EditModal";

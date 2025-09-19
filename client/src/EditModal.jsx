@@ -15,6 +15,7 @@ function EditModal({
   const [quantity, setQuantity] = useState("");
   const [type, setType] = useState("");
   const [when, setWhen] = useState("");
+  const [lugarDeCompra, setLugarDeCompra] = useState("");
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -26,6 +27,7 @@ function EditModal({
         setQuantity(itemData.Cantidad || "1");
         setType(itemData["Tipo de Elemento"] || "");
         setWhen(itemData["¿Cuándo se compra?"] || "");
+        setLugarDeCompra(itemData["Lugar de Compra"] || "");
       } else {
         setDescription("");
         setNotes("");
@@ -33,6 +35,7 @@ function EditModal({
         setQuantity("1");
         setType("");
         setWhen("");
+        setLugarDeCompra("");
       }
       setErrors({}); // Reset errors when modal opens
     }
@@ -76,6 +79,7 @@ function EditModal({
       newQuantity: quantity,
       newType: type,
       newWhen: when,
+      newLugarDeCompra: lugarDeCompra,
     });
   };
 
@@ -104,6 +108,16 @@ function EditModal({
             onChange={(e) => setDescription(e.target.value)}
             className="form-input"
             required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="lugarDeCompra-input">Lugar de Compra</label>
+          <input
+            id="lugarDeCompra-input"
+            type="text"
+            value={lugarDeCompra}
+            onChange={(e) => setLugarDeCompra(e.target.value)}
+            className="form-input"
           />
         </div>
         <div className="form-group">
