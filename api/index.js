@@ -271,6 +271,7 @@ async function handleUpdateDetails(res, sheets, body) {
     newQuantity,
     newType,
     newWhen,
+    newLugarDeCompra,
   } = body;
 
   if (
@@ -280,7 +281,8 @@ async function handleUpdateDetails(res, sheets, body) {
     newUnitPrice === undefined ||
     newQuantity === undefined ||
     newType === undefined ||
-    newWhen === undefined
+    newWhen === undefined ||
+    newLugarDeCompra === undefined
   ) {
     return res
       .status(400)
@@ -288,6 +290,7 @@ async function handleUpdateDetails(res, sheets, body) {
   }
 
   // Define the ranges for Type (B), When (C), Description (D), Quantity (E), Unit Price (F), and Notes (H)
+  const lugarDeCompraRange = `${SHEET_NAME}!A${rowIndex}`;
   const typeRange = `${SHEET_NAME}!B${rowIndex}`;
   const whenRange = `${SHEET_NAME}!C${rowIndex}`;
   const descriptionRange = `${SHEET_NAME}!D${rowIndex}`;
@@ -297,6 +300,12 @@ async function handleUpdateDetails(res, sheets, body) {
 
   // Perform all updates
   await Promise.all([
+    sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: lugarDeCompraRange,
+      valueInputOption: "USER_ENTERED",
+      resource: { values: [[newLugarDeCompra]] },
+    }),
     sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: typeRange,
@@ -349,6 +358,7 @@ async function handleAddNewProduct(res, sheets, body) {
     newQuantity,
     newNotes,
     newWhen,
+    newLugarDeCompra,
   } = body;
 
   if (
@@ -357,11 +367,12 @@ async function handleAddNewProduct(res, sheets, body) {
     newUnitPrice === undefined ||
     newQuantity === undefined ||
     newNotes === undefined ||
-    newWhen === undefined
+    newWhen === undefined ||
+    newLugarDeCompra === undefined
   ) {
     return res.status(400).json({
       error:
-        "newDescription, newType, newUnitPrice, newQuantity, newNotes and newWhen are required.",
+        "newDescription, newType, newUnitPrice, newQuantity, newNotes, newWhen and newLugarDeCompra are required.",
     });
   }
 
@@ -378,7 +389,7 @@ async function handleAddNewProduct(res, sheets, body) {
 
   // 3. Construct the new row in the correct column order (A-I).
   const newRow = [
-    "", // A: Lugar de Compra
+    newLugarDeCompra, // A: Lugar de Compra
     newType, // B: Tipo de Elemento
     newWhen, // C: ¿Cuándo se compra?
     newDescription, // D: Descripción
