@@ -53,6 +53,32 @@ body {
   100% { transform: rotate(360deg); }
 }
 
+.skeleton {
+  display: inline-block;
+  background-color: #3a3a3a;
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
+  box-sizing: border-box;
+}
+
+.skeleton.skeleton-input {
+  width: 60px;
+  height: calc(0.9rem + 0.8rem + 2px); /* Matches .editable-input */
+  border: 1px solid #777;
+}
+
+.skeleton.skeleton-select {
+  width: 110px; /* Approximate width of the status select */
+  height: calc(0.8rem + 0.6rem + 2px); /* Matches .item-status-select */
+  border-radius: 12px; /* Matches .item-status-select */
+}
+
+@keyframes pulse {
+  0% { background-color: #3a3a3a; }
+  50% { background-color: #4a4a4a; }
+  100% { background-color: #3a3a3a; }
+}
+
 
 h1 {
   color: #ffa500;
