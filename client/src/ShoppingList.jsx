@@ -67,11 +67,43 @@ function ShoppingList() {
 
         const added = newItems.filter(item => !oldItemsMap.has(item.rowIndex));
         const deleted = oldItems.filter(item => !newItemsMap.has(item.rowIndex));
-        const edited = newItems.filter(item => {
-          if (!oldItemsMap.has(item.rowIndex)) return false;
-          const oldItem = oldItemsMap.get(item.rowIndex);
-          return JSON.stringify(oldItem) !== JSON.stringify(item);
-        });
+        const edited = newItems
+          .map(newItem => {
+            if (!oldItemsMap.has(newItem.rowIndex)) return null;
+
+            const oldItem = oldItemsMap.get(newItem.rowIndex);
+            const changedFields = [];
+
+            // We can add fields to ignore in the comparison
+            const fieldsToIgnore = ["rowIndex", "Total"];
+
+            const allKeys = new Set([...Object.keys(oldItem), ...Object.keys(newItem)]);
+
+            allKeys.forEach(key => {
+              if (fieldsToIgnore.includes(key)) return;
+
+              const oldValue = oldItem[key] || "";
+              const newValue = newItem[key] || "";
+
+              if (String(oldValue) !== String(newValue)) {
+                changedFields.push({
+                  field: key,
+                  from: oldValue,
+                  to: newValue,
+                });
+              }
+            });
+
+            if (changedFields.length > 0) {
+              return {
+                ...newItem,
+                changedFields,
+              };
+            }
+
+            return null;
+          })
+          .filter(Boolean);
 
         if (added.length > 0 || deleted.length > 0 || edited.length > 0) {
           setChanges({ added, edited, deleted });
