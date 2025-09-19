@@ -244,7 +244,14 @@ function ShoppingList() {
   return (
     <div className={`app-container ${pageLoading ? "is-loading" : ""}`}>
       {pageLoading && <Spinner />}
-      <h1>Lista de la Compra 2025</h1>
+      <div className="title-container">
+        <img
+          src="/icono_estilo.png"
+          alt="Icono"
+          className="title-icon"
+        />
+        <h1>Lista de la Compra 2025</h1>
+      </div>
       <div className="filters-container">
         <input
           type="text"

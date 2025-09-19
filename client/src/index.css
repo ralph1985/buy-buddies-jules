@@ -570,3 +570,16 @@ h2 {
 .form-save-button:hover {
   background-color: #ffc966;
 }
+
+.title-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.title-icon {
+  width: 40px;
+  height: 40px;
+}
