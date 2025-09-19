@@ -464,6 +464,7 @@ h2 {
 
 .summary-value {
   font-weight: bold;
+  white-space: nowrap;
 }
 
 /* Summary Modal Specific Styles */
