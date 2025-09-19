@@ -459,6 +459,7 @@ h2 {
 
 .summary-label {
   color: #ccc;
+  text-align: left;
 }
 
 .summary-value {
