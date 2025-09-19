@@ -82,8 +82,14 @@ body {
 
 h1 {
   color: #ffa500;
-  font-size: 1.3rem; /* Reduced */
+  font-size: 1.1rem; /* Reduced */
   margin: 0 0 0.5rem 0; /* Reduced margin */
+}
+
+h2 {
+  color: #ffa500;
+  font-size: 1.0rem;
+  margin: 0 0 0.5rem 0;
 }
 
 .filters-container {
