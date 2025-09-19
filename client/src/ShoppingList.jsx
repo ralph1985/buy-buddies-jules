@@ -234,6 +234,9 @@ function ShoppingList() {
     summaryData.find((item) => item.label === "Total pagado")?.value || "N/A";
   const totalRestante =
     summaryData.find((item) => item.label === "Total restante")?.value || "N/A";
+  const totalPagadoSabado =
+    summaryData.find((item) => item.label === "Total pagado sábado")?.value ||
+    "N/A";
   const totalRestanteSabado =
     summaryData.find((item) => item.label === "Total restante sábado")
       ?.value || "N/A";
@@ -337,6 +340,10 @@ function ShoppingList() {
         <div className="summary-item">
           <span className="summary-label">Total pagado</span>
           <span className="summary-value">{totalPagado}</span>
+        </div>
+        <div className="summary-item">
+          <span className="summary-label">Total pagado sábado</span>
+          <span className="summary-value">{totalPagadoSabado}</span>
         </div>
         <div className="summary-item">
           <span className="summary-label">Total restante sábado</span>
