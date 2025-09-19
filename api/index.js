@@ -126,12 +126,19 @@ async function handleGetStatusOptions(req, res, sheets) {
   });
 
   const rows = response.data.values;
-  if (!rows) {
-    return res.status(200).json([]);
+  let uniqueOptions = new Set();
+
+  if (rows) {
+    // Flatten the array and filter out any empty values
+    uniqueOptions = new Set(rows.flat().filter((val) => val));
   }
 
-  // Use a Set to get unique, non-empty values
-  const uniqueOptions = new Set(rows.flat().filter((val) => val));
+  // If there's only one or no status in the sheet, add the default ones
+  if (uniqueOptions.size <= 1) {
+    const defaultStatuses = ["Pagado", "Pendiente de pago", "Comprado"];
+    defaultStatuses.forEach((status) => uniqueOptions.add(status));
+  }
+
   res.status(200).json([...uniqueOptions]);
 }
 
