@@ -111,16 +111,6 @@ function EditModal({
           />
         </div>
         <div className="form-group">
-          <label htmlFor="lugarDeCompra-input">Lugar de Compra</label>
-          <input
-            id="lugarDeCompra-input"
-            type="text"
-            value={lugarDeCompra}
-            onChange={(e) => setLugarDeCompra(e.target.value)}
-            className="form-input"
-          />
-        </div>
-        <div className="form-group">
           <label htmlFor="type-select">Tipo de Elemento</label>
           <select
             id="type-select"
@@ -157,6 +147,16 @@ function EditModal({
               </option>
             ))}
           </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="lugarDeCompra-input">Lugar de Compra</label>
+          <input
+            id="lugarDeCompra-input"
+            type="text"
+            value={lugarDeCompra}
+            onChange={(e) => setLugarDeCompra(e.target.value)}
+            className="form-input"
+          />
         </div>
         <div className="form-group">
           <label htmlFor="quantity-input">Cantidad</label>
