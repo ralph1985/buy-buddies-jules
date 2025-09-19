@@ -133,11 +133,10 @@ async function handleGetStatusOptions(req, res, sheets) {
     uniqueOptions = new Set(rows.flat().filter((val) => val));
   }
 
-  // If there's only one or no status in the sheet, add the default ones
-  if (uniqueOptions.size <= 1) {
-    const defaultStatuses = ["Pagado", "Pendiente de pago", "Comprado"];
-    defaultStatuses.forEach((status) => uniqueOptions.add(status));
-  }
+  // Always ensure the default statuses are present.
+  // The Set will handle duplicates automatically.
+  const defaultStatuses = ["Pagado", "Pendiente de pago", "Comprado"];
+  defaultStatuses.forEach((status) => uniqueOptions.add(status));
 
   res.status(200).json([...uniqueOptions]);
 }
