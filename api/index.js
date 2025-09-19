@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import crypto from "crypto";
 
 // Helper to parse JSON body from requests
 async function getJsonBody(req) {
@@ -76,6 +77,8 @@ export default async function handler(request, response) {
         await handleGetStatusOptions(request, response, sheets);
       } else if (action === "get_summary") {
         await handleGetSummary(request, response, sheets);
+      } else if (action === "get_hash") {
+        await handleGetHash(request, response, sheets);
       } else {
         await handleGetItems(request, response, sheets);
       }
@@ -116,6 +119,39 @@ async function handleGetItems(req, res, sheets) {
   });
 
   res.status(200).json(data);
+}
+
+// Fetches all items and returns a hash of the data
+async function handleGetHash(req, res, sheets) {
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}!A11:Z`,
+  });
+
+  const rows = response.data.values;
+  if (!rows || rows.length === 0) {
+    // Return a consistent hash for an empty dataset
+    const hash = crypto.createHash("sha256").update("[]").digest("hex");
+    return res.status(200).json({ hash });
+  }
+
+  const header = rows[0];
+  const data = rows.slice(1).map((row, index) => {
+    const rowData = {};
+    header.forEach((key, i) => {
+      if (key) {
+        rowData[key] = row[i] || "";
+      }
+    });
+    // Add the actual row index from the sheet
+    rowData.rowIndex = 11 + 1 + index; // 11 (start) + 1 (for header) + index
+    return rowData;
+  });
+
+  const dataString = JSON.stringify(data);
+  const hash = crypto.createHash("sha256").update(dataString).digest("hex");
+
+  res.status(200).json({ hash });
 }
 
 // Fetches unique, non-empty status options from the 'Estado' column (Column I)

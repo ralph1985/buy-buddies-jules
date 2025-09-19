@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import CryptoJS from "crypto-js";
 import SummaryModal from "./SummaryModal";
 import EditModal from "./EditModal";
 import { validateDecimal } from "./utils/validation";
@@ -50,6 +51,12 @@ function ShoppingList() {
         fetch("/api?action=get_options").then((res) => res.json()),
         fetch("/api?action=get_summary").then((res) => res.json()),
       ]);
+
+      // Create a hash of the items data and store it
+      const dataString = JSON.stringify(itemsData);
+      const newHash = CryptoJS.SHA256(dataString).toString();
+      sessionStorage.setItem("dataHash", newHash);
+
       setItems(itemsData);
       setStatusOptions(statusOpts.sort());
       setSummaryData(processSummaryData(summaryRes));
@@ -68,6 +75,26 @@ function ShoppingList() {
     setPageLoading(true);
     fetchData();
   }, [fetchData]);
+
+  // Effect for polling for changes
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      try {
+        const response = await fetch("/api?action=get_hash");
+        const { hash: newHash } = await response.json();
+        const oldHash = sessionStorage.getItem("dataHash");
+
+        if (oldHash && newHash !== oldHash) {
+          console.log("Change detected, reloading page...");
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error("Polling error:", error);
+      }
+    }, 30000); // Poll every 30 seconds
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, []);
 
   const handleUpdate = async (action, payload, field = null) => {
     // For inline edits, we set the specific field being updated.
