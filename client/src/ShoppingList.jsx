@@ -384,14 +384,21 @@ function ShoppingList() {
                         )}
                         <div className="item-actions">
                           <div className="editable-field">
+                            <label
+                              htmlFor={`quantity-${item.rowIndex}`}
+                              className="editable-field-label"
+                            >
+                              Cantidad:
+                            </label>
                             {isUpdating &&
                             updatingField.field === "quantity" ? (
                               <Skeleton />
                             ) : (
                               <input
+                                id={`quantity-${item.rowIndex}`}
                                 type="text"
                                 inputMode="decimal"
-                                className={`item-quantity-input ${
+                                className={`editable-input ${
                                   quantityErrors[item.rowIndex]
                                     ? "input-error"
                                     : ""
@@ -421,15 +428,21 @@ function ShoppingList() {
                             )}
                           </div>
                           <div className="editable-field">
+                            <label
+                              htmlFor={`unit-price-${item.rowIndex}`}
+                              className="editable-field-label"
+                            >
+                              €/ud:
+                            </label>
                             {isUpdating &&
                             updatingField.field === "unitPrice" ? (
                               <Skeleton />
                             ) : (
                               <input
+                                id={`unit-price-${item.rowIndex}`}
                                 type="text"
                                 inputMode="decimal"
-                                placeholder="€/ud."
-                                className={`item-unit-price-input ${
+                                className={`editable-input ${
                                   unitPriceErrors[item.rowIndex]
                                     ? "input-error"
                                     : ""
