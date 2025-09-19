@@ -12,6 +12,20 @@ function Skeleton({ type = "input" }) {
   return <div className={`skeleton skeleton-${type}`}></div>;
 }
 
+const processSummaryData = (data) => {
+  const boldLabels = [
+    "Total presupuesto",
+    "Total gastos estimado",
+    "Total pagado",
+    "Total restante",
+  ];
+
+  return data.map((item) => ({
+    ...item,
+    type: boldLabels.includes(item.label) ? "bold" : "italic",
+  }));
+};
+
 function ShoppingList() {
   const [items, setItems] = useState([]);
   const [statusOptions, setStatusOptions] = useState([]);
@@ -38,7 +52,7 @@ function ShoppingList() {
       ]);
       setItems(itemsData);
       setStatusOptions(statusOpts.sort());
-      setSummaryData(summaryRes);
+      setSummaryData(processSummaryData(summaryRes));
     } catch (err) {
       console.error("Fetch error:", err);
       setError(
