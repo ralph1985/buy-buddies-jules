@@ -7,11 +7,16 @@ function Spinner() {
   return <div className="spinner"></div>;
 }
 
+function Skeleton() {
+  return <div className="skeleton"></div>;
+}
+
 function ShoppingList() {
   const [items, setItems] = useState([]);
   const [statusOptions, setStatusOptions] = useState([]);
   const [summaryData, setSummaryData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [updatingField, setUpdatingField] = useState(null); // { rowIndex, field }
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -39,30 +44,43 @@ function ShoppingList() {
         "No se pudo cargar la lista de la compra. Inténtalo de nuevo más tarde."
       );
     } finally {
-      setLoading(false);
+      setPageLoading(false);
+      setUpdatingField(null);
     }
   }, []);
 
   useEffect(() => {
-    setLoading(true);
+    setPageLoading(true);
     fetchData();
   }, [fetchData]);
 
-  const handleUpdate = async (action, payload) => {
-    setLoading(true);
+  const handleUpdate = async (action, payload, field = null) => {
+    // For inline edits, we set the specific field being updated.
+    // For modal edits (add/update details), we show the full spinner.
+    if (field) {
+      setUpdatingField({ rowIndex: payload.rowIndex, field });
+    } else {
+      setPageLoading(true);
+    }
+
     try {
       await fetch("/api", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, ...payload }),
       });
-      await fetchData();
+      await fetchData(); // Refreshes all data
     } catch (error) {
       console.error("Update failed:", error);
       alert(
         "Error: No se pudo realizar la actualización. Por favor, recarga la página."
       );
-      setLoading(false);
+      // Reset loading states on failure
+      if (field) {
+        setUpdatingField(null);
+      } else {
+        setPageLoading(false);
+      }
     }
   };
 
@@ -73,23 +91,27 @@ function ShoppingList() {
 
   const handleSaveDetails = (payload) => {
     setIsEditModalOpen(false);
-    // If rowIndex exists, it's an update; otherwise, it's an add.
     const action = payload.rowIndex ? "update_details" : "add_product";
-    handleUpdate(action, payload);
+    handleUpdate(action, payload); // This will use the full page spinner
   };
 
   const handleStatusChange = (rowIndex, newStatus) =>
-    handleUpdate("update_status", { rowIndex, newStatus });
+    handleUpdate("update_status", { rowIndex, newStatus }, "status");
   const [quantityValues, setQuantityValues] = useState({});
   const [quantityErrors, setQuantityErrors] = useState({});
+  const [unitPriceValues, setUnitPriceValues] = useState({});
+  const [unitPriceErrors, setUnitPriceErrors] = useState({});
 
   useEffect(() => {
     if (items.length > 0) {
-      const initialQuantities = items.reduce((acc, item) => {
-        acc[item.rowIndex] = item.Cantidad;
-        return acc;
-      }, {});
+      const initialQuantities = {};
+      const initialUnitPrices = {};
+      items.forEach((item) => {
+        initialQuantities[item.rowIndex] = item.Cantidad;
+        initialUnitPrices[item.rowIndex] = item["Precio unidad"];
+      });
       setQuantityValues(initialQuantities);
+      setUnitPriceValues(initialUnitPrices);
     }
   }, [items]);
 
@@ -99,9 +121,8 @@ function ShoppingList() {
     originalQuantity
   ) => {
     if (currentValue === "" || !validateDecimal(currentValue)) {
-      const errorMessage = `Valor "${currentValue}" no es válido. Ejemplos: 1, 100, 0,95.`;
+      const errorMessage = `Valor "${currentValue}" no es válido. Ej: 1, 1.99.`;
       setQuantityErrors((prev) => ({ ...prev, [rowIndex]: errorMessage }));
-      // Revert to original value after a short delay to allow the user to see the error on the invalid value
       setTimeout(() => {
         setQuantityValues((prev) => ({
           ...prev,
@@ -111,18 +132,41 @@ function ShoppingList() {
       }, 1500);
     } else {
       setQuantityErrors((prev) => ({ ...prev, [rowIndex]: null }));
-      const formattedValue = currentValue.endsWith(",")
-        ? currentValue.slice(0, -1)
-        : currentValue;
-
+      const formattedValue = currentValue.replace(",", ".");
       if (formattedValue !== originalQuantity) {
-        handleUpdate("update_quantity", {
-          rowIndex,
-          newQuantity: formattedValue,
-        });
+        handleUpdate(
+          "update_quantity",
+          { rowIndex, newQuantity: formattedValue },
+          "quantity"
+        );
       }
-      // Also update the displayed value in case we stripped a trailing comma
       setQuantityValues((prev) => ({ ...prev, [rowIndex]: formattedValue }));
+    }
+  };
+
+  const handleUnitPriceValidation = (
+    rowIndex,
+    currentValue,
+    originalPrice
+  ) => {
+    if (currentValue === "" || !validateDecimal(currentValue)) {
+      const errorMessage = `Valor "${currentValue}" no es válido. Ej: 1, 1.99.`;
+      setUnitPriceErrors((prev) => ({ ...prev, [rowIndex]: errorMessage }));
+      setTimeout(() => {
+        setUnitPriceValues((prev) => ({ ...prev, [rowIndex]: originalPrice }));
+        setUnitPriceErrors((prev) => ({ ...prev, [rowIndex]: null }));
+      }, 1500);
+    } else {
+      setUnitPriceErrors((prev) => ({ ...prev, [rowIndex]: null }));
+      const formattedValue = currentValue.replace(",", ".");
+      if (formattedValue !== originalPrice) {
+        handleUpdate(
+          "update_unit_price",
+          { rowIndex, newUnitPrice: formattedValue },
+          "unitPrice"
+        );
+      }
+      setUnitPriceValues((prev) => ({ ...prev, [rowIndex]: formattedValue }));
     }
   };
 
@@ -176,8 +220,8 @@ function ShoppingList() {
       ?.value || "N/A";
 
   return (
-    <div className={`app-container ${loading ? "is-loading" : ""}`}>
-      {loading && <Spinner />}
+    <div className={`app-container ${pageLoading ? "is-loading" : ""}`}>
+      {pageLoading && <Spinner />}
       <h1>Lista de la Compra 2025</h1>
       <div className="filters-container">
         <input
@@ -186,13 +230,13 @@ function ShoppingList() {
           className="search-input"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          disabled={loading}
+          disabled={pageLoading}
         />
         <select
           className="filter-select"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          disabled={loading}
+          disabled={pageLoading}
         >
           <option value="all">Todos los estados</option>
           {statusOptions.map((option) => (
@@ -209,7 +253,7 @@ function ShoppingList() {
           className="filter-select"
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          disabled={loading}
+          disabled={pageLoading}
         >
           <option value="all">Todos los tipos</option>
           {typeOptions.map((option) => (
@@ -226,7 +270,7 @@ function ShoppingList() {
           className="filter-select"
           value={whenFilter}
           onChange={(e) => setWhenFilter(e.target.value)}
-          disabled={loading}
+          disabled={pageLoading}
         >
           <option value="all">Todas las fechas</option>
           {whenOptions.map((option) => (
@@ -248,7 +292,7 @@ function ShoppingList() {
               value="type"
               checked={groupBy === "type"}
               onChange={(e) => setGroupBy(e.target.value)}
-              disabled={loading}
+              disabled={pageLoading}
             />
             Tipo
           </label>
@@ -259,7 +303,7 @@ function ShoppingList() {
               value="when"
               checked={groupBy === "when"}
               onChange={(e) => setGroupBy(e.target.value)}
-              disabled={loading}
+              disabled={pageLoading}
             />
             Fecha
           </label>
@@ -285,13 +329,13 @@ function ShoppingList() {
         <button
           onClick={() => setIsSummaryModalOpen(true)}
           className="summary-link-button"
-          disabled={loading}
+          disabled={pageLoading}
         >
           Ver Resumen Completo
         </button>
       </div>
 
-      {loading && items.length === 0 ? (
+      {pageLoading && items.length === 0 ? (
         <div className="loading">Cargando lista...</div>
       ) : Object.keys(groupedItems).length > 0 ? (
         Object.entries(groupedItems).map(([groupName, groupItems]) => {
@@ -312,90 +356,142 @@ function ShoppingList() {
                 </span>
               </h2>
               <ul className="shopping-list">
-                {groupItems.map((item) => (
-                  <li
-                    key={item.rowIndex}
-                  className={`shopping-list-item status-${String(
-                    item.Estado || ""
-                  )
-                    .toLowerCase()
-                    .replace(/ /g, "-")}`}
-                >
-                  <div className="item-details">
-                    <span
-                      className="item-name"
-                      onClick={() => handleOpenEditModal(item)}
+                {groupItems.map((item) => {
+                  const isUpdating =
+                    updatingField && updatingField.rowIndex === item.rowIndex;
+                  return (
+                    <li
+                      key={item.rowIndex}
+                      className={`shopping-list-item status-${String(
+                        item.Estado || ""
+                      )
+                        .toLowerCase()
+                        .replace(/ /g, "-")}`}
                     >
-                      {item.Descripción}
-                    </span>
-                    {item.Notas && (
-                      <span className="item-notes">{item.Notas}</span>
-                    )}
-                    <div className="quantity-container">
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        className={`item-quantity-input ${
-                          quantityErrors[item.rowIndex] ? "input-error" : ""
-                        }`}
-                        value={quantityValues[item.rowIndex] || ""}
-                        onChange={(e) => {
-                          const newValues = {
-                            ...quantityValues,
-                            [item.rowIndex]: e.target.value,
-                          };
-                          setQuantityValues(newValues);
-                        }}
-                        onBlur={(e) =>
-                          handleQuantityValidation(
-                            item.rowIndex,
-                            e.target.value,
-                            item.Cantidad
-                          )
-                        }
-                        aria-label="Cantidad"
-                        disabled={loading}
-                      />
-                      {quantityErrors[item.rowIndex] && (
-                        <span className="item-error-message">
-                          {quantityErrors[item.rowIndex]}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="item-pricing">
-                    <span className="item-total">{item.Total}€</span>
-                    {item["Precio unidad"] && (
-                      <span className="item-unit-price">
-                        ({item["Precio unidad"]}€/ud.)
-                      </span>
-                    )}
-                    <select
-                      className="item-status-select"
-                      value={item.Estado || ""}
-                      onChange={(e) =>
-                        handleStatusChange(item.rowIndex, e.target.value)
-                      }
-                      disabled={loading}
-                    >
-                      <option value="">- Sin Estado -</option>
-                      {item.Estado && !statusOptions.includes(item.Estado) && (
-                        <option value={item.Estado}>{item.Estado}</option>
-                      )}
-                      {statusOptions.map((option) => (
-                        <option
-                          key={option}
-                          value={option}
+                      <div className="item-details">
+                        <span
+                          className="item-name"
+                          onClick={() => handleOpenEditModal(item)}
                         >
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+                          {item.Descripción}
+                        </span>
+                        {item.Notas && (
+                          <span className="item-notes">{item.Notas}</span>
+                        )}
+                        <div className="item-actions">
+                          <div className="editable-field">
+                            {isUpdating &&
+                            updatingField.field === "quantity" ? (
+                              <Skeleton />
+                            ) : (
+                              <input
+                                type="text"
+                                inputMode="decimal"
+                                className={`item-quantity-input ${
+                                  quantityErrors[item.rowIndex]
+                                    ? "input-error"
+                                    : ""
+                                }`}
+                                value={quantityValues[item.rowIndex] || ""}
+                                onChange={(e) =>
+                                  setQuantityValues({
+                                    ...quantityValues,
+                                    [item.rowIndex]: e.target.value,
+                                  })
+                                }
+                                onBlur={(e) =>
+                                  handleQuantityValidation(
+                                    item.rowIndex,
+                                    e.target.value,
+                                    item.Cantidad
+                                  )
+                                }
+                                aria-label="Cantidad"
+                                disabled={pageLoading || updatingField}
+                              />
+                            )}
+                            {quantityErrors[item.rowIndex] && (
+                              <span className="item-error-message">
+                                {quantityErrors[item.rowIndex]}
+                              </span>
+                            )}
+                          </div>
+                          <div className="editable-field">
+                            {isUpdating &&
+                            updatingField.field === "unitPrice" ? (
+                              <Skeleton />
+                            ) : (
+                              <input
+                                type="text"
+                                inputMode="decimal"
+                                placeholder="€/ud."
+                                className={`item-unit-price-input ${
+                                  unitPriceErrors[item.rowIndex]
+                                    ? "input-error"
+                                    : ""
+                                }`}
+                                value={unitPriceValues[item.rowIndex] || ""}
+                                onChange={(e) =>
+                                  setUnitPriceValues({
+                                    ...unitPriceValues,
+                                    [item.rowIndex]: e.target.value,
+                                  })
+                                }
+                                onBlur={(e) =>
+                                  handleUnitPriceValidation(
+                                    item.rowIndex,
+                                    e.target.value,
+                                    item["Precio unidad"]
+                                  )
+                                }
+                                aria-label="Precio por unidad"
+                                disabled={pageLoading || updatingField}
+                              />
+                            )}
+                            {unitPriceErrors[item.rowIndex] && (
+                              <span className="item-error-message">
+                                {unitPriceErrors[item.rowIndex]}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="item-pricing">
+                        <span className="item-total">{item.Total}€</span>
+                        {isUpdating && updatingField.field === "status" ? (
+                          <Skeleton />
+                        ) : (
+                          <select
+                            className="item-status-select"
+                            value={item.Estado || ""}
+                            onChange={(e) =>
+                              handleStatusChange(item.rowIndex, e.target.value)
+                            }
+                            disabled={pageLoading || updatingField}
+                          >
+                            <option value="">- Sin Estado -</option>
+                            {item.Estado &&
+                              !statusOptions.includes(item.Estado) && (
+                                <option value={item.Estado}>
+                                  {item.Estado}
+                                </option>
+                              )}
+                            {statusOptions.map((option) => (
+                              <option
+                                key={option}
+                                value={option}
+                              >
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           );
         })
       ) : (
@@ -418,12 +514,11 @@ function ShoppingList() {
       <button
         className="fab-add-button"
         onClick={() => handleOpenEditModal(null)}
-        disabled={loading}
+        disabled={pageLoading}
       >
         +
       </button>
     </div>
   );
 }
-
-export default ShoppingList;
+// No changes needed in the final block, but keeping it for context
