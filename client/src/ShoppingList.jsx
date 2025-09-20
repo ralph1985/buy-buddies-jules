@@ -37,10 +37,10 @@ function ShoppingList({ user, onLogout }) {
   const [updatingField, setUpdatingField] = useState(null); // { rowIndex, field }
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState([]);
   const [typeFilter, setTypeFilter] = useState([]);
-  const [whenFilter, setWhenFilter] = useState("all");
-  const [locationFilter, setLocationFilter] = useState("all");
+  const [whenFilter, setWhenFilter] = useState([]);
+  const [locationFilter, setLocationFilter] = useState([]);
   const [groupBy, setGroupBy] = useState("type"); // 'type' or 'when'
 
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
@@ -210,10 +210,10 @@ function ShoppingList({ user, onLogout }) {
 
   const handleClearFilters = () => {
     setSearchTerm("");
-    setStatusFilter("all");
+    setStatusFilter([]);
     setTypeFilter([]);
-    setWhenFilter("all");
-    setLocationFilter("all");
+    setWhenFilter([]);
+    setLocationFilter([]);
     setGroupBy("type");
   };
 
@@ -313,7 +313,11 @@ function ShoppingList({ user, onLogout }) {
     .filter((item) =>
       item.Descripción?.toLowerCase().includes(searchTerm.toLowerCase())
     )
-    .filter((item) => statusFilter === "all" || item.Estado === statusFilter)
+    .filter(
+      (item) =>
+        statusFilter.length === 0 ||
+        statusFilter.some((filter) => filter.value === item.Estado)
+    )
     .filter(
       (item) =>
         typeFilter.length === 0 ||
@@ -321,25 +325,32 @@ function ShoppingList({ user, onLogout }) {
     )
     .filter(
       (item) =>
-        whenFilter === "all" || item["¿Cuándo se compra?"] === whenFilter
+        whenFilter.length === 0 ||
+        whenFilter.some((filter) => filter.value === item["¿Cuándo se compra?"])
     )
     .filter(
       (item) =>
-        locationFilter === "all" || item["Lugar de Compra"] === locationFilter
+        locationFilter.length === 0 ||
+        locationFilter.some(
+          (filter) => filter.value === item["Lugar de Compra"]
+        )
     );
 
   const validItems = filteredItems.filter((item) => item.Descripción);
 
   const whenOptions = [
     ...new Set(items.map((item) => item["¿Cuándo se compra?"]).filter(Boolean)),
-  ].sort();
+  ].sort().map(option => ({ value: option, label: option }));
+
   const typeOptions = [
     ...new Set(items.map((item) => item["Tipo de Elemento"]).filter(Boolean)),
   ].sort().map(option => ({ value: option, label: option }));
 
   const locationOptions = [
     ...new Set(items.map((item) => item["Lugar de Compra"]).filter(Boolean)),
-  ].sort();
+  ].sort().map(option => ({ value: option, label: option }));
+
+  const statusOptionsFormatted = statusOptions.map(option => ({ value: option, label: option }));
 
   const groupedItems = validItems.reduce((acc, item) => {
     let group;
@@ -461,22 +472,17 @@ function ShoppingList({ user, onLogout }) {
             </button>
           )}
         </div>
-        <select
+        <Select
+          isMulti
+          options={statusOptionsFormatted}
           className="filter-select"
+          classNamePrefix="select"
+          placeholder="Todos los estados"
+          onChange={setStatusFilter}
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          disabled={pageLoading}
-        >
-          <option value="all">Todos los estados</option>
-          {statusOptions.map((option) => (
-            <option
-              key={option}
-              value={option}
-            >
-              {option}
-            </option>
-          ))}
-        </select>
+          isDisabled={pageLoading}
+          styles={customStyles}
+        />
 
         <Select
           isMulti
@@ -490,39 +496,29 @@ function ShoppingList({ user, onLogout }) {
           styles={customStyles}
         />
 
-        <select
+        <Select
+          isMulti
+          options={whenOptions}
           className="filter-select"
+          classNamePrefix="select"
+          placeholder="Todas las fechas"
+          onChange={setWhenFilter}
           value={whenFilter}
-          onChange={(e) => setWhenFilter(e.target.value)}
-          disabled={pageLoading}
-        >
-          <option value="all">Todas las fechas</option>
-          {whenOptions.map((option) => (
-            <option
-              key={option}
-              value={option}
-            >
-              {option}
-            </option>
-          ))}
-        </select>
+          isDisabled={pageLoading}
+          styles={customStyles}
+        />
 
-        <select
+        <Select
+          isMulti
+          options={locationOptions}
           className="filter-select"
+          classNamePrefix="select"
+          placeholder="Todos los lugares"
+          onChange={setLocationFilter}
           value={locationFilter}
-          onChange={(e) => setLocationFilter(e.target.value)}
-          disabled={pageLoading}
-        >
-          <option value="all">Todos los lugares</option>
-          {locationOptions.map((option) => (
-            <option
-              key={option}
-              value={option}
-            >
-              {option}
-            </option>
-          ))}
-        </select>
+          isDisabled={pageLoading}
+          styles={customStyles}
+        />
 
         <div className="grouping-container">
           <span className="grouping-label">Agrupar por:</span>
