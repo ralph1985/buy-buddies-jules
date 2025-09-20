@@ -121,10 +121,10 @@ function EditModal({
             <option value="">- Seleccionar tipo -</option>
             {typeOptions.map((option) => (
               <option
-                key={option}
-                value={option}
+                key={option.value}
+                value={option.value}
               >
-                {option}
+                {option.label}
               </option>
             ))}
           </select>
@@ -140,10 +140,10 @@ function EditModal({
             <option value="">- Seleccionar fecha -</option>
             {whenOptions.map((option) => (
               <option
-                key={option}
-                value={option}
+                key={option.value}
+                value={option.value}
               >
-                {option}
+                {option.label}
               </option>
             ))}
           </select>
