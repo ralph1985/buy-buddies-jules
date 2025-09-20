@@ -79,6 +79,8 @@ export default async function handler(request, response) {
         await handleGetSummary(request, response, sheets);
       } else if (action === "get_hash") {
         await handleGetHash(request, response, sheets);
+      } else if (action === "get_members") {
+        await handleGetMembers(request, response, sheets);
       } else {
         await handleGetItems(request, response, sheets);
       }
@@ -437,4 +439,33 @@ async function handleGetSummary(req, res, sheets) {
     .filter((item) => item.label && item.value); // Filter out rows without a label or a value
 
   res.status(200).json(summaryData);
+}
+
+// Fetches members from the 'Miembros' sheet
+async function handleGetMembers(req, res, sheets) {
+  const MEMBERS_SHEET_NAME = "Miembros";
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${MEMBERS_SHEET_NAME}!A10:D`,
+  });
+
+  const rows = response.data.values;
+  if (!rows || rows.length === 0) {
+    return res.status(200).json([]);
+  }
+
+  const header = rows[0];
+  const memberColIndex = header.indexOf("Miembro");
+  const accessColIndex = header.indexOf("¿Acceso App?");
+
+  if (memberColIndex === -1 || accessColIndex === -1) {
+    return res.status(500).json({ error: "Required columns not found in Miembros sheet." });
+  }
+
+  const members = rows.slice(1).map(row => ({
+    name: row[memberColIndex],
+    access: row[accessColIndex]
+  })).filter(member => member.name); // Filter out rows without a name
+
+  res.status(200).json(members);
 }

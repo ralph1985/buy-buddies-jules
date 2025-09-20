@@ -28,7 +28,7 @@ const processSummaryData = (data) => {
   }));
 };
 
-function ShoppingList() {
+function ShoppingList({ user, onLogout }) {
   const [items, setItems] = useState([]);
   const [statusOptions, setStatusOptions] = useState([]);
   const [summaryData, setSummaryData] = useState([]);
@@ -372,6 +372,16 @@ function ShoppingList() {
           className="header-logo"
         />
         <h1>Lista de la Compra 2025</h1>
+        <div className="user-info">
+          <span>{user}</span>
+          <button onClick={() => {
+            if (window.confirm('¿Seguro que quieres cerrar sesión?')) {
+              onLogout();
+            }
+          }}>
+            Cerrar sesión
+          </button>
+        </div>
       </div>
       <div className="filters-container">
         <div className="search-input-container">
