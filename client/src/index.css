@@ -444,7 +444,7 @@ h2 {
 
 .modal-content {
   background-color: #2c2c2c;
-  padding: 1rem;
+  padding: 0.5rem;
   border-radius: 8px;
   max-width: 500px;
   width: 90%;
@@ -565,7 +565,7 @@ h2 {
 
 /* Edit Modal Form Styles */
 .form-group {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.375rem;
   text-align: left;
 }
 
@@ -596,7 +596,7 @@ h2 {
 
 .form-actions {
   text-align: right;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
 .form-save-button {
