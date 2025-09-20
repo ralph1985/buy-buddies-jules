@@ -366,12 +366,14 @@ function ShoppingList({ user, onLogout }) {
     <div className={`app-container ${pageLoading ? "is-loading" : ""}`}>
       {pageLoading && <Spinner />}
       <div className="header-container">
-        <img
-          src="/logo.png"
-          alt="Logo"
-          className="header-logo"
-        />
-        <h1>Lista de la Compra 2025</h1>
+        <div className="header-left">
+          <img
+            src="/logo.png"
+            alt="Logo"
+            className="header-logo"
+          />
+          <h1>Lista de la Compra 2025</h1>
+        </div>
         <div className="user-info">
           <span>{user}</span>
           <button onClick={() => {

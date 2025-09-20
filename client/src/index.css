@@ -83,20 +83,22 @@ body {
 .header-container {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1rem;
-  position: relative;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .user-info {
-  position: absolute;
-  top: 5px;
-  right: 5px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  font-size: 0.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
 }
 
 .user-info span {
@@ -110,7 +112,7 @@ body {
   color: #ccc;
   text-decoration: underline;
   cursor: pointer;
-  font-size: 0.65rem;
+  font-size: 0.8rem;
   padding: 0;
 }
 
