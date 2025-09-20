@@ -365,6 +365,59 @@ function ShoppingList({ user, onLogout }) {
     summaryData.find((item) => item.label === "Total restante sábado")?.value ||
     "N/A";
 
+  const customStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      backgroundColor: '#2c2c2c',
+      borderColor: state.isFocused ? '#ffa500' : '#555',
+      boxShadow: state.isFocused ? '0 0 0 1px #ffa500' : 'none',
+      '&:hover': {
+        borderColor: '#ffa500',
+      },
+      marginBottom: '0.5rem',
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: '#2c2c2c',
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? '#ffa500' : state.isFocused ? '#444' : '#2c2c2c',
+      color: state.isSelected ? '#1a1a1a' : 'white',
+      '&:active': {
+        backgroundColor: '#ffa500',
+      },
+    }),
+    multiValue: (provided) => ({
+      ...provided,
+      backgroundColor: '#444',
+    }),
+    multiValueLabel: (provided) => ({
+      ...provided,
+      color: 'white',
+    }),
+    multiValueRemove: (provided) => ({
+      ...provided,
+      color: '#ccc',
+      '&:hover': {
+        backgroundColor: '#ffa500',
+        color: 'white',
+      },
+    }),
+    input: (provided) => ({
+      ...provided,
+      color: 'white',
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: '#ccc',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: 'white',
+    }),
+  };
+
   return (
     <div className={`app-container ${pageLoading ? "is-loading" : ""}`}>
       {pageLoading && <Spinner />}
@@ -434,6 +487,7 @@ function ShoppingList({ user, onLogout }) {
           onChange={setTypeFilter}
           value={typeFilter}
           isDisabled={pageLoading}
+          styles={customStyles}
         />
 
         <select
