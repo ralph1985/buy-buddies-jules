@@ -42,6 +42,7 @@ function ShoppingList({ user, onLogout }) {
   const [whenFilter, setWhenFilter] = useState([]);
   const [locationFilter, setLocationFilter] = useState([]);
   const [groupBy, setGroupBy] = useState("type"); // 'type' or 'when'
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
 
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -323,6 +324,122 @@ function ShoppingList({ user, onLogout }) {
     }
   };
 
+  const renderFilterMenu = () => (
+    <>
+      <div
+        className={`filter-menu-overlay ${isFilterMenuOpen ? "is-open" : ""}`}
+        onClick={() => setIsFilterMenuOpen(false)}
+      ></div>
+      <div className={`filter-menu ${isFilterMenuOpen ? "is-open" : ""}`}>
+        <div className="filters-container">
+          <div className="search-input-container">
+            <input
+              type="text"
+              placeholder="Buscar producto..."
+              className="search-input"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              disabled={pageLoading}
+            />
+            {searchTerm && (
+              <button
+                className="clear-search-button"
+                onClick={() => setSearchTerm("")}
+                aria-label="Limpiar búsqueda"
+              >
+                &times;
+              </button>
+            )}
+          </div>
+          <Select
+            isMulti
+            options={statusOptionsFormatted}
+            className="filter-select"
+            classNamePrefix="select"
+            placeholder="Todos los estados"
+            onChange={setStatusFilter}
+            value={statusFilter}
+            isDisabled={pageLoading}
+            styles={customStyles}
+          />
+
+          <Select
+            isMulti
+            options={typeOptions}
+            className="filter-select"
+            classNamePrefix="select"
+            placeholder="Todos los tipos"
+            onChange={setTypeFilter}
+            value={typeFilter}
+            isDisabled={pageLoading}
+            styles={customStyles}
+          />
+
+          <Select
+            isMulti
+            options={whenOptions}
+            className="filter-select"
+            classNamePrefix="select"
+            placeholder="Todas las fechas"
+            onChange={setWhenFilter}
+            value={whenFilter}
+            isDisabled={pageLoading}
+            styles={customStyles}
+          />
+
+          <Select
+            isMulti
+            options={locationOptions}
+            className="filter-select"
+            classNamePrefix="select"
+            placeholder="Todos los lugares"
+            onChange={setLocationFilter}
+            value={locationFilter}
+            isDisabled={pageLoading}
+            styles={customStyles}
+          />
+
+          <div className="grouping-container">
+            <span className="grouping-label">Agrupar por:</span>
+            <label>
+              <input
+                type="radio"
+                name="groupBy"
+                value="type"
+                checked={groupBy === "type"}
+                onChange={(e) => setGroupBy(e.target.value)}
+                disabled={pageLoading}
+              />
+              Tipo
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="groupBy"
+                value="when"
+                checked={groupBy === "when"}
+                onChange={(e) => setGroupBy(e.target.value)}
+                disabled={pageLoading}
+              />
+              Fecha
+            </label>
+          </div>
+        </div>
+        <div className="clear-filters-container">
+          <button onClick={handleClearFilters} className="summary-link-button">
+            Limpiar filtros
+          </button>
+        </div>
+        <button
+          onClick={() => setIsFilterMenuOpen(false)}
+          className="close-menu-button"
+        >
+          Cerrar
+        </button>
+      </div>
+    </>
+  );
+
   if (error) return <div className="error">{error}</div>;
 
   if (!Array.isArray(items)) {
@@ -461,104 +578,16 @@ function ShoppingList({ user, onLogout }) {
           </button>
         </div>
       </div>
-      <div className="filters-container">
-        <div className="search-input-container">
-          <input
-            type="text"
-            placeholder="Buscar producto..."
-            className="search-input"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            disabled={pageLoading}
-          />
-          {searchTerm && (
-            <button
-              className="clear-search-button"
-              onClick={() => setSearchTerm("")}
-              aria-label="Limpiar búsqueda"
-            >
-              &times;
-            </button>
-          )}
-        </div>
-        <Select
-          isMulti
-          options={statusOptionsFormatted}
-          className="filter-select"
-          classNamePrefix="select"
-          placeholder="Todos los estados"
-          onChange={setStatusFilter}
-          value={statusFilter}
-          isDisabled={pageLoading}
-          styles={customStyles}
-        />
 
-        <Select
-          isMulti
-          options={typeOptions}
-          className="filter-select"
-          classNamePrefix="select"
-          placeholder="Todos los tipos"
-          onChange={setTypeFilter}
-          value={typeFilter}
-          isDisabled={pageLoading}
-          styles={customStyles}
-        />
+      {renderFilterMenu()}
 
-        <Select
-          isMulti
-          options={whenOptions}
-          className="filter-select"
-          classNamePrefix="select"
-          placeholder="Todas las fechas"
-          onChange={setWhenFilter}
-          value={whenFilter}
-          isDisabled={pageLoading}
-          styles={customStyles}
-        />
-
-        <Select
-          isMulti
-          options={locationOptions}
-          className="filter-select"
-          classNamePrefix="select"
-          placeholder="Todos los lugares"
-          onChange={setLocationFilter}
-          value={locationFilter}
-          isDisabled={pageLoading}
-          styles={customStyles}
-        />
-
-        <div className="grouping-container">
-          <span className="grouping-label">Agrupar por:</span>
-          <label>
-            <input
-              type="radio"
-              name="groupBy"
-              value="type"
-              checked={groupBy === "type"}
-              onChange={(e) => setGroupBy(e.target.value)}
-              disabled={pageLoading}
-            />
-            Tipo
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="groupBy"
-              value="when"
-              checked={groupBy === "when"}
-              onChange={(e) => setGroupBy(e.target.value)}
-              disabled={pageLoading}
-            />
-            Fecha
-          </label>
-        </div>
-      </div>
-
-      <div className="clear-filters-container">
-        <button onClick={handleClearFilters} className="summary-link-button">
-          Limpiar filtros
+      <div className="open-filters-button-container">
+        <button
+          onClick={() => setIsFilterMenuOpen(true)}
+          className="open-filters-button"
+          disabled={pageLoading}
+        >
+          Filtros
         </button>
       </div>
 
