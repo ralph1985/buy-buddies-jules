@@ -47,6 +47,18 @@ function ShoppingList({ user, onLogout }) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [countdown, setCountdown] = useState(30);
+  const [pinnedSummaryItems, setPinnedSummaryItems] = useState(() => {
+    const saved = localStorage.getItem("pinnedSummaryItems");
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return [
+      "Total restante",
+      "Total pagado",
+      "Total pagado sábado",
+      "Total restante sábado",
+    ];
+  });
 
   const [isChangesModalOpen, setIsChangesModalOpen] = useState(false);
   const [changes, setChanges] = useState({ added: [], edited: [], deleted: [] });
@@ -228,6 +240,14 @@ function ShoppingList({ user, onLogout }) {
     handleUpdate(action, payload); // This will use the full page spinner
   };
 
+  const handlePinnedSummaryChange = (label, isPinned) => {
+    const newPinnedItems = isPinned
+      ? [...pinnedSummaryItems, label]
+      : pinnedSummaryItems.filter((itemLabel) => itemLabel !== label);
+    setPinnedSummaryItems(newPinnedItems);
+    localStorage.setItem("pinnedSummaryItems", JSON.stringify(newPinnedItems));
+  };
+
   const handleStatusChange = (rowIndex, newStatus) =>
     handleUpdate("update_status", { rowIndex, newStatus }, "status");
   const [quantityValues, setQuantityValues] = useState({});
@@ -364,17 +384,6 @@ function ShoppingList({ user, onLogout }) {
     acc[group].push(item);
     return acc;
   }, {});
-
-  const totalPagado =
-    summaryData.find((item) => item.label === "Total pagado")?.value || "N/A";
-  const totalRestante =
-    summaryData.find((item) => item.label === "Total restante")?.value || "N/A";
-  const totalPagadoSabado =
-    summaryData.find((item) => item.label === "Total pagado sábado")?.value ||
-    "N/A";
-  const totalRestanteSabado =
-    summaryData.find((item) => item.label === "Total restante sábado")?.value ||
-    "N/A";
 
   const customStyles = {
     control: (provided, state) => ({
@@ -554,22 +563,21 @@ function ShoppingList({ user, onLogout }) {
       </div>
 
       <div className="main-summary-container">
-        <div className="summary-item">
-          <span className="summary-label">Total restante</span>
-          <span className="summary-value">{totalRestante}</span>
-        </div>
-        <div className="summary-item">
-          <span className="summary-label">Total pagado</span>
-          <span className="summary-value">{totalPagado}</span>
-        </div>
-        <div className="summary-item">
-          <span className="summary-label">Total pagado sábado</span>
-          <span className="summary-value">{totalPagadoSabado}</span>
-        </div>
-        <div className="summary-item">
-          <span className="summary-label">Total restante sábado</span>
-          <span className="summary-value">{totalRestanteSabado}</span>
-        </div>
+        {pinnedSummaryItems.map((label) => {
+          const item = summaryData.find((d) => d.label === label);
+          if (!item) return null;
+          return (
+            <div className="summary-item" key={label}>
+              <span className="summary-label">{item.label}</span>
+              <span className="summary-value">{item.value}</span>
+            </div>
+          );
+        })}
+        {pinnedSummaryItems.length === 0 && (
+          <p className="no-pinned-items-message">
+            No hay elementos fijados. Selecciona qué ver desde el resumen completo.
+          </p>
+        )}
       </div>
 
       <div className="summary-actions-container">
@@ -772,6 +780,8 @@ function ShoppingList({ user, onLogout }) {
         onClose={() => setIsSummaryModalOpen(false)}
         summaryData={summaryData}
         isLoading={false}
+        pinnedSummaryItems={pinnedSummaryItems}
+        onPinnedChange={handlePinnedSummaryChange}
       />
       <EditModal
         isOpen={isEditModalOpen}
