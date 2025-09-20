@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import CryptoJS from "crypto-js";
+import Select from "react-select";
 import SummaryModal from "./SummaryModal";
 import EditModal from "./EditModal";
 import ChangesModal from "./ChangesModal";
@@ -37,7 +38,7 @@ function ShoppingList({ user, onLogout }) {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState([]);
   const [whenFilter, setWhenFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState("all");
   const [groupBy, setGroupBy] = useState("type"); // 'type' or 'when'
@@ -210,7 +211,7 @@ function ShoppingList({ user, onLogout }) {
   const handleClearFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
-    setTypeFilter("all");
+    setTypeFilter([]);
     setWhenFilter("all");
     setLocationFilter("all");
     setGroupBy("type");
@@ -314,7 +315,9 @@ function ShoppingList({ user, onLogout }) {
     )
     .filter((item) => statusFilter === "all" || item.Estado === statusFilter)
     .filter(
-      (item) => typeFilter === "all" || item["Tipo de Elemento"] === typeFilter
+      (item) =>
+        typeFilter.length === 0 ||
+        typeFilter.some((filter) => filter.value === item["Tipo de Elemento"])
     )
     .filter(
       (item) =>
@@ -332,7 +335,7 @@ function ShoppingList({ user, onLogout }) {
   ].sort();
   const typeOptions = [
     ...new Set(items.map((item) => item["Tipo de Elemento"]).filter(Boolean)),
-  ].sort();
+  ].sort().map(option => ({ value: option, label: option }));
 
   const locationOptions = [
     ...new Set(items.map((item) => item["Lugar de Compra"]).filter(Boolean)),
@@ -422,22 +425,16 @@ function ShoppingList({ user, onLogout }) {
           ))}
         </select>
 
-        <select
+        <Select
+          isMulti
+          options={typeOptions}
           className="filter-select"
+          classNamePrefix="select"
+          placeholder="Todos los tipos"
+          onChange={setTypeFilter}
           value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          disabled={pageLoading}
-        >
-          <option value="all">Todos los tipos</option>
-          {typeOptions.map((option) => (
-            <option
-              key={option}
-              value={option}
-            >
-              {option}
-            </option>
-          ))}
-        </select>
+          isDisabled={pageLoading}
+        />
 
         <select
           className="filter-select"

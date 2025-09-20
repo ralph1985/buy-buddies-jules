@@ -23,7 +23,7 @@ function LoginModal({ onLogin }) {
         setError('Error de acceso');
         setLoading(false);
       }
-    } catch (err) {
+    } catch {
       setError('Error de acceso');
       setLoading(false);
     }
