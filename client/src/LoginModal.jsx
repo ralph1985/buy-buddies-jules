@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function LoginModal({ onLogin }) {
+function LoginModal({ onLogin, onClose }) {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,8 +30,9 @@ function LoginModal({ onLogin }) {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <button className="close-button" onClick={onClose}>&times;</button>
         <h2>Acceso a la aplicación</h2>
         <form onSubmit={handleLogin}>
           <div className="form-group">

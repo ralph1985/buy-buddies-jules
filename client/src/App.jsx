@@ -31,12 +31,25 @@ function App() {
     setUser(null);
   };
 
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  const handleLoginSuccess = (name) => {
+    handleLogin(name);
+    setIsLoginModalOpen(false);
+  };
+
   return (
     <div className="App">
-      {user ? (
-        <ShoppingList user={user} onLogout={handleLogout} />
-      ) : (
-        <LoginModal onLogin={handleLogin} />
+      <ShoppingList
+        user={user}
+        onLogout={handleLogout}
+        onLoginRedirect={() => setIsLoginModalOpen(true)}
+      />
+      {isLoginModalOpen && (
+        <LoginModal
+          onLogin={handleLoginSuccess}
+          onClose={() => setIsLoginModalOpen(false)}
+        />
       )}
     </div>
   );
