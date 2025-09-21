@@ -402,18 +402,10 @@ h2 {
 }
 
 /* Status-specific styles */
-.status-pagado {
-  border-left-color: #4caf50;
-}
-.status-pagado .item-status-select {
-  background-color: #4caf50;
-  border-color: #388e3c;
-}
-
-.status-pendiente-pago {
+.status-pendiente {
   border-left-color: #f44336;
 }
-.status-pendiente-pago .item-status-select {
+.status-pendiente .item-status-select {
   background-color: #f44336;
   border-color: #d32f2f;
 }
