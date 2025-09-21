@@ -7,14 +7,14 @@ function EditModal({
   itemData,
   onSave,
   typeOptions,
-  whenOptions,
+  assignedToOptions,
 }) {
   const [description, setDescription] = useState("");
   const [notes, setNotes] = useState("");
   const [unitPrice, setUnitPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [type, setType] = useState("");
-  const [when, setWhen] = useState("");
+  const [assignedTo, setAssignedTo] = useState("");
   const [lugarDeCompra, setLugarDeCompra] = useState("");
   const [errors, setErrors] = useState({});
 
@@ -26,7 +26,7 @@ function EditModal({
         setUnitPrice(itemData["Precio unidad"] || "");
         setQuantity(itemData.Cantidad || "1");
         setType(itemData["Tipo de Elemento"] || "");
-        setWhen(itemData["¿Cuándo se compra?"] || "");
+        setAssignedTo(itemData["Asignado a"] || "");
         setLugarDeCompra(itemData["Lugar de Compra"] || "");
       } else {
         setDescription("");
@@ -34,7 +34,7 @@ function EditModal({
         setUnitPrice("");
         setQuantity("1");
         setType("");
-        setWhen("");
+        setAssignedTo("");
         setLugarDeCompra("");
       }
       setErrors({}); // Reset errors when modal opens
@@ -78,7 +78,7 @@ function EditModal({
       newUnitPrice: unitPrice,
       newQuantity: quantity,
       newType: type,
-      newWhen: when,
+      newAssignedTo: assignedTo,
       newLugarDeCompra: lugarDeCompra,
     });
   };
@@ -130,15 +130,15 @@ function EditModal({
           </select>
         </div>
         <div className="form-group">
-          <label htmlFor="when-select">¿Cuándo se compra?</label>
+          <label htmlFor="assigned-to-select">Asignado a</label>
           <select
-            id="when-select"
-            value={when}
-            onChange={(e) => setWhen(e.target.value)}
+            id="assigned-to-select"
+            value={assignedTo}
+            onChange={(e) => setAssignedTo(e.target.value)}
             className="form-input"
           >
-            <option value="">- Seleccionar fecha -</option>
-            {whenOptions.map((option) => (
+            <option value="">- Asignar a -</option>
+            {assignedToOptions.map((option) => (
               <option
                 key={option.value}
                 value={option.value}

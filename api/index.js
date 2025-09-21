@@ -434,7 +434,7 @@ async function handleUpdateDetails(res, sheets, body) {
     newUnitPrice,
     newQuantity,
     newType,
-    newWhen,
+    newAssignedTo,
     newLugarDeCompra,
     user,
   } = body;
@@ -446,7 +446,7 @@ async function handleUpdateDetails(res, sheets, body) {
     newUnitPrice === undefined ||
     newQuantity === undefined ||
     newType === undefined ||
-    newWhen === undefined ||
+    newAssignedTo === undefined ||
     newLugarDeCompra === undefined
   ) {
     return res
@@ -457,7 +457,7 @@ async function handleUpdateDetails(res, sheets, body) {
   const fieldsToUpdate = {
     A: { value: newLugarDeCompra, name: "Lugar de Compra" },
     B: { value: newType, name: "Tipo de Elemento" },
-    C: { value: newWhen, name: "Cuándo se compra" },
+    C: { value: newAssignedTo, name: "Asignado a" },
     D: { value: newDescription, name: "Descripción" },
     E: { value: newQuantity, name: "Cantidad" },
     F: { value: newUnitPrice, name: "Precio unidad" },
@@ -531,7 +531,7 @@ async function handleAddNewProduct(res, sheets, body) {
     newUnitPrice,
     newQuantity,
     newNotes,
-    newWhen,
+    newAssignedTo,
     newLugarDeCompra,
     user,
   } = body;
@@ -542,12 +542,12 @@ async function handleAddNewProduct(res, sheets, body) {
     newUnitPrice === undefined ||
     newQuantity === undefined ||
     newNotes === undefined ||
-    newWhen === undefined ||
+    newAssignedTo === undefined ||
     newLugarDeCompra === undefined
   ) {
     return res.status(400).json({
       error:
-        "newDescription, newType, newUnitPrice, newQuantity, newNotes, newWhen and newLugarDeCompra are required.",
+        "newDescription, newType, newUnitPrice, newQuantity, newNotes, newAssignedTo and newLugarDeCompra are required.",
     });
   }
 
@@ -569,7 +569,7 @@ async function handleAddNewProduct(res, sheets, body) {
     const newRow = [
       newLugarDeCompra, // A: Lugar de Compra
       newType, // B: Tipo de Elemento
-      newWhen, // C: ¿Cuándo se compra?
+      newAssignedTo, // C: Asignado a
       newDescription, // D: Descripción
       newQuantity, // E: Cantidad
       newUnitPrice, // F: Precio unidad
