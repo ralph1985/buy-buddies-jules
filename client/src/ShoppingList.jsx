@@ -42,7 +42,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
   const [typeFilter, setTypeFilter] = useState([]);
   const [assignedToFilter, setAssignedToFilter] = useState([]);
   const [locationFilter, setLocationFilter] = useState([]);
-  const [groupBy, setGroupBy] = useState("type"); // 'type' or 'assignedTo'
+  const [groupBy, setGroupBy] = useState("type"); // 'type', 'assignedTo', 'status', 'place'
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
 
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
@@ -417,6 +417,28 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
               />
               Asignado a
             </label>
+            <label>
+              <input
+                type="radio"
+                name="groupBy"
+                value="status"
+                checked={groupBy === "status"}
+                onChange={(e) => setGroupBy(e.target.value)}
+                disabled={pageLoading}
+              />
+              Estado
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="groupBy"
+                value="place"
+                checked={groupBy === "place"}
+                onChange={(e) => setGroupBy(e.target.value)}
+                disabled={pageLoading}
+              />
+              Lugar
+            </label>
           </div>
         </div>
         <div className="clear-filters-container">
@@ -490,6 +512,10 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
     let group;
     if (groupBy === "type") {
       group = item["Tipo de Elemento"] || "Otros";
+    } else if (groupBy === "status") {
+      group = item.Estado || "Sin estado";
+    } else if (groupBy === "place") {
+      group = item["Lugar de Compra"] || "Lugar sin especificar";
     } else {
       // groupBy === 'assignedTo'
       group = item["Asignado a"] || "Sin asignar";
