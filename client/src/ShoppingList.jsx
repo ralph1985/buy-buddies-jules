@@ -54,10 +54,8 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
       return JSON.parse(saved);
     }
     return [
+      "Total presupuesto",
       "Total restante",
-      "Total pagado",
-      "Total pagado sábado",
-      "Total restante sábado",
     ];
   });
 
