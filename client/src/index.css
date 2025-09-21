@@ -261,7 +261,7 @@ h2 {
   justify-content: space-between;
   align-items: center;
   position: sticky;
-  top: 4.8rem; /* Adjusted to be below the sticky filter button */
+  top: calc(4.5rem + 2px); /* Adjusted to be below the sticky filter button */
   background-color: #1a1a1a; /* Match the body background */
   z-index: 10;
   color: #ffa500;
