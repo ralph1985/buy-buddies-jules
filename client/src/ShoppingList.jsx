@@ -29,7 +29,7 @@ const processSummaryData = (data) => {
   }));
 };
 
-function ShoppingList({ user, onLogout }) {
+function ShoppingList({ user, onLogout, onLoginRedirect }) {
   const [items, setItems] = useState([]);
   const [statusOptions, setStatusOptions] = useState([]);
   const [summaryData, setSummaryData] = useState([]);
@@ -185,6 +185,7 @@ function ShoppingList({ user, onLogout }) {
   }, [fetchData]);
 
   const handleUpdate = async (action, payload, field = null) => {
+    if (!user) return; // Do not allow updates if not logged in
     isLocalUpdate.current = true;
     // For inline edits, we set the specific field being updated.
     // For modal edits (add/update details), we show the full spinner.
@@ -568,14 +569,22 @@ function ShoppingList({ user, onLogout }) {
           <h1>Lista de la Compra 2025</h1>
         </div>
         <div className="user-info">
-          <span>{user}</span>
-          <button onClick={() => {
-            if (window.confirm('¿Seguro que quieres cerrar sesión?')) {
-              onLogout();
-            }
-          }}>
-            Cerrar sesión
-          </button>
+          {user ? (
+            <>
+              <span>{user}</span>
+              <button onClick={() => {
+                if (window.confirm('¿Seguro que quieres cerrar sesión?')) {
+                  onLogout();
+                }
+              }}>
+                Cerrar sesión
+              </button>
+            </>
+          ) : (
+            <button onClick={onLoginRedirect}>
+              Iniciar sesión
+            </button>
+          )}
         </div>
       </div>
 
@@ -664,8 +673,8 @@ function ShoppingList({ user, onLogout }) {
                     >
                       <div className="item-details">
                         <span
-                          className="item-name"
-                          onClick={() => handleOpenEditModal(item)}
+                          className={`item-name ${user ? 'editable' : ''}`}
+                          onClick={() => user && handleOpenEditModal(item)}
                         >
                           {item.Descripción}
                         </span>
@@ -708,7 +717,7 @@ function ShoppingList({ user, onLogout }) {
                                   )
                                 }
                                 aria-label="Cantidad"
-                                disabled={pageLoading || updatingField}
+                                disabled={!user || pageLoading || updatingField}
                               />
                             )}
                             {quantityErrors[item.rowIndex] && (
@@ -752,7 +761,7 @@ function ShoppingList({ user, onLogout }) {
                                   )
                                 }
                                 aria-label="Precio por unidad"
-                                disabled={pageLoading || updatingField}
+                                disabled={!user || pageLoading || updatingField}
                               />
                             )}
                             {unitPriceErrors[item.rowIndex] && (
@@ -774,7 +783,7 @@ function ShoppingList({ user, onLogout }) {
                             onChange={(e) =>
                               handleStatusChange(item.rowIndex, e.target.value)
                             }
-                            disabled={pageLoading || updatingField}
+                            disabled={!user || pageLoading || updatingField}
                           >
                             <option value="">- Sin Estado -</option>
                             {item.Estado &&
@@ -829,13 +838,15 @@ function ShoppingList({ user, onLogout }) {
         }}
         changes={changes}
       />
-      <button
-        className="fab-add-button"
-        onClick={() => handleOpenEditModal(null)}
-        disabled={pageLoading}
-      >
-        +
-      </button>
+      {user && (
+        <button
+          className="fab-add-button"
+          onClick={() => handleOpenEditModal(null)}
+          disabled={pageLoading}
+        >
+          +
+        </button>
+      )}
     </div>
   );
 }
