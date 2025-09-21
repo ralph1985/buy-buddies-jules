@@ -443,7 +443,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
   const filteredItems = items
     .filter((item) => {
       if (searchTags.length === 0) return true;
-      return searchTags.every((tag) =>
+      return searchTags.some((tag) =>
         item.Descripción?.toLowerCase().includes(tag.value.toLowerCase())
       );
     })
