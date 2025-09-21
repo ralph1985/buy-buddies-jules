@@ -198,7 +198,7 @@ function ShoppingList({ user, onLogout }) {
       await fetch("/api", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, ...payload }),
+        body: JSON.stringify({ action, ...payload, user }),
       });
       await fetchData(); // Refreshes all data
     } catch (error) {
