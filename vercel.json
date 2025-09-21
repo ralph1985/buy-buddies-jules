@@ -16,11 +16,15 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index.js"
+      "destination": "/api/index"
+    },
+    {
+      "source": "/",
+      "destination": "/client/"
     },
     {
       "source": "/(.*)",
-      "destination": "/client/dist/$1"
+      "destination": "/client/$1"
     }
   ]
 }
