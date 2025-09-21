@@ -261,7 +261,7 @@ h2 {
   justify-content: space-between;
   align-items: center;
   position: sticky;
-  top: 0;
+  top: 4.8rem; /* Adjusted to be below the sticky filter button */
   background-color: #1a1a1a; /* Match the body background */
   z-index: 10;
   color: #ffa500;
@@ -520,7 +520,13 @@ h2 {
 }
 
 .open-filters-button-container {
-  margin-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: #1a1a1a;
+  padding-top: 0.5rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem; /* Keep margin for spacing with summary, padding is for scroll clearance */
 }
 
 .open-filters-button {
