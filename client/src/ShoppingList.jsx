@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import CryptoJS from "crypto-js";
 import Select from "react-select";
+import CreatableSelect from "react-select/creatable";
 import SummaryModal from "./SummaryModal";
 import EditModal from "./EditModal";
 import ChangesModal from "./ChangesModal";
@@ -36,7 +37,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
   const [pageLoading, setPageLoading] = useState(true);
   const [updatingField, setUpdatingField] = useState(null); // { rowIndex, field }
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTags, setSearchTags] = useState([]);
   const [statusFilter, setStatusFilter] = useState([]);
   const [typeFilter, setTypeFilter] = useState([]);
   const [assignedToFilter, setAssignedToFilter] = useState([]);
@@ -221,7 +222,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
   };
 
   const handleClearFilters = () => {
-    setSearchTerm("");
+    setSearchTags([]);
     setStatusFilter([]);
     setTypeFilter([]);
     setAssignedToFilter([]);
@@ -331,25 +332,19 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
       ></div>
       <div className={`filter-menu ${isFilterMenuOpen ? "is-open" : ""}`}>
         <div className="filters-container">
-          <div className="search-input-container">
-            <input
-              type="text"
-              placeholder="Buscar producto..."
-              className="search-input"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              disabled={pageLoading}
-            />
-            {searchTerm && (
-              <button
-                className="clear-search-button"
-                onClick={() => setSearchTerm("")}
-                aria-label="Limpiar búsqueda"
-              >
-                &times;
-              </button>
-            )}
-          </div>
+          <CreatableSelect
+            isMulti
+            isClearable
+            placeholder="Buscar productos..."
+            className="filter-select"
+            classNamePrefix="select"
+            onChange={setSearchTags}
+            value={searchTags}
+            isDisabled={pageLoading}
+            styles={customStyles}
+            noOptionsMessage={() => "Escribe para añadir un producto"}
+            formatCreateLabel={(inputValue) => `Añadir "${inputValue}"`}
+          />
           <Select
             isMulti
             options={statusOptionsFormatted}
@@ -446,9 +441,12 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
   }
 
   const filteredItems = items
-    .filter((item) =>
-      item.Descripción?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    .filter((item) => {
+      if (searchTags.length === 0) return true;
+      return searchTags.every((tag) =>
+        item.Descripción?.toLowerCase().includes(tag.value.toLowerCase())
+      );
+    })
     .filter(
       (item) =>
         statusFilter.length === 0 ||
