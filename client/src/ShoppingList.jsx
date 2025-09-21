@@ -39,9 +39,9 @@ function ShoppingList({ user, onLogout }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState([]);
   const [typeFilter, setTypeFilter] = useState([]);
-  const [whenFilter, setWhenFilter] = useState([]);
+  const [assignedToFilter, setAssignedToFilter] = useState([]);
   const [locationFilter, setLocationFilter] = useState([]);
-  const [groupBy, setGroupBy] = useState("type"); // 'type' or 'when'
+  const [groupBy, setGroupBy] = useState("type"); // 'type' or 'assignedTo'
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
 
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
@@ -225,7 +225,7 @@ function ShoppingList({ user, onLogout }) {
     setSearchTerm("");
     setStatusFilter([]);
     setTypeFilter([]);
-    setWhenFilter([]);
+    setAssignedToFilter([]);
     setLocationFilter([]);
     setGroupBy("type");
   };
@@ -377,12 +377,12 @@ function ShoppingList({ user, onLogout }) {
 
           <Select
             isMulti
-            options={whenOptions}
+            options={assignedToOptions}
             className="filter-select"
             classNamePrefix="select"
-            placeholder="Todas las fechas"
-            onChange={setWhenFilter}
-            value={whenFilter}
+            placeholder="Asignar a"
+            onChange={setAssignedToFilter}
+            value={assignedToFilter}
             isDisabled={pageLoading}
             styles={customStyles}
           />
@@ -416,12 +416,12 @@ function ShoppingList({ user, onLogout }) {
               <input
                 type="radio"
                 name="groupBy"
-                value="when"
-                checked={groupBy === "when"}
+                value="assignedTo"
+                checked={groupBy === "assignedTo"}
                 onChange={(e) => setGroupBy(e.target.value)}
                 disabled={pageLoading}
               />
-              Fecha
+              Asignado a
             </label>
           </div>
         </div>
@@ -462,8 +462,8 @@ function ShoppingList({ user, onLogout }) {
     )
     .filter(
       (item) =>
-        whenFilter.length === 0 ||
-        whenFilter.some((filter) => filter.value === item["¿Cuándo se compra?"])
+        assignedToFilter.length === 0 ||
+        assignedToFilter.some((filter) => filter.value === item["Asignado a"])
     )
     .filter(
       (item) =>
@@ -475,8 +475,8 @@ function ShoppingList({ user, onLogout }) {
 
   const validItems = filteredItems.filter((item) => item.Descripción);
 
-  const whenOptions = [
-    ...new Set(items.map((item) => item["¿Cuándo se compra?"]).filter(Boolean)),
+  const assignedToOptions = [
+    ...new Set(items.map((item) => item["Asignado a"]).filter(Boolean)),
   ].sort().map(option => ({ value: option, label: option }));
 
   const typeOptions = [
@@ -494,8 +494,8 @@ function ShoppingList({ user, onLogout }) {
     if (groupBy === "type") {
       group = item["Tipo de Elemento"] || "Otros";
     } else {
-      // groupBy === 'when'
-      group = item["¿Cuándo se compra?"] || "Sin fecha";
+      // groupBy === 'assignedTo'
+      group = item["Asignado a"] || "Sin asignar";
     }
     if (!acc[group]) acc[group] = [];
     acc[group].push(item);
@@ -818,7 +818,7 @@ function ShoppingList({ user, onLogout }) {
         itemData={editingItem}
         onSave={handleSaveDetails}
         typeOptions={typeOptions}
-        whenOptions={whenOptions}
+        assignedToOptions={assignedToOptions}
       />
       <ChangesModal
         isOpen={isChangesModalOpen}
