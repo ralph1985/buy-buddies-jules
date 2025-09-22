@@ -1,5 +1,8 @@
+import Bugsnag from "@bugsnag/js";
 import { google } from "googleapis";
 import crypto from "crypto";
+
+Bugsnag.start({ apiKey: process.env.BUGSNAG_API_KEY });
 
 // Helper to parse JSON body from requests
 async function getJsonBody(req) {
@@ -152,6 +155,7 @@ export default async function handler(request, response) {
     }
   } catch (error) {
     console.error("API Error:", error);
+    Bugsnag.notify(error);
     response
       .status(500)
       .json({ error: "An API error occurred.", details: error.message });
