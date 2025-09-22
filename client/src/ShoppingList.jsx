@@ -708,8 +708,8 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
                   className="group-container"
                 >
                   <h2 className="group-header">
-                    <div className="item-checkbox-container">
-                      {user && (
+                    {user && (
+                      <div className="item-checkbox-container">
                         <input
                           type="checkbox"
                           className="group-checkbox"
@@ -721,8 +721,8 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
                           }
                           disabled={pageLoading}
                         />
-                      )}
-                    </div>
+                      </div>
+                    )}
                     <span className="group-name">{groupName}</span>
                     <span className="group-total">
                       {groupTotal.toFixed(2).replace(".", ",")}€
@@ -741,8 +741,8 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
                             .toLowerCase()
                             .replace(/ /g, "-")}`}
                         >
-                          <div className="item-checkbox-container">
-                            {user && (
+                          {user && (
+                            <div className="item-checkbox-container">
                               <input
                                 type="checkbox"
                                 className="item-checkbox"
@@ -750,8 +750,8 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
                                 onChange={() => handleSelectItem(item.rowIndex)}
                                 disabled={pageLoading}
                               />
-                            )}
-                          </div>
+                            </div>
+                          )}
                           <div className="item-details">
                             <span
                               className={`item-name ${user ? 'editable' : ''}`}
