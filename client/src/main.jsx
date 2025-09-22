@@ -5,10 +5,11 @@ import BugsnagPluginReact from "@bugsnag/plugin-react";
 import "./index.css";
 import App from "./App.jsx";
 
-Bugsnag.start({
+const bugsnagClient = Bugsnag.start({
   apiKey: import.meta.env.VITE_BUGSNAG_API_KEY,
   plugins: [new BugsnagPluginReact(React)],
 });
+window.Bugsnag = bugsnagClient;
 
 const ErrorBoundary = Bugsnag.getPlugin("react").createErrorBoundary(React);
 
