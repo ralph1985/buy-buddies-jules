@@ -1,21 +1,20 @@
 import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import Bugsnag from "@bugsnag/js";
-import BugsnagPluginReact from "@bugsnag/plugin-react";
 import "./index.css";
 import App from "./App.jsx";
+import { getErrorBoundary } from './bugsnag';
+import { CookieConsentProvider } from './context/CookieConsentContext';
+import CookieConsent from './components/CookieConsent/CookieConsent';
 
-Bugsnag.start({
-  apiKey: import.meta.env.VITE_BUGSNAG_API_KEY,
-  plugins: [new BugsnagPluginReact(React)],
-});
-
-const ErrorBoundary = Bugsnag.getPlugin("react").createErrorBoundary(React);
+const ErrorBoundary = getErrorBoundary();
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ErrorBoundary>
-      <App />
+      <CookieConsentProvider>
+        <App />
+        <CookieConsent />
+      </CookieConsentProvider>
     </ErrorBoundary>
   </StrictMode>
 );
