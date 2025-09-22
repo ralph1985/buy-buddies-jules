@@ -1,5 +1,6 @@
 import React from 'react';
 import { useCookieConsentContext } from '../../context/CookieConsentContext';
+import { useRouter } from '../../context/RouterContext';
 import './CookieConsent.css';
 
 const CookieConsent = () => {
@@ -15,6 +16,8 @@ const CookieConsent = () => {
     closeSettings,
   } = useCookieConsentContext();
 
+  const { navigate } = useRouter();
+
   if (!isBannerVisible && !isSettingsVisible) {
     return null;
   }
@@ -23,13 +26,18 @@ const CookieConsent = () => {
     updateConsent('performance', e.target.checked);
   };
 
+  const handlePolicyClick = (e) => {
+    e.preventDefault();
+    navigate('/politica-de-cookies');
+  };
+
   const renderBanner = () => (
     <div className="cookie-consent-banner" role="dialog" aria-live="polite" aria-label="Cookie Consent Banner">
       <div className="cookie-consent-text">
         <p>
           Utilizamos cookies para mejorar tu experiencia. Al aceptar, nos permites usar cookies de rendimiento para analizar el tráfico y detectar errores.
           {' '}
-          <a href="/politica-de-cookies" target="_blank" rel="noopener noreferrer">
+          <a href="/politica-de-cookies" onClick={handlePolicyClick}>
             Política de Cookies
           </a>
         </p>

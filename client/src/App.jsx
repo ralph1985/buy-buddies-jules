@@ -1,23 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import ShoppingList from './ShoppingList';
 import LoginModal from './LoginModal';
-import CookiePolicy from './CookiePolicy'; // Import the new component
+import CookiePolicy from './CookiePolicy';
 import { useCookieConsentContext } from './context/CookieConsentContext';
+import { useRouter } from './context/RouterContext';
 
 function App() {
   const [user, setUser] = useState(null);
   const { openSettings } = useCookieConsentContext();
-  const [path, setPath] = useState(window.location.pathname);
-
-  useEffect(() => {
-    const onLocationChange = () => {
-      setPath(window.location.pathname);
-    };
-    window.addEventListener('popstate', onLocationChange);
-    return () => {
-      window.removeEventListener('popstate', onLocationChange);
-    };
-  }, []);
+  const { path } = useRouter(); // Get path from RouterContext
 
   useEffect(() => {
     const session = JSON.parse(localStorage.getItem('userSession'));
