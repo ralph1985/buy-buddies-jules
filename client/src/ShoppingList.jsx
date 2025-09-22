@@ -4,6 +4,7 @@ import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import SummaryModal from "./SummaryModal";
 import EditModal from "./EditModal";
+import BulkEditModal from "./BulkEditModal";
 import ChangesModal from "./ChangesModal";
 import { validateDecimal } from "./utils/validation";
 
@@ -47,6 +48,8 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
 
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
+  const [selectedItems, setSelectedItems] = useState([]);
   const [editingItem, setEditingItem] = useState(null);
   const [countdown, setCountdown] = useState(30);
   const [pinnedSummaryItems, setPinnedSummaryItems] = useState(() => {
@@ -235,10 +238,39 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
     setIsEditModalOpen(true);
   };
 
+  const handleOpenBulkEditModal = () => {
+    setIsBulkEditModalOpen(true);
+  };
+
+  const handleSelectItem = (rowIndex) => {
+    setSelectedItems((prev) =>
+      prev.includes(rowIndex)
+        ? prev.filter((id) => id !== rowIndex)
+        : [...prev, rowIndex]
+    );
+  };
+
+  const handleSelectGroup = (groupItems, isSelected) => {
+    const groupRowIndexes = groupItems.map((item) => item.rowIndex);
+    if (isSelected) {
+      setSelectedItems((prev) => [...new Set([...prev, ...groupRowIndexes])]);
+    } else {
+      setSelectedItems((prev) =>
+        prev.filter((rowIndex) => !groupRowIndexes.includes(rowIndex))
+      );
+    }
+  };
+
   const handleSaveDetails = (payload) => {
     setIsEditModalOpen(false);
     const action = payload.rowIndex ? "update_details" : "add_product";
     handleUpdate(action, payload); // This will use the full page spinner
+  };
+
+  const handleBulkUpdate = (payload) => {
+    setIsBulkEditModalOpen(false);
+    handleUpdate("bulk_update", { ...payload, rowIndexes: selectedItems });
+    setSelectedItems([]);
   };
 
   const handlePinnedSummaryChange = (label, isPinned) => {
@@ -676,6 +708,17 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
                   className="group-container"
                 >
                   <h2 className="group-header">
+                    <input
+                      type="checkbox"
+                      className="group-checkbox"
+                      checked={groupItems.every((item) =>
+                        selectedItems.includes(item.rowIndex)
+                      )}
+                      onChange={(e) =>
+                        handleSelectGroup(groupItems, e.target.checked)
+                      }
+                      disabled={!user || pageLoading}
+                    />
                     <span>{groupName}</span>
                     <span className="group-total">
                       {groupTotal.toFixed(2).replace(".", ",")}€
@@ -694,6 +737,13 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
                             .toLowerCase()
                             .replace(/ /g, "-")}`}
                         >
+                          <input
+                            type="checkbox"
+                            className="item-checkbox"
+                            checked={selectedItems.includes(item.rowIndex)}
+                            onChange={() => handleSelectItem(item.rowIndex)}
+                            disabled={!user || pageLoading}
+                          />
                           <div className="item-details">
                             <span
                               className={`item-name ${user ? 'editable' : ''}`}
@@ -852,6 +902,16 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
             typeOptions={typeOptions}
             assignedToOptions={assignedToOptions}
           />
+          <BulkEditModal
+            isOpen={isBulkEditModalOpen}
+            onClose={() => setIsBulkEditModalOpen(false)}
+            items={items.filter((item) => selectedItems.includes(item.rowIndex))}
+            onSave={handleBulkUpdate}
+            typeOptions={typeOptions}
+            assignedToOptions={assignedToOptions}
+            statusOptions={statusOptionsFormatted}
+            locationOptions={locationOptions}
+          />
           <ChangesModal
             isOpen={isChangesModalOpen}
             onClose={() => {
@@ -862,13 +922,24 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
             changes={changes}
           />
           {user && (
-            <button
-              className="fab-add-button"
-              onClick={() => handleOpenEditModal(null)}
-              disabled={pageLoading}
-            >
-              +
-            </button>
+            <div className="fab-container">
+              {selectedItems.length > 0 && (
+                <button
+                  className="fab-edit-button"
+                  onClick={handleOpenBulkEditModal}
+                  disabled={pageLoading}
+                >
+                  ✏️
+                </button>
+              )}
+              <button
+                className="fab-add-button"
+                onClick={() => handleOpenEditModal(null)}
+                disabled={pageLoading}
+              >
+                +
+              </button>
+            </div>
           )}
         </div>
       </div>
