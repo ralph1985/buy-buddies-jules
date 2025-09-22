@@ -1,4 +1,4 @@
-import { StrictMode, Fragment } from "react";
+import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import Bugsnag from "@bugsnag/js";
 import BugsnagPluginReact from "@bugsnag/plugin-react";
@@ -7,10 +7,10 @@ import App from "./App.jsx";
 
 Bugsnag.start({
   apiKey: import.meta.env.VITE_BUGSNAG_API_KEY,
-  plugins: [new BugsnagPluginReact()],
+  plugins: [new BugsnagPluginReact(React)],
 });
 
-const ErrorBoundary = Bugsnag.getPlugin("react").createErrorBoundary(Fragment);
+const ErrorBoundary = Bugsnag.getPlugin("react").createErrorBoundary(React);
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
