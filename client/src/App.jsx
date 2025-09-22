@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import ShoppingList from './ShoppingList';
 import LoginModal from './LoginModal';
+import { useCookieConsentContext } from './context/CookieConsentContext';
 
 function App() {
   const [user, setUser] = useState(null);
+  const { openSettings } = useCookieConsentContext();
 
   useEffect(() => {
     const session = JSON.parse(localStorage.getItem('userSession'));
@@ -51,6 +53,11 @@ function App() {
           onClose={() => setIsLoginModalOpen(false)}
         />
       )}
+      <footer className="app-footer">
+        <button onClick={openSettings} className="footer-link">
+          Configurar cookies
+        </button>
+      </footer>
     </div>
   );
 }
