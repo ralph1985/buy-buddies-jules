@@ -70,7 +70,7 @@ function App() {
   return (
     <div className="App">
       {renderPage()}
-      {path === '/' && <CookieConsent />}
+      <CookieConsent />
       <footer className="app-footer">
         <button onClick={openSettings} className="footer-link">
           Configurar cookies
