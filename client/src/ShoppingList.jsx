@@ -371,18 +371,6 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
 
         <Select
           isMulti
-          options={assignedToOptions}
-          className="filter-select"
-          classNamePrefix="select"
-          placeholder="Asignar a"
-          onChange={setAssignedToFilter}
-          value={assignedToFilter}
-          isDisabled={pageLoading}
-          styles={customStyles}
-        />
-
-        <Select
-          isMulti
           options={locationOptions}
           className="filter-select"
           classNamePrefix="select"
@@ -393,30 +381,20 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
           styles={customStyles}
         />
 
+        <Select
+          isMulti
+          options={assignedToOptions}
+          className="filter-select"
+          classNamePrefix="select"
+          placeholder="Asignar a"
+          onChange={setAssignedToFilter}
+          value={assignedToFilter}
+          isDisabled={pageLoading}
+          styles={customStyles}
+        />
+
         <div className="grouping-container">
           <span className="grouping-label">Agrupar por:</span>
-          <label>
-            <input
-              type="radio"
-              name="groupBy"
-              value="type"
-              checked={groupBy === "type"}
-              onChange={(e) => setGroupBy(e.target.value)}
-              disabled={pageLoading}
-            />
-            Tipo
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="groupBy"
-              value="assignedTo"
-              checked={groupBy === "assignedTo"}
-              onChange={(e) => setGroupBy(e.target.value)}
-              disabled={pageLoading}
-            />
-            Asignado a
-          </label>
           <label>
             <input
               type="radio"
@@ -432,12 +410,34 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
             <input
               type="radio"
               name="groupBy"
+              value="type"
+              checked={groupBy === "type"}
+              onChange={(e) => setGroupBy(e.target.value)}
+              disabled={pageLoading}
+            />
+            Tipo
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="groupBy"
               value="place"
               checked={groupBy === "place"}
               onChange={(e) => setGroupBy(e.target.value)}
               disabled={pageLoading}
             />
             Lugar
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="groupBy"
+              value="assignedTo"
+              checked={groupBy === "assignedTo"}
+              onChange={(e) => setGroupBy(e.target.value)}
+              disabled={pageLoading}
+            />
+            Asignado a
           </label>
         </div>
         </div>
