@@ -133,6 +133,8 @@ export default async function handler(request, response) {
         await handleUpdateUnitPrice(response, sheets, body);
       } else if (body.action === "add_product") {
         await handleAddNewProduct(response, sheets, body);
+      } else if (body.action === "bulk_update") {
+        await handleBulkUpdate(response, sheets, body);
       } else {
         // Default POST action is to update status
         await handleUpdateStatus(response, sheets, body);
@@ -608,6 +610,81 @@ async function handleAddNewProduct(res, sheets, body) {
     res
       .status(500)
       .json({ error: "Failed to add new product.", details: error.message });
+  }
+}
+
+// Handles bulk updates for multiple rows
+async function handleBulkUpdate(res, sheets, body) {
+  const { rowIndexes, newType, newAssignedTo, newStatus, newLugarDeCompra, user } =
+    body;
+
+  if (
+    !rowIndexes ||
+    !Array.isArray(rowIndexes) ||
+    rowIndexes.length === 0
+  ) {
+    return res
+      .status(400)
+      .json({ error: "rowIndexes array is required." });
+  }
+
+  const fieldsToUpdate = {
+    A: { value: newLugarDeCompra, name: "Lugar de Compra" },
+    B: { value: newType, name: "Tipo de Elemento" },
+    C: { value: newAssignedTo, name: "Asignado a" },
+    I: { value: newStatus, name: "Estado" },
+  };
+
+  const data = [];
+  for (const [column, { value }] of Object.entries(fieldsToUpdate)) {
+    if (value) {
+      for (const rowIndex of rowIndexes) {
+        data.push({
+          range: `${SHEET_NAME}!${column}${rowIndex}`,
+          values: [[value]],
+        });
+      }
+    }
+  }
+
+  if (data.length === 0) {
+    return res
+      .status(400)
+      .json({ error: "No fields to update were provided." });
+  }
+
+  try {
+    await sheets.spreadsheets.values.batchUpdate({
+      spreadsheetId: SPREADSHEET_ID,
+      resource: {
+        valueInputOption: "USER_ENTERED",
+        data,
+      },
+    });
+
+    // Log the change
+    const updatedFields = Object.entries(fieldsToUpdate)
+      .filter(([, { value }]) => value)
+      .map(([, { name }]) => name)
+      .join(", ");
+
+    await logChange(
+      sheets,
+      user,
+      "Bulk Update",
+      `Updated ${rowIndexes.length} products. Changed fields: ${updatedFields}`
+    );
+
+    res.status(200).json({
+      success: true,
+      message: `${rowIndexes.length} rows updated successfully.`,
+    });
+  } catch (error) {
+    console.error("Failed to perform bulk update:", error);
+    res.status(500).json({
+      error: "Failed to perform bulk update.",
+      details: error.message,
+    });
   }
 }
 
