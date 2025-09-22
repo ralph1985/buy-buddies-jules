@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ShoppingList from './ShoppingList';
 import LoginModal from './LoginModal';
 import CookiePolicy from './CookiePolicy';
+import CookieConsent from './components/CookieConsent/CookieConsent';
 import { useCookieConsentContext } from './context/CookieConsentContext';
 import { useRouter } from './context/RouterContext';
 
@@ -69,6 +70,7 @@ function App() {
   return (
     <div className="App">
       {renderPage()}
+      {path === '/' && <CookieConsent />}
       <footer className="app-footer">
         <button onClick={openSettings} className="footer-link">
           Configurar cookies

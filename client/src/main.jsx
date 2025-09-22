@@ -5,7 +5,6 @@ import App from "./App.jsx";
 import { getErrorBoundary } from './bugsnag';
 import { CookieConsentProvider } from './context/CookieConsentContext';
 import { RouterProvider } from './context/RouterContext';
-import CookieConsent from './components/CookieConsent/CookieConsent';
 
 const ErrorBoundary = getErrorBoundary();
 
@@ -15,7 +14,6 @@ createRoot(document.getElementById("root")).render(
       <RouterProvider>
         <CookieConsentProvider>
           <App />
-          <CookieConsent />
         </CookieConsentProvider>
       </RouterProvider>
     </ErrorBoundary>
