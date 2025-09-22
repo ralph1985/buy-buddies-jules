@@ -11,6 +11,7 @@
   "author": "Jules",
   "license": "ISC",
   "dependencies": {
+    "@bugsnag/js": "^8.4.0",
     "express": "^5.1.0",
     "googleapis": "^159.0.0"
   }
