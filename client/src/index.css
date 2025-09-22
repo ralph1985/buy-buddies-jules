@@ -683,9 +683,6 @@ h2 {
 
 /* Floating Action Button */
 .fab-add-button {
-  position: fixed;
-  bottom: 1rem;
-  right: 1rem;
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -704,9 +701,42 @@ h2 {
   transform: scale(1.1);
 }
 
-.fab-add-button:disabled {
+.fab-add-button:disabled,
+.fab-edit-button:disabled {
   background-color: #555;
   cursor: not-allowed;
+}
+
+.fab-container {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 1000;
+}
+
+.fab-edit-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #007bff; /* A different color to distinguish */
+  color: white;
+  border: none;
+  font-size: 1.7rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.fab-edit-button:hover {
+  transform: scale(1.1);
+  background-color: #0056b3;
 }
 
 /* Edit Modal Form Styles */
