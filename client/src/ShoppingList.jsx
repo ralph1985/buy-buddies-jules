@@ -325,16 +325,17 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
   };
 
   const renderFilterMenu = () => (
-    <div className={`filter-menu ${isFilterMenuOpen ? "is-open" : ""}`}>
+    <>
       <div
-        className={`filter-menu-overlay`}
+        className={`filter-menu-overlay ${isFilterMenuOpen ? "is-open" : ""}`}
         onClick={() => setIsFilterMenuOpen(false)}
       ></div>
-      <div className="filters-container">
-        <CreatableSelect
-          isMulti
-          isClearable
-          placeholder="Buscar productos..."
+      <div className={`filter-menu ${isFilterMenuOpen ? "is-open" : ""}`}>
+        <div className="filters-container">
+          <CreatableSelect
+            isMulti
+            isClearable
+            placeholder="Buscar productos..."
           className="filter-select"
           classNamePrefix="select"
           onChange={setSearchTags}
@@ -439,19 +440,20 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
             Lugar
           </label>
         </div>
-      </div>
-      <div className="clear-filters-container">
-        <button onClick={handleClearFilters} className="summary-link-button">
-          Limpiar filtros
+        </div>
+        <div className="clear-filters-container">
+          <button onClick={handleClearFilters} className="summary-link-button">
+            Limpiar filtros
+          </button>
+        </div>
+        <button
+          onClick={() => setIsFilterMenuOpen(false)}
+          className="close-menu-button"
+        >
+          Cerrar
         </button>
       </div>
-      <button
-        onClick={() => setIsFilterMenuOpen(false)}
-        className="close-menu-button"
-      >
-        Cerrar
-      </button>
-    </div>
+    </>
   );
 
   if (error) return <div className="error">{error}</div>;
