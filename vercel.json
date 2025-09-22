@@ -1,8 +1,5 @@
 {
   "version": 2,
-  "env": {
-    "BUGSNAG_API_KEY": "@bugsnag_api_key"
-  },
   "builds": [
     {
       "src": "api/index.js",
@@ -13,11 +10,6 @@
       "use": "@vercel/static-build",
       "config": {
         "distDir": "dist"
-      },
-      "build": {
-        "env": {
-          "VITE_BUGSNAG_API_KEY": "@bugsnag_api_key"
-        }
       }
     }
   ],
