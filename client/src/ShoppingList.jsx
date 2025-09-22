@@ -708,17 +708,19 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
                   className="group-container"
                 >
                   <h2 className="group-header">
-                    <input
-                      type="checkbox"
-                      className="group-checkbox"
-                      checked={groupItems.every((item) =>
-                        selectedItems.includes(item.rowIndex)
-                      )}
-                      onChange={(e) =>
-                        handleSelectGroup(groupItems, e.target.checked)
-                      }
-                      disabled={!user || pageLoading}
-                    />
+                    {user && (
+                      <input
+                        type="checkbox"
+                        className="group-checkbox"
+                        checked={groupItems.every((item) =>
+                          selectedItems.includes(item.rowIndex)
+                        )}
+                        onChange={(e) =>
+                          handleSelectGroup(groupItems, e.target.checked)
+                        }
+                        disabled={pageLoading}
+                      />
+                    )}
                     <span>{groupName}</span>
                     <span className="group-total">
                       {groupTotal.toFixed(2).replace(".", ",")}€
@@ -737,13 +739,15 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
                             .toLowerCase()
                             .replace(/ /g, "-")}`}
                         >
-                          <input
-                            type="checkbox"
-                            className="item-checkbox"
-                            checked={selectedItems.includes(item.rowIndex)}
-                            onChange={() => handleSelectItem(item.rowIndex)}
-                            disabled={!user || pageLoading}
-                          />
+                          {user && (
+                            <input
+                              type="checkbox"
+                              className="item-checkbox"
+                              checked={selectedItems.includes(item.rowIndex)}
+                              onChange={() => handleSelectItem(item.rowIndex)}
+                              disabled={pageLoading}
+                            />
+                          )}
                           <div className="item-details">
                             <span
                               className={`item-name ${user ? 'editable' : ''}`}
