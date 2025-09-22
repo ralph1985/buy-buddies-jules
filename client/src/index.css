@@ -983,3 +983,42 @@ h2 {
 .footer-link:hover {
   color: #ffc966;
 }
+
+/* Policy Page Styles */
+.policy-page {
+  text-align: left;
+  padding: 1rem;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.policy-page h1, .policy-page h2, .policy-page h3 {
+  color: #ffa500;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.policy-page p {
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.policy-page ul {
+  list-style-position: inside;
+  padding-left: 1rem;
+}
+
+.policy-page li {
+  margin-bottom: 0.5rem;
+}
+
+.policy-page .back-link {
+  display: inline-block;
+  margin-bottom: 2rem;
+  color: #ffa500;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.policy-page .back-link:hover {
+  text-decoration: underline;
+}
