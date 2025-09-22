@@ -236,11 +236,7 @@ h2 {
 
 .filter-select {
   width: 100%;
-  padding: 0.375rem;
   font-size: 0.85rem;
-  border-radius: 8px;
-  border: 2px solid #555;
-  background-color: #2c2c2c;
   color: white;
   cursor: pointer;
   box-sizing: border-box;
