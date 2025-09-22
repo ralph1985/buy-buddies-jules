@@ -48,11 +48,22 @@ function BulkEditModal({
 
         <div className="bulk-edit-summary">
           <h3>Productos Seleccionados:</h3>
-          <ul>
-            {items.map((item) => (
-              <li key={item.rowIndex}>{item.Descripción}</li>
-            ))}
-          </ul>
+          <div className="bulk-edit-summary-scrollable">
+            <table className="changes-table">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item) => (
+                  <tr key={item.rowIndex}>
+                    <td>{item.Descripción}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div className="form-group">
