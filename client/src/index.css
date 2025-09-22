@@ -894,7 +894,7 @@ h2 {
   }
 
   /* Hide mobile-only elements */
-  .filter-menu .filter-menu-overlay,
+  .filter-menu-overlay,
   .filter-menu .close-menu-button,
   .open-filters-button-container {
     display: none;
