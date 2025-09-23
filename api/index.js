@@ -149,6 +149,8 @@ export default async function handler(request, response) {
         await handleGetHash(request, response, sheets);
       } else if (action === "get_members") {
         await handleGetMembers(request, response, sheets);
+      } else if (action === "get_sheet_title") {
+        await handleGetSheetTitle(request, response, sheets);
       } else {
         await handleGetItems(request, response, sheets);
       }
@@ -161,6 +163,23 @@ export default async function handler(request, response) {
     response
       .status(500)
       .json({ error: "An API error occurred.", details: error.message });
+  }
+}
+
+// Fetches the spreadsheet title
+async function handleGetSheetTitle(req, res, sheets) {
+  try {
+    const spreadsheet = await sheets.spreadsheets.get({
+      spreadsheetId: SPREADSHEET_ID,
+    });
+    const title = spreadsheet.data.properties.title;
+    res.status(200).json({ title });
+  } catch (error) {
+    console.error("Failed to get spreadsheet title:", error);
+    res.status(500).json({
+      error: "Failed to get spreadsheet title.",
+      details: error.message,
+    });
   }
 }
 
