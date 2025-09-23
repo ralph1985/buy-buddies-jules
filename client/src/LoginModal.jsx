@@ -37,8 +37,10 @@ function LoginModal({ onLogin, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="close-button" onClick={onClose}>&times;</button>
-        <h2>Acceso a la aplicación</h2>
+        <div className="modal-header">
+          <h2>Acceso a la aplicación</h2>
+          <button className="modal-close-button" onClick={onClose}>&times;</button>
+        </div>
         <form onSubmit={handleLogin}>
           <div className="form-group">
             <label htmlFor="name">Nombre de miembro:</label>
