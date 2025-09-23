@@ -5,28 +5,29 @@ import CookieConsent from './components/CookieConsent/CookieConsent';
 import { useCookieConsentContext } from './context/CookieConsentContext';
 
 function App() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); // Will now store the full member object
   const { openSettings } = useCookieConsentContext();
 
   useEffect(() => {
     const session = JSON.parse(localStorage.getItem('userSession'));
-    if (session && session.name && session.timestamp) {
+    // Check if the stored session contains the member object
+    if (session && session.member && session.timestamp) {
       const eightHours = 8 * 60 * 60 * 1000;
       if (new Date().getTime() - session.timestamp < eightHours) {
-        setUser(session.name);
+        setUser(session.member); // Set the full member object
       } else {
         localStorage.removeItem('userSession');
       }
     }
   }, []);
 
-  const handleLogin = (name) => {
+  const handleLogin = (member) => {
     const session = {
-      name,
+      member, // Store the entire member object
       timestamp: new Date().getTime(),
     };
     localStorage.setItem('userSession', JSON.stringify(session));
-    setUser(name);
+    setUser(member);
   };
 
   const handleLogout = () => {
@@ -36,14 +37,16 @@ function App() {
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  const handleLoginSuccess = (name) => {
-    handleLogin(name);
+  // This now receives the full member object from LoginModal
+  const handleLoginSuccess = (member) => {
+    handleLogin(member);
     setIsLoginModalOpen(false);
   };
 
   return (
     <div className="App">
       <ShoppingList
+        // Pass the full user object, or just the name if you want to be safe with existing prop usage
         user={user}
         onLogout={handleLogout}
         onLoginRedirect={() => setIsLoginModalOpen(true)}

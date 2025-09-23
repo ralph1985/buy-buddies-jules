@@ -97,8 +97,8 @@ async function logChange(sheets, user, action, details) {
 // Main handler
 export default async function handler(request, response) {
   // Validate environment variables
-  if (!SPREADSHEET_ID || !SHEET_NAME) {
-    console.error("Missing SPREADSHEET_ID or SHEET_NAME in environment variables.");
+  if (!SPREADSHEET_ID || !SHEET_NAME || !process.env.MEMBERS_SHEET_NAME) {
+    console.error("Missing SPREADSHEET_ID, SHEET_NAME, or MEMBERS_SHEET_NAME in environment variables.");
     return response.status(500).json({
       error: "Server configuration error: Missing spreadsheet configuration.",
     });
@@ -731,31 +731,51 @@ async function handleGetSummary(req, res, sheets) {
   res.status(200).json(summaryData);
 }
 
-// Fetches members from the 'Miembros' sheet
+// Fetches members from the members sheet
 async function handleGetMembers(req, res, sheets) {
-  const MEMBERS_SHEET_NAME = "Miembros";
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${MEMBERS_SHEET_NAME}!A10:D`,
-  });
+  // Use environment variable for the sheet name, with a sensible fallback.
+  const MEMBERS_SHEET_NAME = process.env.MEMBERS_SHEET_NAME || "Miembros";
 
-  const rows = response.data.values;
-  if (!rows || rows.length === 0) {
-    return res.status(200).json([]);
+  try {
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${MEMBERS_SHEET_NAME}!A:Z`, // Read the whole sheet to be flexible
+    });
+
+    const rows = response.data.values;
+    if (!rows || rows.length < 2) {
+      // Not enough data if there's no header and at least one member
+      return res.status(200).json([]);
+    }
+
+    const header = rows[0];
+    const data = rows.slice(1).map((row) => {
+      const rowData = {};
+      header.forEach((key, i) => {
+        if (key) {
+          // This dynamically assigns all columns from the sheet
+          // including 'Miembro', '¿Acceso App?', and 'Filtro por defecto'
+          rowData[key] = row[i] || "";
+        }
+      });
+      return rowData;
+    });
+
+    // Filter out any rows that don't have a value in the first column (the member name)
+    const validMembers = data.filter(member => member[header[0]]);
+
+    res.status(200).json(validMembers);
+  } catch (error) {
+    console.error("Failed to get members:", error);
+    if (error.message.includes("Unable to parse range")) {
+       return res.status(404).json({
+        error: `The sheet '${MEMBERS_SHEET_NAME}' was not found. Please check the MEMBERS_SHEET_NAME environment variable.`,
+        details: error.message,
+      });
+    }
+    res.status(500).json({
+      error: "Failed to get members.",
+      details: error.message,
+    });
   }
-
-  const header = rows[0];
-  const memberColIndex = header.indexOf("Miembro");
-  const accessColIndex = header.indexOf("¿Acceso App?");
-
-  if (memberColIndex === -1 || accessColIndex === -1) {
-    return res.status(500).json({ error: "Required columns not found in Miembros sheet." });
-  }
-
-  const members = rows.slice(1).map(row => ({
-    name: row[memberColIndex],
-    access: row[accessColIndex]
-  })).filter(member => member.name); // Filter out rows without a name
-
-  res.status(200).json(members);
 }

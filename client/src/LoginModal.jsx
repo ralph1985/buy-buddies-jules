@@ -14,11 +14,16 @@ function LoginModal({ onLogin, onClose }) {
     setLoading(true);
     try {
       const response = await fetch('/api?action=get_members');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch members.');
+      }
       const members = await response.json();
-      const member = members.find(m => m.name.toLowerCase() === name.toLowerCase());
+      // The backend now returns objects with keys from the sheet header
+      const member = members.find(m => m['Miembro'] && m['Miembro'].toLowerCase() === name.toLowerCase());
 
-      if (member && member.access === 'Sí') {
-        onLogin(member.name);
+      if (member && member['¿Acceso App?'] === 'Sí') {
+        onLogin(member); // Pass the entire member object
       } else {
         setError('Error de acceso');
         setLoading(false);
