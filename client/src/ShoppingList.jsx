@@ -160,6 +160,43 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
     fetchData();
   }, [fetchData]);
 
+  // Effect to apply default user filter on login
+  useEffect(() => {
+    if (user && user['Filtro por defecto']) {
+      try {
+        const defaultFilter = JSON.parse(user['Filtro por defecto']);
+
+        // Explicitly set each filter based on the default settings or reset it.
+        // This avoids race conditions from clearing and then setting state.
+
+        setGroupBy(defaultFilter['Agrupado por'] || 'type');
+
+        const assignedTo = defaultFilter['Asignar a'];
+        setAssignedToFilter(assignedTo ? [{ value: assignedTo, label: assignedTo }] : []);
+
+        const status = defaultFilter['Estado'];
+        setStatusFilter(status ? [{ value: status, label: status }] : []);
+
+        const type = defaultFilter['Tipo de Elemento'];
+        setTypeFilter(type ? [{ value: type, label: type }] : []);
+
+        const location = defaultFilter['Lugar de Compra'];
+        setLocationFilter(location ? [{ value: location, label: location }] : []);
+
+        // Always reset search tags as they are not part of the default filter
+        setSearchTags([]);
+
+      } catch (e) {
+        console.error("Failed to parse or apply default filter:", e);
+        // If parsing fails, just clear all filters to ensure a clean state.
+        handleClearFilters();
+      }
+    } else if (!user) {
+      // If user logs out, clear all filters.
+      handleClearFilters();
+    }
+  }, [user]); // This effect runs when the user logs in or out
+
   // Effect for polling for changes
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -629,7 +666,8 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
         <div className="user-info">
           {user ? (
             <>
-              <span>{user}</span>
+              {/* Display the member's name from the user object */}
+              <span>{user['Miembro']}</span>
               <button onClick={() => {
                 if (window.confirm('¿Seguro que quieres cerrar sesión?')) {
                   onLogout();
