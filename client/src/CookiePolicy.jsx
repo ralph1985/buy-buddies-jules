@@ -1,17 +1,8 @@
 import React from 'react';
-import { useRouter } from './context/RouterContext';
 
 const CookiePolicy = () => {
-  const { navigate } = useRouter();
-
-  const handleBackClick = (e) => {
-    e.preventDefault();
-    navigate('/');
-  };
-
   return (
     <div className="policy-page">
-      <a href="/" onClick={handleBackClick} className="back-link">&larr; Volver a la página principal</a>
       <h1>Política de Cookies</h1>
       <p><em>Última actualización: 22 de septiembre de 2025</em></p>
 

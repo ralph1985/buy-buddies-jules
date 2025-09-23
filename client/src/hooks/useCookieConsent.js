@@ -11,6 +11,7 @@ export const useCookieConsent = () => {
   const [consent, setConsent] = useState(null);
   const [isBannerVisible, setIsBannerVisible] = useState(false);
   const [isSettingsVisible, setIsSettingsVisible] = useState(false);
+  const [isPolicyVisible, setIsPolicyVisible] = useState(false);
 
   useEffect(() => {
     try {
@@ -87,16 +88,27 @@ export const useCookieConsent = () => {
     setIsSettingsVisible(false);
   }, []);
 
+  const openPolicy = useCallback(() => {
+    setIsPolicyVisible(true);
+  }, []);
+
+  const closePolicy = useCallback(() => {
+    setIsPolicyVisible(false);
+  }, []);
+
 
   return {
     consent,
     isBannerVisible,
     isSettingsVisible,
+    isPolicyVisible,
     acceptAll,
     rejectAll,
     updateConsent,
     savePreferences,
     openSettings,
     closeSettings,
+    openPolicy,
+    closePolicy,
   };
 };

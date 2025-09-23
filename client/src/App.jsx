@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import ShoppingList from './ShoppingList';
 import LoginModal from './LoginModal';
-import CookiePolicy from './CookiePolicy';
 import CookieConsent from './components/CookieConsent/CookieConsent';
 import { useCookieConsentContext } from './context/CookieConsentContext';
-import { useRouter } from './context/RouterContext';
 
 function App() {
   const [user, setUser] = useState(null);
   const { openSettings } = useCookieConsentContext();
-  const { path } = useRouter(); // Get path from RouterContext
 
   useEffect(() => {
     const session = JSON.parse(localStorage.getItem('userSession'));
@@ -44,32 +41,19 @@ function App() {
     setIsLoginModalOpen(false);
   };
 
-  const renderPage = () => {
-    switch (path) {
-      case '/politica-de-cookies':
-        return <CookiePolicy />;
-      default:
-        return (
-          <>
-            <ShoppingList
-              user={user}
-              onLogout={handleLogout}
-              onLoginRedirect={() => setIsLoginModalOpen(true)}
-            />
-            {isLoginModalOpen && (
-              <LoginModal
-                onLogin={handleLoginSuccess}
-                onClose={() => setIsLoginModalOpen(false)}
-              />
-            )}
-          </>
-        );
-    }
-  };
-
   return (
     <div className="App">
-      {renderPage()}
+      <ShoppingList
+        user={user}
+        onLogout={handleLogout}
+        onLoginRedirect={() => setIsLoginModalOpen(true)}
+      />
+      {isLoginModalOpen && (
+        <LoginModal
+          onLogin={handleLoginSuccess}
+          onClose={() => setIsLoginModalOpen(false)}
+        />
+      )}
       <CookieConsent />
       <footer className="app-footer">
         <button onClick={openSettings} className="footer-link">
