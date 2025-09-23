@@ -200,7 +200,7 @@ async function handleGetItems(req, res, sheets) {
     const rowData = {};
     header.forEach((key, i) => {
       if (key) {
-        rowData[key] = row[i] || "";
+        rowData[key.trim()] = row[i] || "";
       }
     });
     // Add the actual row index from the sheet
@@ -230,7 +230,7 @@ async function handleGetHash(req, res, sheets) {
     const rowData = {};
     header.forEach((key, i) => {
       if (key) {
-        rowData[key] = row[i] || "";
+        rowData[key.trim()] = row[i] || "";
       }
     });
     // Add the actual row index from the sheet
@@ -755,7 +755,7 @@ async function handleGetMembers(req, res, sheets) {
         if (key) {
           // This dynamically assigns all columns from the sheet
           // including 'Miembro', '¿Acceso App?', and 'Filtro por defecto'
-          rowData[key] = row[i] || "";
+          rowData[key.trim()] = row[i] || "";
         }
       });
       return rowData;
