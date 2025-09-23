@@ -27,7 +27,7 @@ function SummaryModal({ isOpen, onClose, summaryData, isLoading, pinnedSummaryIt
               <li key={index} className={`summary-item summary-item-${item.type}`}>
                 <input
                   type="checkbox"
-                  className="summary-pin-checkbox"
+                  className="summary-pin-checkbox custom-form-control"
                   checked={pinnedSummaryItems.includes(item.label)}
                   onChange={(e) => handleCheckboxChange(e, item.label)}
                   id={`summary-item-${index}`}

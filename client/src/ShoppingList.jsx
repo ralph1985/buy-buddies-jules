@@ -6,6 +6,7 @@ import SummaryModal from "./SummaryModal";
 import EditModal from "./EditModal";
 import BulkEditModal from "./BulkEditModal";
 import ChangesModal from "./ChangesModal";
+import LogoutModal from "./LogoutModal";
 import { validateDecimal } from "./utils/validation";
 
 function Spinner() {
@@ -65,6 +66,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
   });
 
   const [isChangesModalOpen, setIsChangesModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [changes, setChanges] = useState({ added: [], edited: [], deleted: [] });
   const isLocalUpdate = useRef(false);
 
@@ -476,6 +478,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
               checked={groupBy === "status"}
               onChange={(e) => setGroupBy(e.target.value)}
               disabled={pageLoading}
+              className="custom-form-control"
             />
             Estado
           </label>
@@ -487,6 +490,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
               checked={groupBy === "type"}
               onChange={(e) => setGroupBy(e.target.value)}
               disabled={pageLoading}
+              className="custom-form-control"
             />
             Tipo
           </label>
@@ -498,6 +502,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
               checked={groupBy === "place"}
               onChange={(e) => setGroupBy(e.target.value)}
               disabled={pageLoading}
+              className="custom-form-control"
             />
             Lugar
           </label>
@@ -509,6 +514,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
               checked={groupBy === "assignedTo"}
               onChange={(e) => setGroupBy(e.target.value)}
               disabled={pageLoading}
+              className="custom-form-control"
             />
             Asignado a
           </label>
@@ -668,11 +674,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
             <>
               {/* Display the member's name from the user object */}
               <span>{user['Miembro']}</span>
-              <button onClick={() => {
-                if (window.confirm('¿Seguro que quieres cerrar sesión?')) {
-                  onLogout();
-                }
-              }}>
+              <button onClick={() => setIsLogoutModalOpen(true)}>
                 Cerrar sesión
               </button>
             </>
@@ -754,7 +756,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
                       <div className="item-checkbox-container">
                         <input
                           type="checkbox"
-                          className="group-checkbox"
+                          className="group-checkbox custom-form-control"
                           checked={groupItems.every((item) =>
                             selectedItems.includes(item.rowIndex)
                           )}
@@ -787,7 +789,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
                             <div className="item-checkbox-container">
                               <input
                                 type="checkbox"
-                                className="item-checkbox"
+                                className="item-checkbox custom-form-control"
                                 checked={selectedItems.includes(item.rowIndex)}
                                 onChange={() => handleSelectItem(item.rowIndex)}
                                 disabled={pageLoading}
@@ -970,6 +972,14 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
               localStorage.setItem("items", JSON.stringify(items));
             }}
             changes={changes}
+          />
+          <LogoutModal
+            isOpen={isLogoutModalOpen}
+            onClose={() => setIsLogoutModalOpen(false)}
+            onConfirm={() => {
+              setIsLogoutModalOpen(false);
+              onLogout();
+            }}
           />
           {user && (
             <div className="fab-container">
