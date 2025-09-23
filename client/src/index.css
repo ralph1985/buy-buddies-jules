@@ -678,12 +678,15 @@ h2 {
   cursor: pointer; /* Make the whole row clickable */
 }
 
-.summary-pin-checkbox {
+.summary-pin-checkbox {}
+
+/* New class for unified form control styles */
+.custom-form-control {
   cursor: pointer;
-  /* Optional: Custom checkbox styling */
   accent-color: #ffa500;
   width: 16px;
   height: 16px;
+  vertical-align: middle; /* Better alignment with labels */
 }
 
 .summary-item-bold {
