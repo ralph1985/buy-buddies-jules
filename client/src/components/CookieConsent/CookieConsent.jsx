@@ -1,6 +1,6 @@
 import React from 'react';
 import { useCookieConsentContext } from '../../context/CookieConsentContext';
-import { useRouter } from '../../context/RouterContext';
+import CookiePolicyModal from '../../CookiePolicyModal';
 import './CookieConsent.css';
 
 const CookieConsent = () => {
@@ -8,17 +8,17 @@ const CookieConsent = () => {
     consent,
     isBannerVisible,
     isSettingsVisible,
+    isPolicyVisible,
     acceptAll,
     rejectAll,
     updateConsent,
     savePreferences,
     openSettings,
     closeSettings,
+    openPolicy,
   } = useCookieConsentContext();
 
-  const { navigate } = useRouter();
-
-  if (!isBannerVisible && !isSettingsVisible) {
+  if (!isBannerVisible && !isSettingsVisible && !isPolicyVisible) {
     return null;
   }
 
@@ -28,7 +28,7 @@ const CookieConsent = () => {
 
   const handlePolicyClick = (e) => {
     e.preventDefault();
-    navigate('/politica-de-cookies');
+    openPolicy();
   };
 
   const renderBanner = () => (
@@ -37,7 +37,7 @@ const CookieConsent = () => {
         <p>
           Utilizamos cookies para mejorar tu experiencia. Al aceptar, nos permites usar cookies de rendimiento para analizar el tráfico y detectar errores.
           {' '}
-          <a href="/politica-de-cookies" onClick={handlePolicyClick}>
+          <a href="#" onClick={handlePolicyClick}>
             Política de Cookies
           </a>
         </p>
@@ -55,7 +55,11 @@ const CookieConsent = () => {
       <div className="cookie-settings-modal">
         <h2>Configuración de Cookies</h2>
         <p>
-          Puedes gestionar tus preferencias de cookies a continuación. Las cookies necesarias no se pueden desactivar.
+          Puedes gestionar tus preferencias de cookies a continuación. Las cookies necesarias no se pueden desactivar. Para más detalles, consulta nuestra{' '}
+          <a href="#" onClick={handlePolicyClick}>
+            Política de Cookies
+          </a>
+          .
         </p>
 
         <div className="cookie-category">
@@ -91,6 +95,10 @@ const CookieConsent = () => {
       </div>
     </div>
   );
+
+  if (isPolicyVisible) {
+    return <CookiePolicyModal />;
+  }
 
   if (isSettingsVisible) {
     return renderSettings();
