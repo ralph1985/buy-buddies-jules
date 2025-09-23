@@ -761,8 +761,10 @@ async function handleGetMembers(req, res, sheets) {
       return rowData;
     });
 
-    // Filter out any rows that don't have a value in the first column (the member name)
-    const validMembers = data.filter(member => member[header[0]]);
+    // Filter out any rows that don't have a 'Miembro' value.
+    const validMembers = data.filter(
+      (member) => member["Miembro"] && member["Miembro"].trim() !== ""
+    );
 
     res.status(200).json(validMembers);
   } catch (error) {
