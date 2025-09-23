@@ -33,6 +33,7 @@ const processSummaryData = (data) => {
 
 function ShoppingList({ user, onLogout, onLoginRedirect }) {
   const [items, setItems] = useState([]);
+  const [pageTitle, setPageTitle] = useState("Lista de la Compra");
   const [statusOptions, setStatusOptions] = useState([]);
   const [summaryData, setSummaryData] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
@@ -69,11 +70,14 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
 
   const fetchData = useCallback(async () => {
     try {
-      const [itemsData, statusOpts, summaryRes] = await Promise.all([
+      const [itemsData, statusOpts, summaryRes, titleRes] = await Promise.all([
         fetch("/api").then((res) => res.json()),
         fetch("/api?action=get_options").then((res) => res.json()),
         fetch("/api?action=get_summary").then((res) => res.json()),
+        fetch("/api?action=get_sheet_title").then((res) => res.json()),
       ]);
+
+      setPageTitle(titleRes.title || "Lista de la Compra");
 
       const oldItems = JSON.parse(localStorage.getItem("items") || "[]");
 
@@ -620,7 +624,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
             alt="Logo"
             className="header-logo"
           />
-          <h1>Lista de la Compra 2025</h1>
+          <h1>{pageTitle}</h1>
         </div>
         <div className="user-info">
           {user ? (
