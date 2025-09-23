@@ -44,7 +44,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
   const [typeFilter, setTypeFilter] = useState([]);
   const [assignedToFilter, setAssignedToFilter] = useState([]);
   const [locationFilter, setLocationFilter] = useState([]);
-  const [groupBy, setGroupBy] = useState("type"); // 'type', 'assignedTo', 'status', 'place'
+  const [groupBy, setGroupBy] = useState("assignedTo"); // 'type', 'assignedTo', 'status', 'place'
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
 
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
@@ -169,7 +169,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
         // Explicitly set each filter based on the default settings or reset it.
         // This avoids race conditions from clearing and then setting state.
 
-        setGroupBy(defaultFilter['Agrupado por'] || 'type');
+        setGroupBy(defaultFilter['Agrupado por'] || 'assignedTo');
 
         const assignedTo = defaultFilter['Asignar a'];
         setAssignedToFilter(assignedTo ? [{ value: assignedTo, label: assignedTo }] : []);
@@ -271,7 +271,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
     setTypeFilter([]);
     setAssignedToFilter([]);
     setLocationFilter([]);
-    setGroupBy("type");
+    setGroupBy("assignedTo");
   };
 
   const handleOpenEditModal = (item) => {
