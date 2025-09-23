@@ -739,7 +739,7 @@ async function handleGetMembers(req, res, sheets) {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${MEMBERS_SHEET_NAME}!A:Z`, // Read the whole sheet to be flexible
+      range: `${MEMBERS_SHEET_NAME}!A10:Z`, // Start reading from row 10
     });
 
     const rows = response.data.values;

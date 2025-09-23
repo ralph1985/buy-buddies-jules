@@ -242,7 +242,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
       await fetch("/api", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, ...payload, user }),
+        body: JSON.stringify({ action, ...payload, user: user['Miembro'] }),
       });
       await fetchData(); // Refreshes all data
     } catch (error) {
