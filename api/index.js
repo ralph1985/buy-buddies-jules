@@ -4,6 +4,33 @@ import crypto from "crypto";
 
 Bugsnag.start({ apiKey: process.env.BUGSNAG_API_KEY });
 
+const COLUMN = {
+  LUGAR_DE_COMPRA: "Lugar de Compra",
+  TIPO_DE_ELEMENTO: "Tipo de Elemento",
+  ASIGNADO_A: "Asignado a",
+  DESCRIPCION: "Descripción",
+  CANTIDAD: "Cantidad",
+  PRECIO_UNIDAD: "Precio unidad",
+  TOTAL: "Total",
+  NOTAS: "Notas",
+  ESTADO: "Estado",
+  MIEMBRO: "Miembro",
+  ACCESO_APP: "¿Acceso App?",
+};
+
+const LOG_ACTIONS = {
+  UPDATE_STATUS: "Update Status",
+  UPDATE_QUANTITY: "Update Quantity",
+  UPDATE_UNIT_PRICE: "Update Unit Price",
+  UPDATE_DETAILS: "Update Details",
+  ADD_PRODUCT: "Add Product",
+  BULK_UPDATE: "Bulk Update",
+};
+
+const MEMBERS_SHEET_NAME = "Miembros";
+const HISTORY_SHEET_NAME = "Historial de cambios";
+const DEFAULT_STATUSES = ["Pendiente", "Comprado"];
+
 // Helper to parse JSON body from requests
 async function getJsonBody(req) {
   return new Promise((resolve, reject) => {
@@ -12,6 +39,41 @@ async function getJsonBody(req) {
     req.on("end", () => resolve(JSON.parse(body)));
     req.on("error", (err) => reject(err));
   });
+}
+
+// A cache for headers to avoid fetching them on every request.
+let headerCache = null;
+
+async function getHeaders(sheets) {
+  if (headerCache) {
+    return headerCache;
+  }
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${SHEET_NAME}!A11:Z11`, // Assuming headers are in row 11
+  });
+
+  const headerArray = response.data.values[0];
+  const headerMap = {};
+  headerArray.forEach((header, index) => {
+    if (header) {
+      headerMap[header] = index;
+    }
+  });
+
+  headerCache = { headerMap, headerArray };
+  return headerCache;
+}
+
+function columnIndexToLetter(index) {
+  let letter = "";
+  while (index >= 0) {
+    const temp = index % 26;
+    letter = String.fromCharCode(temp + 65) + letter;
+    index = Math.floor(index / 26) - 1;
+  }
+  return letter;
 }
 
 async function getAuth() {
@@ -31,7 +93,6 @@ async function getAuth() {
 
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 const SHEET_NAME = process.env.SHEET_NAME;
-const HISTORY_SHEET_NAME = "Historial de cambios";
 
 async function ensureHistorySheetExists(sheets) {
   const spreadsheet = await sheets.spreadsheets.get({
@@ -94,11 +155,42 @@ async function logChange(sheets, user, action, details) {
   }
 }
 
+const ACTIONS = {
+  UPDATE_STATUS: "update_status",
+  UPDATE_DETAILS: "update_details",
+  UPDATE_QUANTITY: "update_quantity",
+  UPDATE_UNIT_PRICE: "update_unit_price",
+  ADD_PRODUCT: "add_product",
+  BULK_UPDATE: "bulk_update",
+  GET_OPTIONS: "get_options",
+  GET_SUMMARY: "get_summary",
+  GET_HASH: "get_hash",
+  GET_MEMBERS: "get_members",
+  GET_ITEMS: "get_items",
+};
+
+const POST_ACTION_HANDLERS = {
+  [ACTIONS.UPDATE_QUANTITY]: handleUpdateQuantity,
+  [ACTIONS.UPDATE_DETAILS]: handleUpdateDetails,
+  [ACTIONS.UPDATE_UNIT_PRICE]: handleUpdateUnitPrice,
+  [ACTIONS.ADD_PRODUCT]: handleAddNewProduct,
+  [ACTIONS.BULK_UPDATE]: handleBulkUpdate,
+};
+
+const GET_ACTION_HANDLERS = {
+  [ACTIONS.GET_OPTIONS]: handleGetStatusOptions,
+  [ACTIONS.GET_SUMMARY]: handleGetSummary,
+  [ACTIONS.GET_HASH]: handleGetHash,
+  [ACTIONS.GET_MEMBERS]: handleGetMembers,
+};
+
 // Main handler
 export default async function handler(request, response) {
   // Validate environment variables
   if (!SPREADSHEET_ID || !SHEET_NAME) {
-    console.error("Missing SPREADSHEET_ID or SHEET_NAME in environment variables.");
+    console.error(
+      "Missing SPREADSHEET_ID or SHEET_NAME in environment variables."
+    );
     return response.status(500).json({
       error: "Server configuration error: Missing spreadsheet configuration.",
     });
@@ -124,33 +216,28 @@ export default async function handler(request, response) {
     if (request.method === "POST") {
       await ensureHistorySheetExists(sheets);
       const body = await getJsonBody(request);
-      // Route POST requests based on an 'action' property in the body
-      if (body.action === "update_quantity") {
-        await handleUpdateQuantity(response, sheets, body);
-      } else if (body.action === "update_details") {
-        await handleUpdateDetails(response, sheets, body);
-      } else if (body.action === "update_unit_price") {
-        await handleUpdateUnitPrice(response, sheets, body);
-      } else if (body.action === "add_product") {
-        await handleAddNewProduct(response, sheets, body);
-      } else if (body.action === "bulk_update") {
-        await handleBulkUpdate(response, sheets, body);
-      } else {
+      const action = body.action;
+      const handler = POST_ACTION_HANDLERS[action];
+
+      if (handler) {
+        await handler(response, sheets, body);
+      } else if (!action || action === ACTIONS.UPDATE_STATUS) {
         // Default POST action is to update status
         await handleUpdateStatus(response, sheets, body);
+      } else {
+        response.status(400).json({ error: `Invalid POST action: ${action}` });
       }
     } else if (request.method === "GET") {
       const action = request.query.action;
-      if (action === "get_options") {
-        await handleGetStatusOptions(request, response, sheets);
-      } else if (action === "get_summary") {
-        await handleGetSummary(request, response, sheets);
-      } else if (action === "get_hash") {
-        await handleGetHash(request, response, sheets);
-      } else if (action === "get_members") {
-        await handleGetMembers(request, response, sheets);
-      } else {
+      const handler = GET_ACTION_HANDLERS[action];
+
+      if (handler) {
+        await handler(request, response, sheets);
+      } else if (!action || action === ACTIONS.GET_ITEMS) {
+        // Default GET action is to get items
         await handleGetItems(request, response, sheets);
+      } else {
+        response.status(400).json({ error: `Invalid GET action: ${action}` });
       }
     } else {
       response.status(405).send({ error: "Method Not Allowed" });
@@ -164,8 +251,8 @@ export default async function handler(request, response) {
   }
 }
 
-// Fetches all items and includes their row index
-async function handleGetItems(req, res, sheets) {
+// Fetches and processes all data from the main sheet
+async function getSheetData(sheets) {
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
     range: `${SHEET_NAME}!A11:Z`,
@@ -173,7 +260,7 @@ async function handleGetItems(req, res, sheets) {
 
   const rows = response.data.values;
   if (!rows || rows.length === 0) {
-    return res.status(200).json([]);
+    return [];
   }
 
   const header = rows[0];
@@ -188,48 +275,37 @@ async function handleGetItems(req, res, sheets) {
     rowData.rowIndex = 11 + 1 + index; // 11 (start) + 1 (for header) + index
     return rowData;
   });
+  return data;
+}
 
+// Fetches all items and includes their row index
+async function handleGetItems(req, res, sheets) {
+  const data = await getSheetData(sheets);
   res.status(200).json(data);
 }
 
 // Fetches all items and returns a hash of the data
 async function handleGetHash(req, res, sheets) {
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A11:Z`,
-  });
-
-  const rows = response.data.values;
-  if (!rows || rows.length === 0) {
-    // Return a consistent hash for an empty dataset
-    const hash = crypto.createHash("sha256").update("[]").digest("hex");
-    return res.status(200).json({ hash });
-  }
-
-  const header = rows[0];
-  const data = rows.slice(1).map((row, index) => {
-    const rowData = {};
-    header.forEach((key, i) => {
-      if (key) {
-        rowData[key] = row[i] || "";
-      }
-    });
-    // Add the actual row index from the sheet
-    rowData.rowIndex = 11 + 1 + index; // 11 (start) + 1 (for header) + index
-    return rowData;
-  });
-
+  const data = await getSheetData(sheets);
   const dataString = JSON.stringify(data);
   const hash = crypto.createHash("sha256").update(dataString).digest("hex");
-
   res.status(200).json({ hash });
 }
 
-// Fetches unique, non-empty status options from the 'Estado' column (Column I)
+// Fetches unique, non-empty status options from the 'Estado' column
 async function handleGetStatusOptions(req, res, sheets) {
+  const { headerMap } = await getHeaders(sheets);
+  const statusColIndex = headerMap[COLUMN.ESTADO];
+  if (statusColIndex === undefined) {
+    return res
+      .status(500)
+      .json({ error: `Could not find column "${COLUMN.ESTADO}"` });
+  }
+  const statusColLetter = columnIndexToLetter(statusColIndex);
+
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!I12:I`, // Start from row 12 to get only data
+    range: `${SHEET_NAME}!${statusColLetter}12:${statusColLetter}`, // Start from row 12 to get only data
   });
 
   const rows = response.data.values;
@@ -241,194 +317,124 @@ async function handleGetStatusOptions(req, res, sheets) {
   }
 
   // Always ensure the default statuses are present.
-  // The Set will handle duplicates automatically.
-  const defaultStatuses = ["Pendiente", "Comprado"];
-  defaultStatuses.forEach((status) => uniqueOptions.add(status));
+  DEFAULT_STATUSES.forEach((status) => uniqueOptions.add(status));
 
   res.status(200).json([...uniqueOptions]);
 }
 
-// Updates the status of a specific row
-async function handleUpdateStatus(res, sheets, body) {
-  const { rowIndex, newStatus, user } = body;
+// Generic handler to update a single field in a row
+async function handleUpdateField(
+  res,
+  sheets,
+  body,
+  fieldName,
+  columnName,
+  logAction
+) {
+  const { rowIndex, user } = body;
+  const newValue = body[fieldName];
 
-  if (!rowIndex || newStatus === undefined) {
+  if (rowIndex === undefined || newValue === undefined) {
     return res
       .status(400)
-      .json({ error: "rowIndex and newStatus are required." });
+      .json({ error: `rowIndex and ${fieldName} are required.` });
   }
 
-  // 'Estado' is column I
-  const range = `${SHEET_NAME}!I${rowIndex}`;
-  const descriptionRange = `${SHEET_NAME}!D${rowIndex}`;
-
   try {
-    // Fetch product description for logging
+    const { headerMap } = await getHeaders(sheets);
+    const fieldColIndex = headerMap[columnName];
+    const descriptionColIndex = headerMap[COLUMN.DESCRIPCION];
+
+    if (fieldColIndex === undefined || descriptionColIndex === undefined) {
+      return res
+        .status(500)
+        .json({ error: "Required columns not found in the sheet." });
+    }
+
+    const fieldColLetter = columnIndexToLetter(fieldColIndex);
+    const descriptionColLetter = columnIndexToLetter(descriptionColIndex);
+
+    const range = `${SHEET_NAME}!${fieldColLetter}${rowIndex}`;
+    const descriptionRange = `${SHEET_NAME}!${descriptionColLetter}${rowIndex}`;
+
     const descriptionResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: descriptionRange,
     });
-    const description = descriptionResponse.data.values?.[0]?.[0] || `Row ${rowIndex}`;
+    const description =
+      descriptionResponse.data.values?.[0]?.[0] || `Row ${rowIndex}`;
 
-    // Fetch the old status for logging
     const getResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: range,
     });
-    const oldStatus = getResponse.data.values?.[0]?.[0] || "";
+    const oldValue = getResponse.data.values?.[0]?.[0] || "";
 
-    // Update the status
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
-      range: range,
-      valueInputOption: "USER_ENTERED",
-      resource: {
-        values: [[newStatus]],
-      },
-    });
+    if (String(oldValue) !== String(newValue)) {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: range,
+        valueInputOption: "USER_ENTERED",
+        resource: {
+          values: [[newValue]],
+        },
+      });
 
-    // Log the change
-    if (oldStatus !== newStatus) {
       await logChange(
         sheets,
         user,
-        "Update Status",
-        `Product "${description}" status changed from "${oldStatus}" to "${newStatus}"`
+        logAction,
+        `Product "${description}" ${columnName.toLowerCase()} changed from "${oldValue}" to "${newValue}"`
       );
     }
 
     res.status(200).json({
       success: true,
-      message: `Row ${rowIndex} status updated to ${newStatus}`,
+      message: `Row ${rowIndex} ${columnName.toLowerCase()} updated to ${newValue}`,
     });
   } catch (error) {
-    console.error("Failed to update status:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to update status.", details: error.message });
+    console.error(`Failed to update ${columnName.toLowerCase()}:`, error);
+    res.status(500).json({
+      error: `Failed to update ${columnName.toLowerCase()}.`,
+      details: error.message,
+    });
   }
+}
+
+// Updates the status of a specific row
+async function handleUpdateStatus(res, sheets, body) {
+  await handleUpdateField(
+    res,
+    sheets,
+    body,
+    "newStatus",
+    COLUMN.ESTADO,
+    LOG_ACTIONS.UPDATE_STATUS
+  );
 }
 
 // Updates the quantity of a specific row
 async function handleUpdateQuantity(res, sheets, body) {
-  const { rowIndex, newQuantity, user } = body;
-
-  if (!rowIndex || newQuantity === undefined) {
-    return res
-      .status(400)
-      .json({ error: "rowIndex and newQuantity are required." });
-  }
-
-  // 'Cantidad' is column E
-  const range = `${SHEET_NAME}!E${rowIndex}`;
-  const descriptionRange = `${SHEET_NAME}!D${rowIndex}`;
-
-  try {
-    // Fetch product description for logging
-    const descriptionResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: descriptionRange,
-    });
-    const description = descriptionResponse.data.values?.[0]?.[0] || `Row ${rowIndex}`;
-
-    // Fetch the old quantity for logging
-    const getResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: range,
-    });
-    const oldQuantity = getResponse.data.values?.[0]?.[0] || "";
-
-    // Update the quantity
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
-      range: range,
-      valueInputOption: "USER_ENTERED",
-      resource: {
-        values: [[newQuantity]],
-      },
-    });
-
-    // Log the change
-    if (oldQuantity !== newQuantity) {
-      await logChange(
-        sheets,
-        user,
-        "Update Quantity",
-        `Product "${description}" quantity changed from "${oldQuantity}" to "${newQuantity}"`
-      );
-    }
-
-    res.status(200).json({
-      success: true,
-      message: `Row ${rowIndex} quantity updated to ${newQuantity}`,
-    });
-  } catch (error) {
-    console.error("Failed to update quantity:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to update quantity.", details: error.message });
-  }
+  await handleUpdateField(
+    res,
+    sheets,
+    body,
+    "newQuantity",
+    COLUMN.CANTIDAD,
+    LOG_ACTIONS.UPDATE_QUANTITY
+  );
 }
 
 // Updates the unit price of a specific row
 async function handleUpdateUnitPrice(res, sheets, body) {
-  const { rowIndex, newUnitPrice, user } = body;
-
-  if (!rowIndex || newUnitPrice === undefined) {
-    return res
-      .status(400)
-      .json({ error: "rowIndex and newUnitPrice are required." });
-  }
-
-  // 'Precio unidad' is column F
-  const range = `${SHEET_NAME}!F${rowIndex}`;
-  const descriptionRange = `${SHEET_NAME}!D${rowIndex}`;
-
-  try {
-    // Fetch product description for logging
-    const descriptionResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: descriptionRange,
-    });
-    const description = descriptionResponse.data.values?.[0]?.[0] || `Row ${rowIndex}`;
-
-    // Fetch the old unit price for logging
-    const getResponse = await sheets.spreadsheets.values.get({
-      spreadsheetId: SPREADSHEET_ID,
-      range: range,
-    });
-    const oldUnitPrice = getResponse.data.values?.[0]?.[0] || "";
-
-    // Update the unit price
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
-      range: range,
-      valueInputOption: "USER_ENTERED",
-      resource: {
-        values: [[newUnitPrice]],
-      },
-    });
-
-    // Log the change
-    if (oldUnitPrice !== newUnitPrice) {
-      await logChange(
-        sheets,
-        user,
-        "Update Unit Price",
-        `Product "${description}" unit price changed from "${oldUnitPrice}" to "${newUnitPrice}"`
-      );
-    }
-
-    res.status(200).json({
-      success: true,
-      message: `Row ${rowIndex} unit price updated to ${newUnitPrice}`,
-    });
-  } catch (error) {
-    console.error("Failed to update unit price:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to update unit price.", details: error.message });
-  }
+  await handleUpdateField(
+    res,
+    sheets,
+    body,
+    "newUnitPrice",
+    COLUMN.PRECIO_UNIDAD,
+    LOG_ACTIONS.UPDATE_UNIT_PRICE
+  );
 }
 
 // Updates the description, notes, unit price, type and when of a specific row
@@ -460,50 +466,59 @@ async function handleUpdateDetails(res, sheets, body) {
       .json({ error: "rowIndex and all new detail fields are required." });
   }
 
-  const fieldsToUpdate = {
-    A: { value: newLugarDeCompra, name: "Lugar de Compra" },
-    B: { value: newType, name: "Tipo de Elemento" },
-    C: { value: newAssignedTo, name: "Asignado a" },
-    D: { value: newDescription, name: "Descripción" },
-    E: { value: newQuantity, name: "Cantidad" },
-    F: { value: newUnitPrice, name: "Precio unidad" },
-    H: { value: newNotes, name: "Notas" },
-  };
-
   try {
+    const { headerMap } = await getHeaders(sheets);
+    const fieldsToUpdate = [
+      { name: COLUMN.LUGAR_DE_COMPRA, value: newLugarDeCompra },
+      { name: COLUMN.TIPO_DE_ELEMENTO, value: newType },
+      { name: COLUMN.ASIGNADO_A, value: newAssignedTo },
+      { name: COLUMN.DESCRIPCION, value: newDescription },
+      { name: COLUMN.CANTIDAD, value: newQuantity },
+      { name: COLUMN.PRECIO_UNIDAD, value: newUnitPrice },
+      { name: COLUMN.NOTAS, value: newNotes },
+    ];
+
     const oldValuesResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A${rowIndex}:H${rowIndex}`,
+      range: `${SHEET_NAME}!A${rowIndex}:Z${rowIndex}`, // Read the whole row
     });
     const oldValues = oldValuesResponse.data.values?.[0] || [];
-    const oldProductDescription = oldValues[3] || `Row ${rowIndex}`;
+    const oldProductDescription =
+      oldValues[headerMap[COLUMN.DESCRIPCION]] || `Row ${rowIndex}`;
 
-    const oldData = {
-      A: oldValues[0] || "",
-      B: oldValues[1] || "",
-      C: oldValues[2] || "",
-      D: oldValues[3] || "",
-      E: oldValues[4] || "",
-      F: oldValues[5] || "",
-      H: oldValues[7] || "",
-    };
+    const oldData = {};
+    for (const field of fieldsToUpdate) {
+      const colIndex = headerMap[field.name];
+      if (colIndex !== undefined) {
+        oldData[field.name] = oldValues[colIndex] || "";
+      }
+    }
 
-    const updatePromises = Object.entries(fieldsToUpdate).map(
-      ([column, { value }]) =>
-        sheets.spreadsheets.values.update({
+    const updatePromises = fieldsToUpdate
+      .map((field) => {
+        const colIndex = headerMap[field.name];
+        if (colIndex === undefined) {
+          console.error(`Column ${field.name} not found`);
+          return null;
+        }
+        const colLetter = columnIndexToLetter(colIndex);
+        return sheets.spreadsheets.values.update({
           spreadsheetId: SPREADSHEET_ID,
-          range: `${SHEET_NAME}!${column}${rowIndex}`,
+          range: `${SHEET_NAME}!${colLetter}${rowIndex}`,
           valueInputOption: "USER_ENTERED",
-          resource: { values: [[value]] },
-        })
-    );
+          resource: { values: [[field.value]] },
+        });
+      })
+      .filter(Boolean);
 
     await Promise.all(updatePromises);
 
-    const changes = Object.entries(fieldsToUpdate)
-      .map(([column, { value, name }]) => {
-        if (String(oldData[column]) !== String(value)) {
-          return `field "${name}" from "${oldData[column]}" to "${value}"`;
+    const changes = fieldsToUpdate
+      .map((field) => {
+        if (String(oldData[field.name]) !== String(field.value)) {
+          return `field "${field.name}" from "${oldData[field.name]}" to "${
+            field.value
+          }"`;
         }
         return null;
       })
@@ -513,7 +528,7 @@ async function handleUpdateDetails(res, sheets, body) {
       await logChange(
         sheets,
         user,
-        "Update Details",
+        LOG_ACTIONS.UPDATE_DETAILS,
         `Product "${oldProductDescription}" updated: ${changes.join(", ")}`
       );
     }
@@ -558,36 +573,54 @@ async function handleAddNewProduct(res, sheets, body) {
   }
 
   try {
-    // 1. Find the next empty row by checking the length of a column (e.g., D for Description)
+    const { headerMap, headerArray } = await getHeaders(sheets);
+    const descriptionColIndex = headerMap[COLUMN.DESCRIPCION];
+    if (descriptionColIndex === undefined) {
+      return res
+        .status(500)
+        .json({ error: `Could not find column "${COLUMN.DESCRIPCION}"` });
+    }
+    const descriptionColLetter = columnIndexToLetter(descriptionColIndex);
+
+    // 1. Find the next empty row by checking the length of the description column
     const getResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!D11:D`, // Check from D11 downwards
+      range: `${SHEET_NAME}!${descriptionColLetter}11:${descriptionColLetter}`,
     });
     const numRows = getResponse.data.values
       ? getResponse.data.values.length
       : 0;
-    const newRowIndex = 11 + numRows; // The new row will be after the last data row
+    const newRowIndex = 11 + numRows;
 
-    // 2. Construct the formula for the Total column (G)
-    const totalFormula = `=E${newRowIndex}*F${newRowIndex}`;
+    // 2. Construct the formula for the Total column
+    const cantidadColLetter = columnIndexToLetter(headerMap[COLUMN.CANTIDAD]);
+    const precioUnidadColLetter = columnIndexToLetter(
+      headerMap[COLUMN.PRECIO_UNIDAD]
+    );
+    const totalFormula = `=${cantidadColLetter}${newRowIndex}*${precioUnidadColLetter}${newRowIndex}`;
 
-    // 3. Construct the new row in the correct column order (A-I).
-    const newRow = [
-      newLugarDeCompra, // A: Lugar de Compra
-      newType, // B: Tipo de Elemento
-      newAssignedTo, // C: Asignado a
-      newDescription, // D: Descripción
-      newQuantity, // E: Cantidad
-      newUnitPrice, // F: Precio unidad
-      totalFormula, // G: Total (calculated by formula)
-      newNotes, // H: Notas
-      "", // I: Estado
-    ];
+    const newRowData = {
+      [COLUMN.LUGAR_DE_COMPRA]: newLugarDeCompra,
+      [COLUMN.TIPO_DE_ELEMENTO]: newType,
+      [COLUMN.ASIGNADO_A]: newAssignedTo,
+      [COLUMN.DESCRIPCION]: newDescription,
+      [COLUMN.CANTIDAD]: newQuantity,
+      [COLUMN.PRECIO_UNIDAD]: newUnitPrice,
+      [COLUMN.TOTAL]: totalFormula,
+      [COLUMN.NOTAS]: newNotes,
+      [COLUMN.ESTADO]: "Pendiente", // Default status
+    };
+
+    const newRow = headerArray.map(
+      (header) => newRowData[header] || ""
+    );
 
     // 4. Update the specific new row
     await sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A${newRowIndex}:I${newRowIndex}`,
+      range: `${SHEET_NAME}!A${newRowIndex}:${columnIndexToLetter(
+        headerArray.length - 1
+      )}${newRowIndex}`,
       valueInputOption: "USER_ENTERED",
       resource: {
         values: [newRow],
@@ -598,7 +631,7 @@ async function handleAddNewProduct(res, sheets, body) {
     await logChange(
       sheets,
       user,
-      "Add Product",
+      LOG_ACTIONS.ADD_PRODUCT,
       `New product added: "${newDescription}"`
     );
 
@@ -615,45 +648,54 @@ async function handleAddNewProduct(res, sheets, body) {
 
 // Handles bulk updates for multiple rows
 async function handleBulkUpdate(res, sheets, body) {
-  const { rowIndexes, newType, newAssignedTo, newStatus, newLugarDeCompra, user } =
-    body;
+  const {
+    rowIndexes,
+    newType,
+    newAssignedTo,
+    newStatus,
+    newLugarDeCompra,
+    user,
+  } = body;
 
-  if (
-    !rowIndexes ||
-    !Array.isArray(rowIndexes) ||
-    rowIndexes.length === 0
-  ) {
-    return res
-      .status(400)
-      .json({ error: "rowIndexes array is required." });
-  }
-
-  const fieldsToUpdate = {
-    A: { value: newLugarDeCompra, name: "Lugar de Compra" },
-    B: { value: newType, name: "Tipo de Elemento" },
-    C: { value: newAssignedTo, name: "Asignado a" },
-    I: { value: newStatus, name: "Estado" },
-  };
-
-  const data = [];
-  for (const [column, { value }] of Object.entries(fieldsToUpdate)) {
-    if (value) {
-      for (const rowIndex of rowIndexes) {
-        data.push({
-          range: `${SHEET_NAME}!${column}${rowIndex}`,
-          values: [[value]],
-        });
-      }
-    }
-  }
-
-  if (data.length === 0) {
-    return res
-      .status(400)
-      .json({ error: "No fields to update were provided." });
+  if (!rowIndexes || !Array.isArray(rowIndexes) || rowIndexes.length === 0) {
+    return res.status(400).json({ error: "rowIndexes array is required." });
   }
 
   try {
+    const { headerMap } = await getHeaders(sheets);
+
+    const fieldsToUpdate = [
+      { name: COLUMN.LUGAR_DE_COMPRA, value: newLugarDeCompra },
+      { name: COLUMN.TIPO_DE_ELEMENTO, value: newType },
+      { name: COLUMN.ASIGNADO_A, value: newAssignedTo },
+      { name: COLUMN.ESTADO, value: newStatus },
+    ];
+
+    const data = [];
+    const updatedFieldNames = [];
+
+    for (const field of fieldsToUpdate) {
+      if (field.value) {
+        const colIndex = headerMap[field.name];
+        if (colIndex === undefined) {
+          console.warn(`Column "${field.name}" not found, skipping bulk update for it.`);
+          continue;
+        }
+        const colLetter = columnIndexToLetter(colIndex);
+        for (const rowIndex of rowIndexes) {
+          data.push({
+            range: `${SHEET_NAME}!${colLetter}${rowIndex}`,
+            values: [[field.value]],
+          });
+        }
+        updatedFieldNames.push(field.name);
+      }
+    }
+
+    if (data.length === 0) {
+      return res.status(400).json({ error: "No fields to update were provided." });
+    }
+
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: SPREADSHEET_ID,
       resource: {
@@ -663,16 +705,11 @@ async function handleBulkUpdate(res, sheets, body) {
     });
 
     // Log the change
-    const updatedFields = Object.entries(fieldsToUpdate)
-      .filter(([, { value }]) => value)
-      .map(([, { name }]) => name)
-      .join(", ");
-
     await logChange(
       sheets,
       user,
-      "Bulk Update",
-      `Updated ${rowIndexes.length} products. Changed fields: ${updatedFields}`
+      LOG_ACTIONS.BULK_UPDATE,
+      `Updated ${rowIndexes.length} products. Changed fields: ${updatedFieldNames.join(", ")}`
     );
 
     res.status(200).json({
@@ -714,7 +751,6 @@ async function handleGetSummary(req, res, sheets) {
 
 // Fetches members from the 'Miembros' sheet
 async function handleGetMembers(req, res, sheets) {
-  const MEMBERS_SHEET_NAME = "Miembros";
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
     range: `${MEMBERS_SHEET_NAME}!A10:D`,
@@ -726,8 +762,8 @@ async function handleGetMembers(req, res, sheets) {
   }
 
   const header = rows[0];
-  const memberColIndex = header.indexOf("Miembro");
-  const accessColIndex = header.indexOf("¿Acceso App?");
+  const memberColIndex = header.indexOf(COLUMN.MIEMBRO);
+  const accessColIndex = header.indexOf(COLUMN.ACCESO_APP);
 
   if (memberColIndex === -1 || accessColIndex === -1) {
     return res.status(500).json({ error: "Required columns not found in Miembros sheet." });
