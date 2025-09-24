@@ -285,10 +285,6 @@ h2 {
   text-align: left;
 }
 
-.group-container:last-of-type .shopping-list {
-  padding-bottom: 150px;
-}
-
 .shopping-list-item {
   background-color: #2c2c2c;
   border-radius: 8px;
