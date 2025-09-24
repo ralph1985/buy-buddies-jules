@@ -17,15 +17,35 @@ let bugsnagInitialized = false;
 export const CookieConsentProvider = ({ children }) => {
   const cookieConsent = useCookieConsent();
 
+  // Initialize Bugsnag on initial load if consent is already given
   useEffect(() => {
     if (cookieConsent.consent?.performance && !bugsnagInitialized) {
       initializeBugsnag();
       bugsnagInitialized = true;
     }
-  }, [cookieConsent.consent]);
+  }, [cookieConsent.consent?.performance]);
+
+
+  const value = {
+    ...cookieConsent,
+    savePreferences: () => {
+      cookieConsent.savePreferences();
+      if (cookieConsent.consent?.performance && !bugsnagInitialized) {
+        initializeBugsnag();
+        bugsnagInitialized = true;
+      }
+    },
+    acceptAll: () => {
+      cookieConsent.acceptAll();
+      if (!bugsnagInitialized) {
+        initializeBugsnag();
+        bugsnagInitialized = true;
+      }
+    }
+  };
 
   return (
-    <CookieConsentContext.Provider value={cookieConsent}>
+    <CookieConsentContext.Provider value={value}>
       {children}
     </CookieConsentContext.Provider>
   );
