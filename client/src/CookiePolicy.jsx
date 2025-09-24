@@ -31,6 +31,7 @@ const CookiePolicy = () => {
       </p>
       <ul>
         <li><strong>Bugsnag:</strong> Utilizamos Bugsnag para detectar y diagnosticar errores de JavaScript en la aplicación. Esto nos ayuda a mejorar la estabilidad y la calidad del servicio. Esta herramienta solo se activará si das tu consentimiento explícito.</li>
+        <li><strong>Google Analytics:</strong> Utilizamos Google Analytics para recopilar información anónima sobre cómo los usuarios interactúan con nuestro sitio. Los datos, como las páginas visitadas y el tiempo de permanencia, nos ayudan a entender qué características son más populares y cómo podemos mejorar la experiencia general. Esta herramienta solo se activará si das tu consentimiento.</li>
       </ul>
 
       <h2>¿Cómo puedes gestionar tus preferencias?</h2>

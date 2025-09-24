@@ -3,6 +3,8 @@ import ShoppingList from './ShoppingList';
 import LoginModal from './LoginModal';
 import CookieConsent from './components/CookieConsent/CookieConsent';
 import { useCookieConsentContext } from './context/CookieConsentContext';
+import AnalyticsTracker from './components/Analytics/AnalyticsTracker';
+import { trackEvent } from './analytics';
 
 function App() {
   const [user, setUser] = useState(null); // Will now store the full member object
@@ -33,6 +35,7 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('userSession');
     setUser(null);
+    trackEvent('Authentication', 'Logout');
   };
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -41,10 +44,12 @@ function App() {
   const handleLoginSuccess = (member) => {
     handleLogin(member);
     setIsLoginModalOpen(false);
+    trackEvent('Authentication', 'Login Success', member.name);
   };
 
   return (
     <div className="App">
+      <AnalyticsTracker />
       <ShoppingList
         user={user}
         onLogout={handleLogout}
