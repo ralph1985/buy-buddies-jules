@@ -127,6 +127,27 @@ body {
   color: white;
 }
 
+.header-help-button {
+  background-color: #555;
+  color: white;
+  border: 1px solid #777;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+
+.header-help-button:hover {
+  background-color: #777;
+}
+
 .header-logo {
   width: 40px;
   height: 40px;
@@ -1085,8 +1106,22 @@ h2 {
 }
 
 .modal-content {
-  max-height: 60vh;
+  max-height: 80vh; /* Increased from 60vh to allow more content */
   overflow-y: auto;
   text-align: left;
   padding-right: 1rem; /* Space for scrollbar */
+}
+
+.help-content h4 {
+  color: #ffa500;
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.help-content p {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  color: #ccc;
+  line-height: 1.6;
 }

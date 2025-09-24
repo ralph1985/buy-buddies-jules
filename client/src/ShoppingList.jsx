@@ -7,6 +7,7 @@ import EditModal from "./EditModal";
 import BulkEditModal from "./BulkEditModal";
 import ChangesModal from "./ChangesModal";
 import LogoutModal from "./LogoutModal";
+import HelpModal from "./HelpModal"; // Import the new modal
 import { validateDecimal } from "./utils/validation";
 
 function Spinner() {
@@ -67,6 +68,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
 
   const [isChangesModalOpen, setIsChangesModalOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false); // State for help modal
   const [changes, setChanges] = useState({ added: [], edited: [], deleted: [] });
   const isLocalUpdate = useRef(false);
 
@@ -690,6 +692,13 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
               Iniciar sesión
             </button>
           )}
+          <button
+            onClick={() => setIsHelpModalOpen(true)}
+            className="header-help-button"
+            aria-label="Ayuda"
+          >
+            ?
+          </button>
         </div>
       </div>
 
@@ -987,6 +996,10 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
               setIsLogoutModalOpen(false);
               onLogout();
             }}
+          />
+          <HelpModal
+            isOpen={isHelpModalOpen}
+            onClose={() => setIsHelpModalOpen(false)}
           />
           {user && (
             <div className="fab-container">
