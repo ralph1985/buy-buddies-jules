@@ -449,6 +449,14 @@ h2 {
   border-color: #004d00;
 }
 
+.status-regalado {
+  border-left-color: #ffd700; /* gold */
+}
+.status-regalado .item-status-select {
+  background-color: #ffd700;
+  border-color: #b89b00;
+}
+
 .error {
   margin-top: 1rem;
   font-size: 0.95rem;
