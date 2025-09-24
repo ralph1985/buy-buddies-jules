@@ -46,10 +46,10 @@ function App() {
   return (
     <div className="App">
       <ShoppingList
-        // Pass the full user object, or just the name if you want to be safe with existing prop usage
         user={user}
         onLogout={handleLogout}
         onLoginRedirect={() => setIsLoginModalOpen(true)}
+        onOpenCookieSettings={openSettings}
       />
       {isLoginModalOpen && (
         <LoginModal
@@ -59,7 +59,7 @@ function App() {
       )}
       <CookieConsent />
       <footer className="app-footer">
-        <button onClick={openSettings} className="footer-link">
+        <button onClick={openSettings} className="footer-link hide-on-desktop">
           Configurar cookies
         </button>
       </footer>
