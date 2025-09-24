@@ -526,7 +526,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
               Limpiar filtros
             </button>
           </div>
-          <div className="cookie-settings-container">
+          <div className="cookie-settings-container desktop-only">
             <button onClick={onOpenCookieSettings} className="summary-link-button">
               Configurar cookies
             </button>

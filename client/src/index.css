@@ -477,6 +477,10 @@ h2 {
   border-top: 1px solid #444;
 }
 
+.desktop-only {
+  display: none;
+}
+
 /* Filter Menu Styles */
 .filter-menu-overlay {
   position: fixed;
@@ -935,9 +939,7 @@ h2 {
 /* Desktop-specific styles */
 @media (min-width: 1024px) {
   :root {
-    --header-sticky-height: 76px; /* Approximation of header height (60px) + its margin (1rem) */
-    /* NOTE: The following values are estimations, as the container heights are dynamic. */
-    --summary-sticky-height: 80px;
+    /* NOTE: This value is an estimation, as the container height is dynamic. */
     --actions-sticky-height: 50px;
   }
 
@@ -951,31 +953,16 @@ h2 {
     align-items: flex-start;
   }
 
-  .header-container,
-  .main-summary-container,
   .summary-actions-container {
     position: sticky;
     background-color: #1a1a1a;
-  }
-
-  .header-container {
-    top: 0;
-    z-index: 101;
-  }
-
-  .main-summary-container {
-    top: var(--header-sticky-height);
-    z-index: 100;
-  }
-
-  .summary-actions-container {
-    top: calc(var(--header-sticky-height) + var(--summary-sticky-height));
+    top: 1rem;
     z-index: 99;
   }
 
   .filter-menu {
     position: sticky; /* Sticks below the header */
-    top: var(--header-sticky-height);
+    top: 1rem;
     transform: translateX(0); /* Always visible */
     box-shadow: none;
     height: auto; /* Let content determine height */
@@ -998,11 +985,15 @@ h2 {
   }
 
   .group-header {
-    top: calc(var(--header-sticky-height) + var(--summary-sticky-height) + var(--actions-sticky-height));
+    top: calc(1rem + var(--actions-sticky-height));
   }
 
   .hide-on-desktop {
     display: none;
+  }
+
+  .desktop-only {
+    display: block;
   }
 }
 
