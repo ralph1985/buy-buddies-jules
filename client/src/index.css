@@ -455,6 +455,7 @@ h2 {
 .status-regalado .item-status-select {
   background-color: #ffd700;
   border-color: #b89b00;
+  color: black;
 }
 
 .error {
