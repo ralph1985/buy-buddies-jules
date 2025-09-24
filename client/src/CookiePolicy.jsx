@@ -4,7 +4,7 @@ const CookiePolicy = () => {
   return (
     <div className="policy-page">
       <h1>Política de Cookies</h1>
-      <p><em>Última actualización: 22 de septiembre de 2025</em></p>
+      <p><em>Última actualización: 24 de septiembre de 2025</em></p>
 
       <h2>¿Qué son las cookies?</h2>
       <p>
