@@ -8,6 +8,7 @@ import BulkEditModal from "./BulkEditModal";
 import ChangesModal from "./ChangesModal";
 import LogoutModal from "./LogoutModal";
 import HelpModal from "./HelpModal"; // Import the new modal
+import { trackEvent } from './analytics';
 import { validateDecimal } from "./utils/validation";
 
 function Spinner() {
@@ -133,6 +134,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
         if (added.length > 0 || deleted.length > 0 || edited.length > 0) {
           setChanges({ added, edited, deleted });
           setIsChangesModalOpen(true);
+          trackEvent('Modal', 'Open', 'Detected Changes');
         }
       } else {
         // If it's a local update or first load, just update localStorage
@@ -201,6 +203,33 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
     }
   }, [user]); // This effect runs when the user logs in or out
 
+  const isInitialFilterLoad = useRef(true);
+  useEffect(() => {
+    if (isInitialFilterLoad.current) {
+      isInitialFilterLoad.current = false;
+      return;
+    }
+
+    const filters = {
+      search: searchTags.map(t => t.value).join(','),
+      status: statusFilter.map(f => f.value).join(','),
+      type: typeFilter.map(f => f.value).join(','),
+      assignedTo: assignedToFilter.map(f => f.value).join(','),
+      location: locationFilter.map(f => f.value).join(','),
+    };
+
+    const changedFilters = Object.entries(filters)
+      .filter(([, value]) => value)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join('; ');
+
+    if (changedFilters) {
+      trackEvent('Interaction', 'Apply Filter', changedFilters);
+    }
+    // Note: Clearing filters is tracked in its own handler for accuracy.
+  }, [searchTags, statusFilter, typeFilter, assignedToFilter, locationFilter]);
+
+
   // Effect for polling for changes
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -264,12 +293,14 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
   };
 
   const handleManualRefresh = async () => {
+    trackEvent('Interaction', 'Click', 'Manual Refresh');
     setPageLoading(true);
     await fetchData();
     setCountdown(30); // Reset countdown on manual refresh
   };
 
   const handleClearFilters = () => {
+    trackEvent('Interaction', 'Click', 'Clear Filters');
     setSearchTags([]);
     setStatusFilter([]);
     setTypeFilter([]);
@@ -281,10 +312,12 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
   const handleOpenEditModal = (item) => {
     setEditingItem(item); // If item is null, it's for creation
     setIsEditModalOpen(true);
+    trackEvent('Modal', 'Open', item ? 'Edit Item' : 'Create Item');
   };
 
   const handleOpenBulkEditModal = () => {
     setIsBulkEditModalOpen(true);
+    trackEvent('Modal', 'Open', 'Bulk Edit');
   };
 
   const handleSelectItem = (rowIndex) => {
@@ -478,7 +511,10 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
               name="groupBy"
               value="status"
               checked={groupBy === "status"}
-              onChange={(e) => setGroupBy(e.target.value)}
+              onChange={(e) => {
+                setGroupBy(e.target.value);
+                trackEvent('Interaction', 'Group By', e.target.value);
+              }}
               disabled={pageLoading}
               className="custom-form-control"
             />
@@ -490,7 +526,10 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
               name="groupBy"
               value="type"
               checked={groupBy === "type"}
-              onChange={(e) => setGroupBy(e.target.value)}
+              onChange={(e) => {
+                setGroupBy(e.target.value);
+                trackEvent('Interaction', 'Group By', e.target.value);
+              }}
               disabled={pageLoading}
               className="custom-form-control"
             />
@@ -502,7 +541,10 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
               name="groupBy"
               value="place"
               checked={groupBy === "place"}
-              onChange={(e) => setGroupBy(e.target.value)}
+              onChange={(e) => {
+                setGroupBy(e.target.value);
+                trackEvent('Interaction', 'Group By', e.target.value);
+              }}
               disabled={pageLoading}
               className="custom-form-control"
             />
@@ -514,7 +556,10 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
               name="groupBy"
               value="assignedTo"
               checked={groupBy === "assignedTo"}
-              onChange={(e) => setGroupBy(e.target.value)}
+              onChange={(e) => {
+                setGroupBy(e.target.value);
+                trackEvent('Interaction', 'Group By', e.target.value);
+              }}
               disabled={pageLoading}
               className="custom-form-control"
             />
@@ -693,7 +738,10 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
             </button>
           )}
           <button
-            onClick={() => setIsHelpModalOpen(true)}
+            onClick={() => {
+              setIsHelpModalOpen(true);
+              trackEvent('Modal', 'Open', 'Help');
+            }}
             className="header-help-button"
             aria-label="Ayuda"
           >
@@ -735,7 +783,10 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
 
           <div className="summary-actions-container">
             <button
-              onClick={() => setIsSummaryModalOpen(true)}
+              onClick={() => {
+                setIsSummaryModalOpen(true);
+                trackEvent('Modal', 'Open', 'Summary');
+              }}
               className="summary-link-button"
               disabled={pageLoading}
             >
