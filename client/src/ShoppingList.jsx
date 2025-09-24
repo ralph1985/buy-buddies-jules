@@ -32,7 +32,7 @@ const processSummaryData = (data) => {
   }));
 };
 
-function ShoppingList({ user, onLogout, onLoginRedirect }) {
+function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings }) {
   const [items, setItems] = useState([]);
   const [pageTitle, setPageTitle] = useState("Lista de la Compra");
   const [statusOptions, setStatusOptions] = useState([]);
@@ -520,10 +520,17 @@ function ShoppingList({ user, onLogout, onLoginRedirect }) {
           </label>
         </div>
         </div>
-        <div className="clear-filters-container">
-          <button onClick={handleClearFilters} className="summary-link-button">
-            Limpiar filtros
-          </button>
+        <div className="filter-menu-actions">
+          <div className="clear-filters-container">
+            <button onClick={handleClearFilters} className="summary-link-button">
+              Limpiar filtros
+            </button>
+          </div>
+          <div className="cookie-settings-container">
+            <button onClick={onOpenCookieSettings} className="summary-link-button">
+              Configurar cookies
+            </button>
+          </div>
         </div>
         <button
           onClick={() => setIsFilterMenuOpen(false)}
