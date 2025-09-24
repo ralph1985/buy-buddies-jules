@@ -956,7 +956,10 @@ h2 {
   .summary-actions-container {
     position: sticky;
     background-color: #1a1a1a;
-    top: 1rem;
+    border-radius: 0; /* Remove border radius */
+    margin-bottom: 0; /* Remove bottom margin */
+    padding: 0.6rem 0;
+    top: 0;
     z-index: 99;
   }
 
@@ -985,7 +988,7 @@ h2 {
   }
 
   .group-header {
-    top: calc(1rem + var(--actions-sticky-height));
+    top: calc(-.8rem + var(--actions-sticky-height));
   }
 
   .hide-on-desktop {
