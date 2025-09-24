@@ -73,7 +73,7 @@ const CookieConsent = () => {
         <div className="cookie-category">
           <div className="cookie-category-header">
             <label htmlFor="performance-cookie">
-              <strong>Rendimiento y Errores (Bugsnag)</strong>
+              <strong>Rendimiento y Analítica</strong>
             </label>
             <label className="switch">
               <input
