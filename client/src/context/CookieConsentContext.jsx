@@ -23,7 +23,7 @@ export const CookieConsentProvider = ({ children }) => {
       initializeBugsnag();
       bugsnagInitialized = true;
     }
-  }, [cookieConsent.consent?.performance]);
+  }, []); // Run only once on mount
 
 
   const value = {
