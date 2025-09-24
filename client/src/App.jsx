@@ -34,11 +34,7 @@ function App() {
 
   const handleLogout = () => {
     // Track the event before clearing the user data
-    if (user) {
-      trackEvent('Authentication', 'Logout', user['Miembro']);
-    } else {
-      trackEvent('Authentication', 'Logout');
-    }
+    trackEvent('Authentication', 'Logout');
     localStorage.removeItem('userSession');
     setUser(null);
   };
@@ -49,7 +45,7 @@ function App() {
   const handleLoginSuccess = (member) => {
     handleLogin(member);
     setIsLoginModalOpen(false);
-    trackEvent('Authentication', 'Login Success', member['Miembro']);
+    trackEvent('Authentication', 'Login Success');
   };
 
   return (
