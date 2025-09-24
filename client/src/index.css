@@ -353,6 +353,10 @@ h2 {
   white-space: pre-wrap; /* Respect newlines in notes */
 }
 
+.item-name.editable {
+  text-decoration: underline;
+}
+
 .item-name:hover {
   text-decoration-color: #ffa500;
 }
