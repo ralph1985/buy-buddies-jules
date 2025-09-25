@@ -950,6 +950,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
                                     }
                                     aria-label="Cantidad"
                                     disabled={!user || pageLoading || isUpdating}
+                                    tabIndex={item.rowIndex * 3}
                                   />
                                 )}
                                 {quantityErrors[item.rowIndex] && (
@@ -994,6 +995,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
                                     }
                                     aria-label="Precio por unidad"
                                     disabled={!user || pageLoading || isUpdating}
+                                    tabIndex={item.rowIndex * 3 + 1}
                                   />
                                 )}
                                 {unitPriceErrors[item.rowIndex] && (
@@ -1016,6 +1018,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
                                   handleStatusChange(item.rowIndex, e.target.value)
                                 }
                                 disabled={!user || pageLoading || isUpdating}
+                                tabIndex={item.rowIndex * 3 + 2}
                               >
                                 <option value="">- Sin Estado -</option>
                                 {item.Estado &&
