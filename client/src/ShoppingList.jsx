@@ -10,6 +10,7 @@ import LogoutModal from "./LogoutModal";
 import HelpModal from "./HelpModal"; // Import the new modal
 import { trackEvent } from './analytics';
 import { validateDecimal } from "./utils/validation";
+import { usePrevious } from './hooks/usePrevious';
 
 function Spinner() {
   return <div className="spinner"></div>;
@@ -74,6 +75,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
   const isLocalUpdate = useRef(false);
   const isInitialRender = useRef(true);
   const urlFiltersApplied = useRef(false);
+  const prevUser = usePrevious(user);
 
   const fetchData = useCallback(async () => {
     try {
@@ -220,11 +222,11 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
         // If parsing fails, just clear all filters to ensure a clean state.
         handleClearFilters();
       }
-    } else if (!user) {
+    } else if (!user && prevUser) {
       // If user logs out, clear all filters.
       handleClearFilters();
     }
-  }, [user]); // This effect runs when the user logs in or out
+  }, [user, prevUser]); // This effect runs when the user logs in or out
 
   useEffect(() => {
     if (isInitialRender.current) {
