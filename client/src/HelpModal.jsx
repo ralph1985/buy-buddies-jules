@@ -32,6 +32,9 @@ function HelpModal({ isOpen, onClose }) {
           <h4>Resumen</h4>
           <p>Haz clic en "Ver Resumen Completo" para obtener un desglose de los gastos. Puedes fijar las categorías que más te interesen para tenerlas siempre a la vista en el panel principal.</p>
 
+          <h4>Vista de Miembros</h4>
+          <p>En la vista de "Miembros" puedes consultar la lista de todos los participantes, la tarifa que han abonado y el estado de su pago. Si has iniciado sesión, tu fila aparecerá resaltada para que puedas identificarte fácilmente.</p>
+
           <h4>Sincronización</h4>
           <p>La lista se actualiza automáticamente cada 30 segundos. También puedes forzar una actualización con el botón "Actualizar".</p>
         </div>
