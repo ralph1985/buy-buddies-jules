@@ -55,7 +55,7 @@ function MembersList({ user }) {
               <tr key={index} className={rowClass}>
                 <td>{member["Miembro"]}</td>
                 <td className={tarifaClass}>{member["Tarifa"]}</td>
-                <td>{String(member["Cuota Pagada"]).toUpperCase() === "TRUE" ? "Sí" : "No"}</td>
+                <td>{String(member["Cuota Pagada"] || "").trim().toLowerCase() === 'sí' ? 'Sí' : 'No'}</td>
               </tr>
             );
           })}
