@@ -52,6 +52,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
   const [locationFilter, setLocationFilter] = useState([]);
   const [groupBy, setGroupBy] = useState("assignedTo"); // 'type', 'assignedTo', 'status', 'place'
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -765,29 +766,13 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
           />
           <h1>{pageTitle}</h1>
         </div>
-        <div className="user-info">
-          {user ? (
-            <>
-              {/* Display the member's name from the user object */}
-              <span>{user['Miembro']}</span>
-              <button onClick={() => setIsLogoutModalOpen(true)}>
-                Cerrar sesión
-              </button>
-            </>
-          ) : (
-            <button onClick={onLoginRedirect}>
-              Iniciar sesión
-            </button>
-          )}
+        <div className="header-right">
           <button
-            onClick={() => {
-              setIsHelpModalOpen(true);
-              trackEvent('Modal', 'Open', 'Help');
-            }}
-            className="header-help-button"
-            aria-label="Ayuda"
+            className="menu-button"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Abrir menú"
           >
-            ?
+            &#9776; {/* Hamburger Icon */}
           </button>
         </div>
       </div>
@@ -1145,20 +1130,80 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
           <MembersList />
         )}
         </div>
-        <div className="right-sidebar">
+        <div className={`right-sidebar ${isSidebarOpen ? 'is-open' : ''}`}>
           <button
-            className={`sidebar-button ${activeView === 'shopping' ? 'active' : ''}`}
-            onClick={() => setActiveView('shopping')}
+            className="close-sidebar-button"
+            onClick={() => setIsSidebarOpen(false)}
           >
-            Compras
+            &times;
           </button>
-          <button
-            className={`sidebar-button ${activeView === 'members' ? 'active' : ''}`}
-            onClick={() => setActiveView('members')}
-          >
-            Miembros
-          </button>
+          <div className="sidebar-content">
+            <div className="sidebar-section">
+              <button
+                className={`sidebar-button ${activeView === 'shopping' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveView('shopping');
+                  setIsSidebarOpen(false);
+                }}
+              >
+                Compras
+              </button>
+              <button
+                className={`sidebar-button ${activeView === 'members' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveView('members');
+                  setIsSidebarOpen(false);
+                }}
+              >
+                Miembros
+              </button>
+            </div>
+            <div className="sidebar-section">
+              {user ? (
+                <>
+                  <span className="sidebar-user-info">Hola, {user['Miembro']}</span>
+                  <button
+                    className="sidebar-button"
+                    onClick={() => {
+                      setIsLogoutModalOpen(true);
+                      setIsSidebarOpen(false);
+                    }}
+                  >
+                    Cerrar sesión
+                  </button>
+                </>
+              ) : (
+                <button
+                  className="sidebar-button"
+                  onClick={() => {
+                    onLoginRedirect();
+                    setIsSidebarOpen(false);
+                  }}
+                >
+                  Iniciar sesión
+                </button>
+              )}
+            </div>
+            <div className="sidebar-section">
+              <button
+                className="sidebar-button"
+                onClick={() => {
+                  setIsHelpModalOpen(true);
+                  trackEvent('Modal', 'Open', 'Help');
+                  setIsSidebarOpen(false);
+                }}
+              >
+                Ayuda
+              </button>
+            </div>
+          </div>
         </div>
+        {isSidebarOpen && (
+          <div
+            className="sidebar-overlay"
+            onClick={() => setIsSidebarOpen(false)}
+          ></div>
+        )}
       </div>
     </div>
   );
