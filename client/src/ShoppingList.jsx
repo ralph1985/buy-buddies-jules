@@ -949,7 +949,13 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
                                       )
                                     }
                                     aria-label="Cantidad"
-                                    disabled={!user || pageLoading || isUpdating}
+                                    disabled={
+                                      !user ||
+                                      pageLoading ||
+                                      (updatingField &&
+                                        updatingField.rowIndex === item.rowIndex &&
+                                        updatingField.field === "quantity")
+                                    }
                                     tabIndex={item.rowIndex * 3}
                                   />
                                 )}
@@ -994,7 +1000,13 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
                                       )
                                     }
                                     aria-label="Precio por unidad"
-                                    disabled={!user || pageLoading || isUpdating}
+                                    disabled={
+                                      !user ||
+                                      pageLoading ||
+                                      (updatingField &&
+                                        updatingField.rowIndex === item.rowIndex &&
+                                        updatingField.field === "unitPrice")
+                                    }
                                     tabIndex={item.rowIndex * 3 + 1}
                                   />
                                 )}
@@ -1017,7 +1029,13 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
                                 onChange={(e) =>
                                   handleStatusChange(item.rowIndex, e.target.value)
                                 }
-                                disabled={!user || pageLoading || isUpdating}
+                                disabled={
+                                  !user ||
+                                  pageLoading ||
+                                  (updatingField &&
+                                    updatingField.rowIndex === item.rowIndex &&
+                                    updatingField.field === "status")
+                                }
                                 tabIndex={item.rowIndex * 3 + 2}
                               >
                                 <option value="">- Sin Estado -</option>
