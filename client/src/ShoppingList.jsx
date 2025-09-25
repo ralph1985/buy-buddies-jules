@@ -72,6 +72,8 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false); // State for help modal
   const [changes, setChanges] = useState({ added: [], edited: [], deleted: [] });
   const isLocalUpdate = useRef(false);
+  const isInitialRender = useRef(true);
+  const urlFiltersApplied = useRef(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -166,9 +168,30 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
     fetchData();
   }, [fetchData]);
 
+  // Load filters from URL on initial render
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const search = params.get('search');
+    const status = params.get('status');
+    const type = params.get('type');
+    const assignedTo = params.get('assignedTo');
+    const location = params.get('location');
+    const groupByParam = params.get('groupBy');
+
+    if (search || status || type || assignedTo || location || groupByParam) {
+      if (search) setSearchTags(search.split(',').map(val => ({ label: val, value: val })));
+      if (status) setStatusFilter(status.split(',').map(val => ({ label: val, value: val })));
+      if (type) setTypeFilter(type.split(',').map(val => ({ label: val, value: val })));
+      if (assignedTo) setAssignedToFilter(assignedTo.split(',').map(val => ({ label: val, value: val })));
+      if (location) setLocationFilter(location.split(',').map(val => ({ label: val, value: val })));
+      if (groupByParam) setGroupBy(groupByParam);
+      urlFiltersApplied.current = true;
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
+
   // Effect to apply default user filter on login
   useEffect(() => {
-    if (user && user['Filtro por defecto']) {
+    if (user && user['Filtro por defecto'] && !urlFiltersApplied.current) {
       try {
         const defaultFilter = JSON.parse(user['Filtro por defecto']);
 
@@ -203,10 +226,9 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
     }
   }, [user]); // This effect runs when the user logs in or out
 
-  const isInitialFilterLoad = useRef(true);
   useEffect(() => {
-    if (isInitialFilterLoad.current) {
-      isInitialFilterLoad.current = false;
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
       return;
     }
 
@@ -226,8 +248,19 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
     if (changedFilters) {
       trackEvent('Interaction', 'Apply Filter', changedFilters);
     }
+
+    const params = new URLSearchParams();
+    if (searchTags.length > 0) params.set('search', searchTags.map(t => t.value).join(','));
+    if (statusFilter.length > 0) params.set('status', statusFilter.map(f => f.value).join(','));
+    if (typeFilter.length > 0) params.set('type', typeFilter.map(f => f.value).join(','));
+    if (assignedToFilter.length > 0) params.set('assignedTo', assignedToFilter.map(f => f.value).join(','));
+    if (locationFilter.length > 0) params.set('location', locationFilter.map(f => f.value).join(','));
+    if (groupBy) params.set('groupBy', groupBy);
+
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState({ path: newUrl }, '', newUrl);
     // Note: Clearing filters is tracked in its own handler for accuracy.
-  }, [searchTags, statusFilter, typeFilter, assignedToFilter, locationFilter]);
+  }, [searchTags, statusFilter, typeFilter, assignedToFilter, locationFilter, groupBy]);
 
 
   // Effect for polling for changes
