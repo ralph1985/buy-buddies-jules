@@ -779,16 +779,6 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
               Iniciar sesión
             </button>
           )}
-           <div className="view-switcher-container">
-            <select
-              value={activeView}
-              onChange={(e) => setActiveView(e.target.value)}
-              className="view-switcher-select"
-            >
-              <option value="shopping">Compras</option>
-              <option value="members">Miembros</option>
-            </select>
-          </div>
           <button
             onClick={() => {
               setIsHelpModalOpen(true);
@@ -803,21 +793,22 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
       </div>
 
       <div className="desktop-layout-container">
-        {activeView === "shopping" ? (
-          <>
-            {renderFilterMenu()}
-            <div className="main-content">
-              <div className="open-filters-button-container">
-                <button
-                  onClick={() => setIsFilterMenuOpen(true)}
-                  className="open-filters-button"
-                  disabled={pageLoading}
-                >
-                  Filtros
-                </button>
-              </div>
-              <div className="main-summary-container">
-            {pinnedSummaryItems.map((label) => {
+        <div className={`main-view-container ${activeView === 'shopping' ? 'shopping-view' : 'members-view'}`}>
+          {activeView === "shopping" ? (
+            <>
+              {renderFilterMenu()}
+              <div className="main-content">
+                <div className="open-filters-button-container">
+                  <button
+                    onClick={() => setIsFilterMenuOpen(true)}
+                    className="open-filters-button"
+                    disabled={pageLoading}
+                  >
+                    Filtros
+                  </button>
+                </div>
+                <div className="main-summary-container">
+                  {pinnedSummaryItems.map((label) => {
               const item = summaryData.find((d) => d.label === label);
               if (!item) return null;
               return (
@@ -1153,6 +1144,21 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
         ) : (
           <MembersList />
         )}
+        </div>
+        <div className="right-sidebar">
+          <button
+            className={`sidebar-button ${activeView === 'shopping' ? 'active' : ''}`}
+            onClick={() => setActiveView('shopping')}
+          >
+            Compras
+          </button>
+          <button
+            className={`sidebar-button ${activeView === 'members' ? 'active' : ''}`}
+            onClick={() => setActiveView('members')}
+          >
+            Miembros
+          </button>
+        </div>
       </div>
     </div>
   );

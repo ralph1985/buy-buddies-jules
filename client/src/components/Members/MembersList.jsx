@@ -46,13 +46,16 @@ function MembersList() {
           </tr>
         </thead>
         <tbody>
-          {members.map((member, index) => (
-            <tr key={index}>
-              <td>{member["Miembro"]}</td>
-              <td>{member["Tarifa"]}</td>
-              <td>{member["Cuota Pagada"]}</td>
-            </tr>
-          ))}
+          {members.map((member, index) => {
+            const tarifaClass = member["Tarifa"] ? `tarifa-${member["Tarifa"].toLowerCase()}` : "";
+            return (
+              <tr key={index} className={tarifaClass}>
+                <td>{member["Miembro"]}</td>
+                <td>{member["Tarifa"]}</td>
+                <td>{member["Cuota Pagada"]}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
