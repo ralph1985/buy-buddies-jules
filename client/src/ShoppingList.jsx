@@ -197,25 +197,30 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
       try {
         const defaultFilter = JSON.parse(user['Filtro por defecto']);
 
-        // Explicitly set each filter based on the default settings or reset it.
-        // This avoids race conditions from clearing and then setting state.
+        // Merge default filters with existing ones, giving priority to user defaults
+        if (defaultFilter['Agrupado por']) {
+          setGroupBy(defaultFilter['Agrupado por']);
+        }
 
-        setGroupBy(defaultFilter['Agrupado por'] || 'assignedTo');
+        if (defaultFilter['Asignar a']) {
+          const assignedTo = defaultFilter['Asignar a'];
+          setAssignedToFilter([{ value: assignedTo, label: assignedTo }]);
+        }
 
-        const assignedTo = defaultFilter['Asignar a'];
-        setAssignedToFilter(assignedTo ? [{ value: assignedTo, label: assignedTo }] : []);
+        if (defaultFilter['Estado']) {
+          const status = defaultFilter['Estado'];
+          setStatusFilter([{ value: status, label: status }]);
+        }
 
-        const status = defaultFilter['Estado'];
-        setStatusFilter(status ? [{ value: status, label: status }] : []);
+        if (defaultFilter['Tipo de Elemento']) {
+          const type = defaultFilter['Tipo de Elemento'];
+          setTypeFilter([{ value: type, label: type }]);
+        }
 
-        const type = defaultFilter['Tipo de Elemento'];
-        setTypeFilter(type ? [{ value: type, label: type }] : []);
-
-        const location = defaultFilter['Lugar de Compra'];
-        setLocationFilter(location ? [{ value: location, label: location }] : []);
-
-        // Always reset search tags as they are not part of the default filter
-        setSearchTags([]);
+        if (defaultFilter['Lugar de Compra']) {
+          const location = defaultFilter['Lugar de Compra'];
+          setLocationFilter([{ value: location, label: location }]);
+        }
 
       } catch (e) {
         console.error("Failed to parse or apply default filter:", e);
