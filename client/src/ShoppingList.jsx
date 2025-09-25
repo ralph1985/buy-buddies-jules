@@ -1056,6 +1056,9 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
                               </select>
                             )}
                           </div>
+                          <div className="item-row-number">
+                            <em>#{item.rowIndex}</em>
+                          </div>
                         </li>
                       );
                     })}
