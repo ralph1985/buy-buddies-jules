@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./MembersList.css";
 
-function MembersList() {
+function MembersList({ user }) {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -48,10 +48,13 @@ function MembersList() {
         <tbody>
           {members.map((member, index) => {
             const tarifaClass = member["Tarifa"] ? `tarifa-${member["Tarifa"].toLowerCase()}` : "";
+            const isCurrentUser = user && user["Miembro"] === member["Miembro"];
+            const rowClass = isCurrentUser ? "current-user" : "";
+
             return (
-              <tr key={index} className={tarifaClass}>
+              <tr key={index} className={rowClass}>
                 <td>{member["Miembro"]}</td>
-                <td>{member["Tarifa"]}</td>
+                <td className={tarifaClass}>{member["Tarifa"]}</td>
                 <td>{member["Cuota Pagada"]}</td>
               </tr>
             );

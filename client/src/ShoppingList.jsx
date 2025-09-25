@@ -1100,10 +1100,6 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
                   onLogout();
                 }}
               />
-              <HelpModal
-                isOpen={isHelpModalOpen}
-                onClose={() => setIsHelpModalOpen(false)}
-              />
               {user && (
                 <div className="fab-container">
                   {selectedItems.length > 0 && (
@@ -1127,9 +1123,21 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
             </div>
           </>
         ) : (
-          <MembersList />
+          <MembersList user={user} />
         )}
         </div>
+        <LogoutModal
+          isOpen={isLogoutModalOpen}
+          onClose={() => setIsLogoutModalOpen(false)}
+          onConfirm={() => {
+            setIsLogoutModalOpen(false);
+            onLogout();
+          }}
+        />
+        <HelpModal
+          isOpen={isHelpModalOpen}
+          onClose={() => setIsHelpModalOpen(false)}
+        />
         <div className={`right-sidebar ${isSidebarOpen ? 'is-open' : ''}`}>
           <button
             className="close-sidebar-button"
