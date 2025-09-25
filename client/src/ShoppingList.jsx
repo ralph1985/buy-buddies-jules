@@ -8,6 +8,7 @@ import BulkEditModal from "./BulkEditModal";
 import ChangesModal from "./ChangesModal";
 import LogoutModal from "./LogoutModal";
 import HelpModal from "./HelpModal"; // Import the new modal
+import MembersList from "./components/Members/MembersList";
 import { trackEvent } from './analytics';
 import { validateDecimal } from "./utils/validation";
 import { usePrevious } from './hooks/usePrevious';
@@ -38,6 +39,7 @@ const processSummaryData = (data) => {
 function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings }) {
   const [items, setItems] = useState([]);
   const [pageTitle, setPageTitle] = useState("Lista de la Compra");
+  const [activeView, setActiveView] = useState("shopping");
   const [statusOptions, setStatusOptions] = useState([]);
   const [summaryData, setSummaryData] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
@@ -777,6 +779,16 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
               Iniciar sesión
             </button>
           )}
+           <div className="view-switcher-container">
+            <select
+              value={activeView}
+              onChange={(e) => setActiveView(e.target.value)}
+              className="view-switcher-select"
+            >
+              <option value="shopping">Compras</option>
+              <option value="members">Miembros</option>
+            </select>
+          </div>
           <button
             onClick={() => {
               setIsHelpModalOpen(true);
@@ -791,19 +803,20 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
       </div>
 
       <div className="desktop-layout-container">
-        {renderFilterMenu()}
-        <div className="main-content">
-          <div className="open-filters-button-container">
-            <button
-              onClick={() => setIsFilterMenuOpen(true)}
-              className="open-filters-button"
-              disabled={pageLoading}
-            >
-              Filtros
-            </button>
-          </div>
-
-          <div className="main-summary-container">
+        {activeView === "shopping" ? (
+          <>
+            {renderFilterMenu()}
+            <div className="main-content">
+              <div className="open-filters-button-container">
+                <button
+                  onClick={() => setIsFilterMenuOpen(true)}
+                  className="open-filters-button"
+                  disabled={pageLoading}
+                >
+                  Filtros
+                </button>
+              </div>
+              <div className="main-summary-container">
             {pinnedSummaryItems.map((label) => {
               const item = summaryData.find((d) => d.label === label);
               if (!item) return null;
@@ -815,39 +828,38 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
               );
             })}
             {pinnedSummaryItems.length === 0 && (
-              <p className="no-pinned-items-message">
-                No hay elementos fijados. Selecciona qué ver desde el resumen completo.
-              </p>
-            )}
-          </div>
+                <p className="no-pinned-items-message">
+                  No hay elementos fijados. Selecciona qué ver desde el resumen completo.
+                </p>
+              )}
+              </div>
 
-          <div className="summary-actions-container">
-            <button
-              onClick={() => {
-                setIsSummaryModalOpen(true);
-                trackEvent('Modal', 'Open', 'Summary');
-              }}
-              className="summary-link-button"
-              disabled={pageLoading}
-            >
-              Ver Resumen Completo
-            </button>
-            <div className="refresh-container">
-              <button
-                onClick={handleManualRefresh}
-                className="summary-link-button"
-                disabled={pageLoading}
-              >
-                Actualizar
-              </button>
-              <span className="countdown-timer">({countdown}s)</span>
-            </div>
-          </div>
-
-          {pageLoading && items.length === 0 ? (
-            <div className="loading">Cargando lista...</div>
-          ) : Object.keys(groupedItems).length > 0 ? (
-            Object.entries(groupedItems).map(([groupName, groupItems]) => {
+              <div className="summary-actions-container">
+                <button
+                  onClick={() => {
+                    setIsSummaryModalOpen(true);
+                    trackEvent('Modal', 'Open', 'Summary');
+                  }}
+                  className="summary-link-button"
+                  disabled={pageLoading}
+                >
+                  Ver Resumen Completo
+                </button>
+                <div className="refresh-container">
+                  <button
+                    onClick={handleManualRefresh}
+                    className="summary-link-button"
+                    disabled={pageLoading}
+                  >
+                    Actualizar
+                  </button>
+                  <span className="countdown-timer">({countdown}s)</span>
+                </div>
+              </div>
+              {pageLoading && items.length === 0 ? (
+                <div className="loading">Cargando lista...</div>
+              ) : Object.keys(groupedItems).length > 0 ? (
+                Object.entries(groupedItems).map(([groupName, groupItems]) => {
               const groupTotal = groupItems.reduce(
                 (sum, item) =>
                   sum + (Number(String(item.Total).replace(",", ".")) || 0),
@@ -1069,74 +1081,78 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
           ) : (
             <p>No se encontraron productos que coincidan con los filtros.</p>
           )}
-          <SummaryModal
-            isOpen={isSummaryModalOpen}
-            onClose={() => setIsSummaryModalOpen(false)}
-            summaryData={summaryData}
-            isLoading={false}
-            pinnedSummaryItems={pinnedSummaryItems}
-            onPinnedChange={handlePinnedSummaryChange}
-          />
-          <EditModal
-            isOpen={isEditModalOpen}
-            onClose={() => setIsEditModalOpen(false)}
-            itemData={editingItem}
-            onSave={handleSaveDetails}
-            typeOptions={typeOptions}
-            assignedToOptions={assignedToOptions}
-          />
-          <BulkEditModal
-            isOpen={isBulkEditModalOpen}
-            onClose={() => setIsBulkEditModalOpen(false)}
-            items={items.filter((item) => selectedItems.includes(item.rowIndex))}
-            onSave={handleBulkUpdate}
-            typeOptions={typeOptions}
-            assignedToOptions={assignedToOptions}
-            statusOptions={statusOptionsFormatted}
-            locationOptions={locationOptions}
-          />
-          <ChangesModal
-            isOpen={isChangesModalOpen}
-            onClose={() => {
-              setIsChangesModalOpen(false);
-              // After closing the modal, update localStorage with the latest items
-              localStorage.setItem("items", JSON.stringify(items));
-            }}
-            changes={changes}
-          />
-          <LogoutModal
-            isOpen={isLogoutModalOpen}
-            onClose={() => setIsLogoutModalOpen(false)}
-            onConfirm={() => {
-              setIsLogoutModalOpen(false);
-              onLogout();
-            }}
-          />
-          <HelpModal
-            isOpen={isHelpModalOpen}
-            onClose={() => setIsHelpModalOpen(false)}
-          />
-          {user && (
-            <div className="fab-container">
-              {selectedItems.length > 0 && (
-                <button
-                  className="fab-edit-button"
-                  onClick={handleOpenBulkEditModal}
-                  disabled={pageLoading}
-                >
-                  ✏️
-                </button>
+              <SummaryModal
+                isOpen={isSummaryModalOpen}
+                onClose={() => setIsSummaryModalOpen(false)}
+                summaryData={summaryData}
+                isLoading={false}
+                pinnedSummaryItems={pinnedSummaryItems}
+                onPinnedChange={handlePinnedSummaryChange}
+              />
+              <EditModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                itemData={editingItem}
+                onSave={handleSaveDetails}
+                typeOptions={typeOptions}
+                assignedToOptions={assignedToOptions}
+              />
+              <BulkEditModal
+                isOpen={isBulkEditModalOpen}
+                onClose={() => setIsBulkEditModalOpen(false)}
+                items={items.filter((item) => selectedItems.includes(item.rowIndex))}
+                onSave={handleBulkUpdate}
+                typeOptions={typeOptions}
+                assignedToOptions={assignedToOptions}
+                statusOptions={statusOptionsFormatted}
+                locationOptions={locationOptions}
+              />
+              <ChangesModal
+                isOpen={isChangesModalOpen}
+                onClose={() => {
+                  setIsChangesModalOpen(false);
+                  // After closing the modal, update localStorage with the latest items
+                  localStorage.setItem("items", JSON.stringify(items));
+                }}
+                changes={changes}
+              />
+              <LogoutModal
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+                onConfirm={() => {
+                  setIsLogoutModalOpen(false);
+                  onLogout();
+                }}
+              />
+              <HelpModal
+                isOpen={isHelpModalOpen}
+                onClose={() => setIsHelpModalOpen(false)}
+              />
+              {user && (
+                <div className="fab-container">
+                  {selectedItems.length > 0 && (
+                    <button
+                      className="fab-edit-button"
+                      onClick={handleOpenBulkEditModal}
+                      disabled={pageLoading}
+                    >
+                      ✏️
+                    </button>
+                  )}
+                  <button
+                    className="fab-add-button"
+                    onClick={() => handleOpenEditModal(null)}
+                    disabled={pageLoading}
+                  >
+                    +
+                  </button>
+                </div>
               )}
-              <button
-                className="fab-add-button"
-                onClick={() => handleOpenEditModal(null)}
-                disabled={pageLoading}
-              >
-                +
-              </button>
             </div>
-          )}
-        </div>
+          </>
+        ) : (
+          <MembersList />
+        )}
       </div>
     </div>
   );
