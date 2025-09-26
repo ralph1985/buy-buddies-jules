@@ -2,8 +2,6 @@
   padding: 20px 0;
   background-color: #1a1a1a;
   color: white;
-  height: calc(100vh - 150px); /* Adjust height to fill viewport minus header/footer */
-  overflow-y: auto;
 }
 
 .members-table {
@@ -22,7 +20,7 @@
 
 .members-table thead th {
   position: sticky;
-  top: -20px; /* Compensate for container padding */
+  top: 0;
   background-color: #2c2c2c;
   color: #ffa500;
   z-index: 1;
