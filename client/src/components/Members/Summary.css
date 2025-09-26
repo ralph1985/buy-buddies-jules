@@ -33,15 +33,9 @@
   font-weight: bold;
 }
 
-.summary-jueves {
+.summary-highlight {
   background-color: #e67e22; /* Orange */
-  color: #1a1a1a;
-  font-weight: bold;
-}
-
-.summary-viernes {
-  background-color: #f1c40f; /* Yellow */
-  color: #1a1a1a;
+  color: white !important;
   font-weight: bold;
 }
 
