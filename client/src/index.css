@@ -1076,6 +1076,8 @@ h2 {
 
   .main-view-container {
     flex-grow: 1;
+    height: auto;
+    overflow: visible;
   }
 
   .group-header {
