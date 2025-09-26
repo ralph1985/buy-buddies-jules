@@ -12,6 +12,7 @@ import MembersList from "./components/Members/MembersList";
 import { trackEvent } from './analytics';
 import { validateDecimal } from "./utils/validation";
 import { usePrevious } from './hooks/usePrevious';
+import { useRouter } from "./context/RouterContext";
 
 function Spinner() {
   return <div className="spinner"></div>;
@@ -37,9 +38,9 @@ const processSummaryData = (data) => {
 };
 
 function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings }) {
+  const { path, navigate } = useRouter();
   const [items, setItems] = useState([]);
   const [pageTitle, setPageTitle] = useState("Lista de la Compra");
-  const [activeView, setActiveView] = useState("shopping");
   const [statusOptions, setStatusOptions] = useState([]);
   const [summaryData, setSummaryData] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
@@ -773,353 +774,347 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
       </div>
 
       <div className="desktop-layout-container">
-        <div className={`main-view-container ${activeView === 'shopping' ? 'shopping-view' : 'members-view'}`}>
-          {activeView === "shopping" ? (
-            <>
-              {renderFilterMenu()}
-              <div className="main-content">
-                <div className="open-filters-button-container">
-                  <button
-                    onClick={() => setIsFilterMenuOpen(true)}
-                    className="open-filters-button"
-                    disabled={pageLoading}
-                  >
-                    Filtros
-                  </button>
-                </div>
-                <div className="main-summary-container">
-                  {pinnedSummaryItems.map((label) => {
-              const item = summaryData.find((d) => d.label === label);
-              if (!item) return null;
-              return (
-                <div className="summary-item" key={label}>
-                  <span className="summary-label">{item.label}</span>
-                  <span className="summary-value">{item.value}</span>
-                </div>
-              );
-            })}
-            {pinnedSummaryItems.length === 0 && (
-                <p className="no-pinned-items-message">
-                  No hay elementos fijados. Selecciona qué ver desde el resumen completo.
-                </p>
-              )}
-              </div>
+        <div className="main-view-container shopping-view">
+          {renderFilterMenu()}
+          <div className="main-content">
+            <div className="open-filters-button-container">
+              <button
+                onClick={() => setIsFilterMenuOpen(true)}
+                className="open-filters-button"
+                disabled={pageLoading}
+              >
+                Filtros
+              </button>
+            </div>
+            <div className="main-summary-container">
+              {pinnedSummaryItems.map((label) => {
+          const item = summaryData.find((d) => d.label === label);
+          if (!item) return null;
+          return (
+            <div className="summary-item" key={label}>
+              <span className="summary-label">{item.label}</span>
+              <span className="summary-value">{item.value}</span>
+            </div>
+          );
+        })}
+        {pinnedSummaryItems.length === 0 && (
+            <p className="no-pinned-items-message">
+              No hay elementos fijados. Selecciona qué ver desde el resumen completo.
+            </p>
+          )}
+          </div>
 
-              <div className="summary-actions-container">
-                <button
-                  onClick={() => {
-                    setIsSummaryModalOpen(true);
-                    trackEvent('Modal', 'Open', 'Summary');
-                  }}
-                  className="summary-link-button"
-                  disabled={pageLoading}
-                >
-                  Ver Resumen Completo
-                </button>
-                <div className="refresh-container">
-                  <button
-                    onClick={handleManualRefresh}
-                    className="summary-link-button"
-                    disabled={pageLoading}
-                  >
-                    Actualizar
-                  </button>
-                  <span className="countdown-timer">({countdown}s)</span>
-                </div>
-              </div>
-              {pageLoading && items.length === 0 ? (
-                <div className="loading">Cargando lista...</div>
-              ) : Object.keys(groupedItems).length > 0 ? (
-                Object.entries(groupedItems).map(([groupName, groupItems]) => {
-              const groupTotal = groupItems.reduce(
-                (sum, item) =>
-                  sum + (Number(String(item.Total).replace(",", ".")) || 0),
-                0
-              );
-              return (
-                <div
-                  key={groupName}
-                  className="group-container"
-                >
-                  <h2 className="group-header">
-                    {user && (
-                      <div className="item-checkbox-container">
-                        <input
-                          type="checkbox"
-                          className="group-checkbox custom-form-control"
-                          checked={groupItems.every((item) =>
-                            selectedItems.includes(item.rowIndex)
-                          )}
-                          onChange={(e) =>
-                            handleSelectGroup(groupItems, e.target.checked)
-                          }
-                          disabled={pageLoading}
-                        />
-                      </div>
-                    )}
-                    <span className="group-name">{groupName}</span>
-                    <span className="group-total">
-                      {groupTotal.toFixed(2).replace(".", ",")}€
-                    </span>
-                  </h2>
-                  <ul className="shopping-list">
-                    {groupItems.map((item) => {
-                      const isUpdating =
-                        updatingField && updatingField.rowIndex === item.rowIndex;
-                      return (
-                        <li
-                          key={item.rowIndex}
-                          className={`shopping-list-item status-${String(
-                            item.Estado || ""
-                          )
-                            .toLowerCase()
-                            .replace(/ /g, "-")}`}
+          <div className="summary-actions-container">
+            <button
+              onClick={() => {
+                setIsSummaryModalOpen(true);
+                trackEvent('Modal', 'Open', 'Summary');
+              }}
+              className="summary-link-button"
+              disabled={pageLoading}
+            >
+              Ver Resumen Completo
+            </button>
+            <div className="refresh-container">
+              <button
+                onClick={handleManualRefresh}
+                className="summary-link-button"
+                disabled={pageLoading}
+              >
+                Actualizar
+              </button>
+              <span className="countdown-timer">({countdown}s)</span>
+            </div>
+          </div>
+          {pageLoading && items.length === 0 ? (
+            <div className="loading">Cargando lista...</div>
+          ) : Object.keys(groupedItems).length > 0 ? (
+            Object.entries(groupedItems).map(([groupName, groupItems]) => {
+          const groupTotal = groupItems.reduce(
+            (sum, item) =>
+              sum + (Number(String(item.Total).replace(",", ".")) || 0),
+            0
+          );
+          return (
+            <div
+              key={groupName}
+              className="group-container"
+            >
+              <h2 className="group-header">
+                {user && (
+                  <div className="item-checkbox-container">
+                    <input
+                      type="checkbox"
+                      className="group-checkbox custom-form-control"
+                      checked={groupItems.every((item) =>
+                        selectedItems.includes(item.rowIndex)
+                      )}
+                      onChange={(e) =>
+                        handleSelectGroup(groupItems, e.target.checked)
+                      }
+                      disabled={pageLoading}
+                    />
+                  </div>
+                )}
+                <span className="group-name">{groupName}</span>
+                <span className="group-total">
+                  {groupTotal.toFixed(2).replace(".", ",")}€
+                </span>
+              </h2>
+              <ul className="shopping-list">
+                {groupItems.map((item) => {
+                  const isUpdating =
+                    updatingField && updatingField.rowIndex === item.rowIndex;
+                  return (
+                    <li
+                      key={item.rowIndex}
+                      className={`shopping-list-item status-${String(
+                        item.Estado || ""
+                      )
+                        .toLowerCase()
+                        .replace(/ /g, "-")}`}
+                    >
+                      {user && (
+                        <div className="item-checkbox-container">
+                          <input
+                            type="checkbox"
+                            className="item-checkbox custom-form-control"
+                            checked={selectedItems.includes(item.rowIndex)}
+                            onChange={() => handleSelectItem(item.rowIndex)}
+                            disabled={pageLoading}
+                          />
+                        </div>
+                      )}
+                      <div className="item-details">
+                        <span
+                          className={`item-name ${user ? 'editable' : ''}`}
+                          onClick={() => user && handleOpenEditModal(item)}
                         >
-                          {user && (
-                            <div className="item-checkbox-container">
-                              <input
-                                type="checkbox"
-                                className="item-checkbox custom-form-control"
-                                checked={selectedItems.includes(item.rowIndex)}
-                                onChange={() => handleSelectItem(item.rowIndex)}
-                                disabled={pageLoading}
-                              />
-                            </div>
-                          )}
-                          <div className="item-details">
-                            <span
-                              className={`item-name ${user ? 'editable' : ''}`}
-                              onClick={() => user && handleOpenEditModal(item)}
+                          {item.Descripción}
+                        </span>
+                        {item.Notas && (
+                          <span className="item-notes">{item.Notas}</span>
+                        )}
+                        <div className="item-actions">
+                          <div className="editable-field">
+                            <label
+                              htmlFor={`quantity-${item.rowIndex}`}
+                              className="editable-field-label"
                             >
-                              {item.Descripción}
-                            </span>
-                            {item.Notas && (
-                              <span className="item-notes">{item.Notas}</span>
-                            )}
-                            <div className="item-actions">
-                              <div className="editable-field">
-                                <label
-                                  htmlFor={`quantity-${item.rowIndex}`}
-                                  className="editable-field-label"
-                                >
-                                  Cantidad:
-                                </label>
-                                {isUpdating &&
-                                updatingField.field === "quantity" ? (
-                                  <Skeleton type="input" />
-                                ) : (
-                                  <input
-                                    id={`quantity-${item.rowIndex}`}
-                                    type="text"
-                                    inputMode="decimal"
-                                    className={`editable-input ${
-                                      quantityErrors[item.rowIndex]
-                                        ? "input-error"
-                                        : ""
-                                    }`}
-                                    value={quantityValues[item.rowIndex] || ""}
-                                    onChange={(e) =>
-                                      setQuantityValues({
-                                        ...quantityValues,
-                                        [item.rowIndex]: e.target.value,
-                                      })
-                                    }
-                                    onBlur={(e) =>
-                                      handleQuantityValidation(
-                                        item.rowIndex,
-                                        e.target.value,
-                                        item.Cantidad
-                                      )
-                                    }
-                                    aria-label="Cantidad"
-                                    disabled={
-                                      !user ||
-                                      pageLoading ||
-                                      (updatingField &&
-                                        updatingField.rowIndex === item.rowIndex &&
-                                        updatingField.field === "quantity")
-                                    }
-                                    tabIndex={item.rowIndex * 3}
-                                  />
-                                )}
-                                {quantityErrors[item.rowIndex] && (
-                                  <span className="item-error-message">
-                                    {quantityErrors[item.rowIndex]}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="editable-field">
-                                <label
-                                  htmlFor={`unit-price-${item.rowIndex}`}
-                                  className="editable-field-label"
-                                >
-                                  €/ud:
-                                </label>
-                                {isUpdating &&
-                                updatingField.field === "unitPrice" ? (
-                                  <Skeleton type="input" />
-                                ) : (
-                                  <input
-                                    id={`unit-price-${item.rowIndex}`}
-                                    type="text"
-                                    inputMode="decimal"
-                                    className={`editable-input ${
-                                      unitPriceErrors[item.rowIndex]
-                                        ? "input-error"
-                                        : ""
-                                    }`}
-                                    value={unitPriceValues[item.rowIndex] || ""}
-                                    onChange={(e) =>
-                                      setUnitPriceValues({
-                                        ...unitPriceValues,
-                                        [item.rowIndex]: e.target.value,
-                                      })
-                                    }
-                                    onBlur={(e) =>
-                                      handleUnitPriceValidation(
-                                        item.rowIndex,
-                                        e.target.value,
-                                        item["Precio unidad"]
-                                      )
-                                    }
-                                    aria-label="Precio por unidad"
-                                    disabled={
-                                      !user ||
-                                      pageLoading ||
-                                      (updatingField &&
-                                        updatingField.rowIndex === item.rowIndex &&
-                                        updatingField.field === "unitPrice")
-                                    }
-                                    tabIndex={item.rowIndex * 3 + 1}
-                                  />
-                                )}
-                                {unitPriceErrors[item.rowIndex] && (
-                                  <span className="item-error-message">
-                                    {unitPriceErrors[item.rowIndex]}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="item-pricing">
-                            <span className="item-total">{item.Total}€</span>
-                            {isUpdating && updatingField.field === "status" ? (
-                              <Skeleton type="select" />
+                              Cantidad:
+                            </label>
+                            {isUpdating &&
+                            updatingField.field === "quantity" ? (
+                              <Skeleton type="input" />
                             ) : (
-                              <select
-                                className="item-status-select"
-                                value={item.Estado || ""}
+                              <input
+                                id={`quantity-${item.rowIndex}`}
+                                type="text"
+                                inputMode="decimal"
+                                className={`editable-input ${
+                                  quantityErrors[item.rowIndex]
+                                    ? "input-error"
+                                    : ""
+                                }`}
+                                value={quantityValues[item.rowIndex] || ""}
                                 onChange={(e) =>
-                                  handleStatusChange(item.rowIndex, e.target.value)
+                                  setQuantityValues({
+                                    ...quantityValues,
+                                    [item.rowIndex]: e.target.value,
+                                  })
                                 }
+                                onBlur={(e) =>
+                                  handleQuantityValidation(
+                                    item.rowIndex,
+                                    e.target.value,
+                                    item.Cantidad
+                                  )
+                                }
+                                aria-label="Cantidad"
                                 disabled={
                                   !user ||
                                   pageLoading ||
                                   (updatingField &&
                                     updatingField.rowIndex === item.rowIndex &&
-                                    updatingField.field === "status")
+                                    updatingField.field === "quantity")
                                 }
-                                tabIndex={item.rowIndex * 3 + 2}
-                              >
-                                <option value="">- Sin Estado -</option>
-                                {item.Estado &&
-                                  !statusOptions.includes(item.Estado) && (
-                                    <option value={item.Estado}>
-                                      {item.Estado}
-                                    </option>
-                                  )}
-                                {statusOptions.map((option) => (
-                                  <option
-                                    key={option}
-                                    value={option}
-                                  >
-                                    {option}
-                                  </option>
-                                ))}
-                              </select>
+                                tabIndex={item.rowIndex * 3}
+                              />
+                            )}
+                            {quantityErrors[item.rowIndex] && (
+                              <span className="item-error-message">
+                                {quantityErrors[item.rowIndex]}
+                              </span>
                             )}
                           </div>
-                          <div className="item-row-number">
-                            <em>#{item.rowIndex}</em>
+                          <div className="editable-field">
+                            <label
+                              htmlFor={`unit-price-${item.rowIndex}`}
+                              className="editable-field-label"
+                            >
+                              €/ud:
+                            </label>
+                            {isUpdating &&
+                            updatingField.field === "unitPrice" ? (
+                              <Skeleton type="input" />
+                            ) : (
+                              <input
+                                id={`unit-price-${item.rowIndex}`}
+                                type="text"
+                                inputMode="decimal"
+                                className={`editable-input ${
+                                  unitPriceErrors[item.rowIndex]
+                                    ? "input-error"
+                                    : ""
+                                }`}
+                                value={unitPriceValues[item.rowIndex] || ""}
+                                onChange={(e) =>
+                                  setUnitPriceValues({
+                                    ...unitPriceValues,
+                                    [item.rowIndex]: e.target.value,
+                                  })
+                                }
+                                onBlur={(e) =>
+                                  handleUnitPriceValidation(
+                                    item.rowIndex,
+                                    e.target.value,
+                                    item["Precio unidad"]
+                                  )
+                                }
+                                aria-label="Precio por unidad"
+                                disabled={
+                                  !user ||
+                                  pageLoading ||
+                                  (updatingField &&
+                                    updatingField.rowIndex === item.rowIndex &&
+                                    updatingField.field === "unitPrice")
+                                }
+                                tabIndex={item.rowIndex * 3 + 1}
+                              />
+                            )}
+                            {unitPriceErrors[item.rowIndex] && (
+                              <span className="item-error-message">
+                                {unitPriceErrors[item.rowIndex]}
+                              </span>
+                            )}
                           </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              );
-            })
-          ) : (
-            <p>No se encontraron productos que coincidan con los filtros.</p>
-          )}
-              <SummaryModal
-                isOpen={isSummaryModalOpen}
-                onClose={() => setIsSummaryModalOpen(false)}
-                summaryData={summaryData}
-                isLoading={false}
-                pinnedSummaryItems={pinnedSummaryItems}
-                onPinnedChange={handlePinnedSummaryChange}
-              />
-              <EditModal
-                isOpen={isEditModalOpen}
-                onClose={() => setIsEditModalOpen(false)}
-                itemData={editingItem}
-                onSave={handleSaveDetails}
-                typeOptions={typeOptions}
-                assignedToOptions={assignedToOptions}
-              />
-              <BulkEditModal
-                isOpen={isBulkEditModalOpen}
-                onClose={() => setIsBulkEditModalOpen(false)}
-                items={items.filter((item) => selectedItems.includes(item.rowIndex))}
-                onSave={handleBulkUpdate}
-                typeOptions={typeOptions}
-                assignedToOptions={assignedToOptions}
-                statusOptions={statusOptionsFormatted}
-                locationOptions={locationOptions}
-              />
-              <ChangesModal
-                isOpen={isChangesModalOpen}
-                onClose={() => {
-                  setIsChangesModalOpen(false);
-                  // After closing the modal, update localStorage with the latest items
-                  localStorage.setItem("items", JSON.stringify(items));
-                }}
-                changes={changes}
-              />
-              <LogoutModal
-                isOpen={isLogoutModalOpen}
-                onClose={() => setIsLogoutModalOpen(false)}
-                onConfirm={() => {
-                  setIsLogoutModalOpen(false);
-                  onLogout();
-                }}
-              />
-              {user && (
-                <div className="fab-container">
-                  {selectedItems.length > 0 && (
-                    <button
-                      className="fab-edit-button"
-                      onClick={handleOpenBulkEditModal}
-                      disabled={pageLoading}
-                    >
-                      ✏️
-                    </button>
-                  )}
-                  <button
-                    className="fab-add-button"
-                    onClick={() => handleOpenEditModal(null)}
-                    disabled={pageLoading}
-                  >
-                    +
-                  </button>
-                </div>
-              )}
+                        </div>
+                      </div>
+                      <div className="item-pricing">
+                        <span className="item-total">{item.Total}€</span>
+                        {isUpdating && updatingField.field === "status" ? (
+                          <Skeleton type="select" />
+                        ) : (
+                          <select
+                            className="item-status-select"
+                            value={item.Estado || ""}
+                            onChange={(e) =>
+                              handleStatusChange(item.rowIndex, e.target.value)
+                            }
+                            disabled={
+                              !user ||
+                              pageLoading ||
+                              (updatingField &&
+                                updatingField.rowIndex === item.rowIndex &&
+                                updatingField.field === "status")
+                            }
+                            tabIndex={item.rowIndex * 3 + 2}
+                          >
+                            <option value="">- Sin Estado -</option>
+                            {item.Estado &&
+                              !statusOptions.includes(item.Estado) && (
+                                <option value={item.Estado}>
+                                  {item.Estado}
+                                </option>
+                              )}
+                            {statusOptions.map((option) => (
+                              <option
+                                key={option}
+                                value={option}
+                              >
+                                {option}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                      <div className="item-row-number">
+                        <em>#{item.rowIndex}</em>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
-          </>
-        ) : (
-          <MembersList user={user} />
-        )}
+          );
+        })
+      ) : (
+        <p>No se encontraron productos que coincidan con los filtros.</p>
+      )}
+          <SummaryModal
+            isOpen={isSummaryModalOpen}
+            onClose={() => setIsSummaryModalOpen(false)}
+            summaryData={summaryData}
+            isLoading={false}
+            pinnedSummaryItems={pinnedSummaryItems}
+            onPinnedChange={handlePinnedSummaryChange}
+          />
+          <EditModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            itemData={editingItem}
+            onSave={handleSaveDetails}
+            typeOptions={typeOptions}
+            assignedToOptions={assignedToOptions}
+          />
+          <BulkEditModal
+            isOpen={isBulkEditModalOpen}
+            onClose={() => setIsBulkEditModalOpen(false)}
+            items={items.filter((item) => selectedItems.includes(item.rowIndex))}
+            onSave={handleBulkUpdate}
+            typeOptions={typeOptions}
+            assignedToOptions={assignedToOptions}
+            statusOptions={statusOptionsFormatted}
+            locationOptions={locationOptions}
+          />
+          <ChangesModal
+            isOpen={isChangesModalOpen}
+            onClose={() => {
+              setIsChangesModalOpen(false);
+              // After closing the modal, update localStorage with the latest items
+              localStorage.setItem("items", JSON.stringify(items));
+            }}
+            changes={changes}
+          />
+          <LogoutModal
+            isOpen={isLogoutModalOpen}
+            onClose={() => setIsLogoutModalOpen(false)}
+            onConfirm={() => {
+              setIsLogoutModalOpen(false);
+              onLogout();
+            }}
+          />
+          {user && (
+            <div className="fab-container">
+              {selectedItems.length > 0 && (
+                <button
+                  className="fab-edit-button"
+                  onClick={handleOpenBulkEditModal}
+                  disabled={pageLoading}
+                >
+                  ✏️
+                </button>
+              )}
+              <button
+                className="fab-add-button"
+                onClick={() => handleOpenEditModal(null)}
+                disabled={pageLoading}
+              >
+                +
+              </button>
+            </div>
+          )}
+        </div>
         </div>
         <LogoutModal
           isOpen={isLogoutModalOpen}
@@ -1143,18 +1138,18 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
           <div className="sidebar-content">
             <div className="sidebar-section">
               <button
-                className={`sidebar-button ${activeView === 'shopping' ? 'active' : ''}`}
+                className={`sidebar-button ${path === '/' ? 'active' : ''}`}
                 onClick={() => {
-                  setActiveView('shopping');
+                  navigate('/');
                   setIsSidebarOpen(false);
                 }}
               >
                 Compras
               </button>
               <button
-                className={`sidebar-button ${activeView === 'members' ? 'active' : ''}`}
+                className={`sidebar-button ${path === '/members' ? 'active' : ''}`}
                 onClick={() => {
-                  setActiveView('members');
+                  navigate('/members');
                   setIsSidebarOpen(false);
                 }}
               >

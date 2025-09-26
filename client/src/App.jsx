@@ -5,10 +5,13 @@ import CookieConsent from './components/CookieConsent/CookieConsent';
 import { useCookieConsentContext } from './context/CookieConsentContext';
 import AnalyticsTracker from './components/Analytics/AnalyticsTracker';
 import { trackEvent } from './analytics';
+import { useRouter } from './context/RouterContext';
+import Members from './Members';
 
 function App() {
   const [user, setUser] = useState(null); // Will now store the full member object
   const { openSettings } = useCookieConsentContext();
+  const { path } = useRouter();
 
   useEffect(() => {
     const session = JSON.parse(localStorage.getItem('userSession'));
@@ -48,15 +51,26 @@ function App() {
     trackEvent('Authentication', 'Login Success');
   };
 
+  const renderContent = () => {
+    switch (path) {
+      case '/members':
+        return <Members />;
+      default:
+        return (
+          <ShoppingList
+            user={user}
+            onLogout={handleLogout}
+            onLoginRedirect={() => setIsLoginModalOpen(true)}
+            onOpenCookieSettings={openSettings}
+          />
+        );
+    }
+  };
+
   return (
     <div className="App">
       <AnalyticsTracker />
-      <ShoppingList
-        user={user}
-        onLogout={handleLogout}
-        onLoginRedirect={() => setIsLoginModalOpen(true)}
-        onOpenCookieSettings={openSettings}
-      />
+      {renderContent()}
       {isLoginModalOpen && (
         <LoginModal
           onLogin={handleLoginSuccess}
