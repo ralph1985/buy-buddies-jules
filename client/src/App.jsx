@@ -64,11 +64,6 @@ function App() {
         />
       )}
       <CookieConsent />
-      <footer className="app-footer">
-        <button onClick={openSettings} className="footer-link hide-on-desktop">
-          Configurar cookies
-        </button>
-      </footer>
     </div>
   );
 }

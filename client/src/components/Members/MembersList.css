@@ -1,5 +1,5 @@
 .members-list-container {
-  padding: 20px;
+  padding: 20px 0;
   background-color: #1a1a1a;
   color: white;
   height: calc(100vh - 150px); /* Adjust height to fill viewport minus header/footer */
@@ -15,8 +15,9 @@
 .members-table th,
 .members-table td {
   border: 1px solid #555;
-  padding: 12px;
+  padding: 8px 12px;
   text-align: left;
+  font-size: 0.9rem;
 }
 
 .members-table thead th {

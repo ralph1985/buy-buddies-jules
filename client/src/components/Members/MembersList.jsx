@@ -42,7 +42,7 @@ function MembersList({ user }) {
           <tr>
             <th>Nombre</th>
             <th>Tarifa</th>
-            <th>Cuota Pagada</th>
+            <th>¿Pagado?</th>
           </tr>
         </thead>
         <tbody>
@@ -55,7 +55,7 @@ function MembersList({ user }) {
               <tr key={index} className={rowClass}>
                 <td>{member["Miembro"]}</td>
                 <td className={tarifaClass}>{member["Tarifa"]}</td>
-                <td>{String(member["Cuota Pagada"] || "").trim().toLowerCase() === 'sí' ? 'Sí' : 'No'}</td>
+                <td>{member["¿Pagado?"] === "Sí" ? "Sí" : "No"}</td>
               </tr>
             );
           })}
