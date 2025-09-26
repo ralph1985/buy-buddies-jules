@@ -1,45 +1,61 @@
 .summary-container {
   margin-bottom: 20px;
   padding: 15px;
-  border: 1px solid #ccc;
+  background-color: #1a1a1a;
   border-radius: 8px;
-  background-color: #f9f9f9;
+  border: 1px solid #555;
 }
 
 .summary-container h2 {
   text-align: center;
   margin-bottom: 15px;
-  color: #333;
+  color: #ffa500;
+  font-size: 1.5rem;
 }
 
 .summary-table {
   width: 100%;
   border-collapse: collapse;
+  color: white;
 }
 
 .summary-table th,
 .summary-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
+  border: 1px solid #555;
+  padding: 8px 12px;
   text-align: left;
+  font-size: 0.9rem;
 }
 
 .summary-table th {
-  background-color: #f2f2f2;
-}
-
-.summary-jueves {
-  background-color: #ffe0b2; /* Light orange */
-}
-
-.summary-viernes {
-  background-color: #fff9c4; /* Light yellow */
-}
-
-.summary-total {
+  background-color: #2c2c2c;
+  color: #ffa500;
   font-weight: bold;
 }
 
-.summary-table tfoot {
-  background-color: #e0e0e0;
+.summary-jueves {
+  background-color: #e67e22; /* Orange */
+  color: #1a1a1a;
+  font-weight: bold;
+}
+
+.summary-viernes {
+  background-color: #f1c40f; /* Yellow */
+  color: #1a1a1a;
+  font-weight: bold;
+}
+
+.summary-table tbody tr {
+  background-color: #2c2c2c;
+}
+
+
+.summary-table tfoot tr {
+  background-color: #2c2c2c;
+}
+
+.summary-total td {
+  font-weight: bold;
+  color: #ffa500;
+  font-size: 1.1rem;
 }
