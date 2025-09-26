@@ -63,6 +63,16 @@
   font-weight: bold;
 }
 
+.members-table td.status-paid {
+  background-color: #28a745; /* Green */
+  color: white;
+}
+
+.members-table td.status-not-paid {
+  background-color: #dc3545; /* Red */
+  color: white;
+}
+
 .members-table td.tarifa-viernes {
   background-color: #f1c40f; /* Yellow */
   color: #1a1a1a;
