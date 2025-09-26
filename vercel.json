@@ -19,12 +19,8 @@
       "destination": "/api/index"
     },
     {
-      "source": "/",
-      "destination": "/client/"
-    },
-    {
       "source": "/(.*)",
-      "destination": "/client/$1"
+      "destination": "/index.html"
     }
   ]
 }
