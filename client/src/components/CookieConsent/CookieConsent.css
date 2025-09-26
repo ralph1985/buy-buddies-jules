@@ -42,9 +42,16 @@
   font-size: 14px;
 }
 
-.cookie-consent-text a {
+.cookie-consent-text a,
+.cookie-settings-modal p a {
   color: var(--cookie-modal-header-text);
   text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.cookie-consent-text a:hover,
+.cookie-settings-modal p a:hover {
+  color: #ffc966; /* Lighter shade of orange for hover */
 }
 
 .cookie-consent-actions {
