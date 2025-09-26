@@ -33,9 +33,15 @@
   font-weight: bold;
 }
 
-.summary-highlight {
+.summary-jueves {
   background-color: #e67e22; /* Orange */
-  color: white !important;
+  color: white;
+  font-weight: bold;
+}
+
+.summary-viernes {
+  background-color: #f1c40f; /* Yellow */
+  color: white;
   font-weight: bold;
 }
 
@@ -52,4 +58,8 @@
   font-weight: bold;
   color: #ffa500;
   font-size: 1.1rem;
+}
+
+.no-wrap {
+  white-space: nowrap;
 }
