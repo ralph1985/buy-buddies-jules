@@ -110,16 +110,20 @@ function MembersList({ user }) {
         </thead>
         <tbody>
           {attending.map((member, index) => {
-            const tarifaClass = member["Tarifa"] ? `tarifa-${member["Tarifa"].toLowerCase()}` : "";
+            const tarifaClass = member["Tarifa"] ? `tarifa-${member["Tarifa"].toLowerCase().replace(/ /g, '-')}` : "";
             const isCurrentUser = user && user["Miembro"] === member["Miembro"];
             const rowClass = isCurrentUser ? "current-user" : "";
 
             return (
               <tr key={index} className={rowClass}>
                 <td>{member["Miembro"]}</td>
-                <td className={tarifaClass}>{member["Tarifa"]}</td>
-                <td className={member["¿Pagado?"] === "Sí" ? 'status-paid' : 'status-not-paid'}>
-                  {member["¿Pagado?"] === "Sí" ? "Sí" : "No"}
+                <td>
+                  <span className={tarifaClass}>{member["Tarifa"]}</span>
+                </td>
+                <td>
+                  <span className={member["¿Pagado?"] === "Sí" ? 'status-paid' : 'status-not-paid'}>
+                    {member["¿Pagado?"] === "Sí" ? "Sí" : "No"}
+                  </span>
                 </td>
               </tr>
             );
@@ -134,13 +138,18 @@ function MembersList({ user }) {
           {notAttending.map((member, index) => {
             const isCurrentUser = user && user["Miembro"] === member["Miembro"];
             const rowClass = isCurrentUser ? "current-user" : "";
+            const tarifaClass = member["Tarifa"] ? `tarifa-${member["Tarifa"].toLowerCase().replace(/ /g, '-')}` : "";
 
             return (
               <tr key={`not-attending-${index}`} className={rowClass}>
                 <td>{member["Miembro"]}</td>
-                <td>{member["Tarifa"]}</td>
-                <td className={member["¿Pagado?"] === "Sí" ? 'status-paid' : 'status-not-paid'}>
-                  {member["¿Pagado?"] === "Sí" ? "Sí" : "No"}
+                <td>
+                  <span className={tarifaClass}>{member["Tarifa"]}</span>
+                </td>
+                <td>
+                  <span className={member["¿Pagado?"] === "Sí" ? 'status-paid' : 'status-not-paid'}>
+                    {member["¿Pagado?"] === "Sí" ? "Sí" : "No"}
+                  </span>
                 </td>
               </tr>
             );

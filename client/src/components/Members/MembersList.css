@@ -57,26 +57,39 @@
   background-color: #006400; /* Slightly lighter green on hover */
 }
 
-.members-table td.tarifa-jueves {
-  background-color: #e67e22; /* Orange */
-  color: #1a1a1a;
+.members-table td span {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
   font-weight: bold;
+  display: inline-block;
+  min-width: 50px;
+  text-align: center;
 }
 
-.members-table td.status-paid {
+.members-table td span.tarifa-jueves {
+  background-color: #e67e22; /* Orange */
+  color: #1a1a1a;
+}
+
+.members-table td span.tarifa-no-viene {
+  background-color: #6c757d; /* Gray */
+  color: white;
+}
+
+.members-table td span.status-paid {
   background-color: #28a745; /* Green */
   color: white;
 }
 
-.members-table td.status-not-paid {
+.members-table td span.status-not-paid {
   background-color: #dc3545; /* Red */
   color: white;
 }
 
-.members-table td.tarifa-viernes {
+.members-table td span.tarifa-viernes {
   background-color: #f1c40f; /* Yellow */
   color: #1a1a1a;
-  font-weight: bold;
 }
 
 .loading,
