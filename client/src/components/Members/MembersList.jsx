@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import "./MembersList.css";
+import Summary from "./Summary";
 
 function MembersList({ user }) {
   const [members, setMembers] = useState([]);
@@ -100,6 +101,7 @@ function MembersList({ user }) {
 
   return (
     <div className="members-list-container">
+      <Summary />
       <table className="members-table">
         <thead>
           <tr>
