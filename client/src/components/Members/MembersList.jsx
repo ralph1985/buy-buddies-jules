@@ -36,7 +36,6 @@ function MembersList({ user }) {
 
   return (
     <div className="members-list-container">
-      <h2>Miembros</h2>
       <table className="members-table">
         <thead>
           <tr>
