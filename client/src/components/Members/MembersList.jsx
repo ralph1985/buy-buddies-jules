@@ -118,7 +118,9 @@ function MembersList({ user }) {
               <tr key={index} className={rowClass}>
                 <td>{member["Miembro"]}</td>
                 <td className={tarifaClass}>{member["Tarifa"]}</td>
-                <td>{member["¿Pagado?"] === "Sí" ? "Sí" : "No"}</td>
+                <td className={member["¿Pagado?"] === "Sí" ? 'status-paid' : 'status-not-paid'}>
+                  {member["¿Pagado?"] === "Sí" ? "Sí" : "No"}
+                </td>
               </tr>
             );
           })}
@@ -137,7 +139,9 @@ function MembersList({ user }) {
               <tr key={`not-attending-${index}`} className={rowClass}>
                 <td>{member["Miembro"]}</td>
                 <td>{member["Tarifa"]}</td>
-                <td>{member["¿Pagado?"] === "Sí" ? "Sí" : "No"}</td>
+                <td className={member["¿Pagado?"] === "Sí" ? 'status-paid' : 'status-not-paid'}>
+                  {member["¿Pagado?"] === "Sí" ? "Sí" : "No"}
+                </td>
               </tr>
             );
           })}
