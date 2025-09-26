@@ -27,10 +27,13 @@ function MembersList({ user }) {
     fetchMembers();
   }, []);
 
-  const sortedMembers = useMemo(() => {
-    let sortableItems = [...members];
+  const { attending, notAttending } = useMemo(() => {
+    const attendingMembers = members.filter(m => m['Tarifa'] !== 'No viene');
+    const notAttendingMembers = members.filter(m => m['Tarifa'] === 'No viene');
+
+    // Sort attending members
     if (sortConfig !== null) {
-      sortableItems.sort((a, b) => {
+      attendingMembers.sort((a, b) => {
         const valA = a[sortConfig.key] || '';
         const valB = b[sortConfig.key] || '';
         if (valA < valB) {
@@ -42,7 +45,8 @@ function MembersList({ user }) {
         return 0;
       });
     } else {
-      sortableItems.sort((a, b) => {
+      // Default sort for attending members
+      attendingMembers.sort((a, b) => {
         const tarifaA = a['Tarifa'] || '';
         const tarifaB = b['Tarifa'] || '';
         const miembroA = a['Miembro'] || '';
@@ -57,7 +61,15 @@ function MembersList({ user }) {
         return 0;
       });
     }
-    return sortableItems;
+
+    // Sort not attending members by name
+    notAttendingMembers.sort((a, b) => {
+        const miembroA = a['Miembro'] || '';
+        const miembroB = b['Miembro'] || '';
+        return miembroA.localeCompare(miembroB);
+    });
+
+    return { attending: attendingMembers, notAttending: notAttendingMembers };
   }, [members, sortConfig]);
 
   const requestSort = (key) => {
@@ -97,7 +109,7 @@ function MembersList({ user }) {
           </tr>
         </thead>
         <tbody>
-          {sortedMembers.map((member, index) => {
+          {attending.map((member, index) => {
             const tarifaClass = member["Tarifa"] ? `tarifa-${member["Tarifa"].toLowerCase()}` : "";
             const isCurrentUser = user && user["Miembro"] === member["Miembro"];
             const rowClass = isCurrentUser ? "current-user" : "";
@@ -106,6 +118,25 @@ function MembersList({ user }) {
               <tr key={index} className={rowClass}>
                 <td>{member["Miembro"]}</td>
                 <td className={tarifaClass}>{member["Tarifa"]}</td>
+                <td>{member["¿Pagado?"] === "Sí" ? "Sí" : "No"}</td>
+              </tr>
+            );
+          })}
+
+          {notAttending.length > 0 && (
+            <tr className="separator-row">
+              <td colSpan="3">No Vienen</td>
+            </tr>
+          )}
+
+          {notAttending.map((member, index) => {
+            const isCurrentUser = user && user["Miembro"] === member["Miembro"];
+            const rowClass = isCurrentUser ? "current-user" : "";
+
+            return (
+              <tr key={`not-attending-${index}`} className={rowClass}>
+                <td>{member["Miembro"]}</td>
+                <td>{member["Tarifa"]}</td>
                 <td>{member["¿Pagado?"] === "Sí" ? "Sí" : "No"}</td>
               </tr>
             );
