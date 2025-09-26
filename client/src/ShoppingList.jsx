@@ -616,11 +616,6 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
               Limpiar filtros
             </button>
           </div>
-          <div className="cookie-settings-container desktop-only">
-            <button onClick={onOpenCookieSettings} className="summary-link-button">
-              Configurar cookies
-            </button>
-          </div>
         </div>
         <button
           onClick={() => setIsFilterMenuOpen(false)}
@@ -1203,6 +1198,17 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
               >
                 Ayuda
               </button>
+            </div>
+            <div className="sidebar-section">
+                <button
+                    className="sidebar-button"
+                    onClick={() => {
+                        onOpenCookieSettings();
+                        setIsSidebarOpen(false);
+                    }}
+                >
+                    Configurar cookies
+                </button>
             </div>
           </div>
         </div>

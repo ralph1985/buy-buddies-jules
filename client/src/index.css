@@ -466,13 +466,6 @@ h2 {
   padding-top: 1rem;
 }
 
-.cookie-settings-container {
-  text-align: center;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #444;
-}
-
 .desktop-only {
   display: none;
 }
@@ -1099,26 +1092,6 @@ h2 {
 }
 
 /* App Footer Styles */
-.app-footer {
-  text-align: center;
-  padding: 20px;
-  margin-top: 20px;
-  color: #888;
-}
-
-.footer-link {
-  background: none;
-  border: none;
-  color: #ffa500;
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 0;
-  font-size: 14px;
-}
-
-.footer-link:hover {
-  color: #ffc966;
-}
 
 /* Policy Page Styles */
 .policy-page {
