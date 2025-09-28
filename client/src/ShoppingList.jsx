@@ -798,10 +798,10 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
       </div>
 
       <div className="desktop-layout-container">
+        {activeView === "shopping" && renderFilterMenu()}
         <div className={`main-view-container ${activeView === 'shopping' ? 'shopping-view' : 'members-view'}`}>
           {activeView === "shopping" ? (
             <>
-              {renderFilterMenu()}
               <div className="main-content">
                 <div className="open-filters-button-container">
                   <button
