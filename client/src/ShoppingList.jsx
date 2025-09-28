@@ -53,6 +53,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
   const [groupBy, setGroupBy] = useState("assignedTo"); // 'type', 'assignedTo', 'status', 'place'
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState({});
 
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -400,6 +401,30 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
       : pinnedSummaryItems.filter((itemLabel) => itemLabel !== label);
     setPinnedSummaryItems(newPinnedItems);
     localStorage.setItem("pinnedSummaryItems", JSON.stringify(newPinnedItems));
+  };
+
+  const toggleAllGroups = () => {
+    const groupKeys = Object.keys(groupedItems);
+    const allCollapsed = groupKeys.every(key => collapsedGroups[key]);
+
+    if (allCollapsed) {
+      // If all are collapsed, expand all
+      setCollapsedGroups({});
+    } else {
+      // Otherwise, collapse all
+      const newCollapsedGroups = {};
+      groupKeys.forEach(key => {
+        newCollapsedGroups[key] = true;
+      });
+      setCollapsedGroups(newCollapsedGroups);
+    }
+  };
+
+  const toggleGroup = (groupName) => {
+    setCollapsedGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName]
+    }));
   };
 
   const handleStatusChange = (rowIndex, newStatus) =>
@@ -816,6 +841,13 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
                 >
                   Ver Resumen Completo
                 </button>
+                <button
+                  onClick={toggleAllGroups}
+                  className="summary-link-button"
+                  disabled={pageLoading}
+                >
+                  Colapsar/Expandir
+                </button>
                 <div className="refresh-container">
                   <button
                     onClick={handleManualRefresh}
@@ -841,7 +873,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
                   key={groupName}
                   className="group-container"
                 >
-                  <h2 className="group-header">
+                  <h2 className="group-header" onClick={() => toggleGroup(groupName)} style={{ cursor: 'pointer' }}>
                     {user && (
                       <div className="item-checkbox-container">
                         <input
@@ -850,18 +882,25 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
                           checked={groupItems.every((item) =>
                             selectedItems.includes(item.rowIndex)
                           )}
-                          onChange={(e) =>
-                            handleSelectGroup(groupItems, e.target.checked)
-                          }
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleSelectGroup(groupItems, e.target.checked);
+                          }}
                           disabled={pageLoading}
                         />
                       </div>
                     )}
-                    <span className="group-name">{groupName}</span>
+                    <span className="group-name">
+                      <span className="group-toggle-icon" style={{ marginRight: '10px' }}>
+                        {collapsedGroups[groupName] ? '▶' : '▼'}
+                      </span>
+                      {groupName}
+                    </span>
                     <span className="group-total">
                       {groupTotal.toFixed(2).replace(".", ",")}€
                     </span>
                   </h2>
+                  {!collapsedGroups[groupName] && (
                   <ul className="shopping-list">
                     {groupItems.map((item) => {
                       const isUpdating =
@@ -1046,6 +1085,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
                       );
                     })}
                   </ul>
+                  )}
                 </div>
               );
             })
