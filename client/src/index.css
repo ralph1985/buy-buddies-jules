@@ -1066,7 +1066,8 @@ h2 {
   /* Hide mobile-only elements */
   .filter-menu-overlay,
   .filter-menu .close-menu-button,
-  .open-filters-button-container {
+  .open-filters-button-container,
+  .header-right .menu-button {
     display: none;
   }
 
@@ -1078,6 +1079,23 @@ h2 {
     flex-grow: 1;
     height: auto;
     overflow: visible;
+  }
+
+  .right-sidebar {
+    position: sticky;
+    top: 1rem;
+    transform: translateX(0);
+    box-shadow: none;
+    border: 1px solid #444;
+    border-radius: 8px;
+    height: auto;
+    width: 280px;
+    flex-shrink: 0;
+  }
+
+  .right-sidebar .close-sidebar-button,
+  .sidebar-overlay {
+    display: none;
   }
 
   .group-header {
