@@ -1311,6 +1311,39 @@ h2 {
   text-decoration: line-through;
 }
 
+.catering-filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.catering-filters .search-input {
+  flex-grow: 1;
+  margin-bottom: 0; /* Override default margin */
+}
+
+.catering-filters .filter-select {
+  flex-grow: 1;
+  width: 150px; /* Give a base width */
+  margin-bottom: 0;
+}
+
+.catering-filters .clear-filters-button {
+  background-color: #555;
+  color: white;
+  border: 1px solid #777;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  height: 38px; /* Match react-select height */
+}
+
+.catering-filters .clear-filters-button:hover {
+  background-color: #666;
+}
+
 .loading-container, .error-container {
     padding: 2rem;
     text-align: center;

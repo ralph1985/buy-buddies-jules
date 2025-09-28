@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import Select from 'react-select';
 import './CateringSummary.css';
 
 function Spinner() {
@@ -27,10 +28,16 @@ function Catering({ user }) {
   const [summaryData, setSummaryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [updatingCell, setUpdatingCell] = useState(null); // { rowIndex, columnName }
+  const [updatingCell, setUpdatingCell] = useState(null);
+
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [saturdayFilter, setSaturdayFilter] = useState(null);
+  const [sundayFilter, setSundayFilter] = useState(null);
+  const [paidFilter, setPaidFilter] = useState(null);
+
 
   const fetchCateringData = async () => {
-    // Don't set loading to true if we are just refreshing in the background
     if (cateringData.length === 0) {
       setLoading(true);
     }
@@ -65,9 +72,7 @@ function Catering({ user }) {
 
   const handleCateringUpdate = async (rowIndex, columnName, newValue) => {
     if (!user) return;
-
     setUpdatingCell({ rowIndex, columnName });
-
     try {
       await fetch("/api", {
         method: "POST",
@@ -80,15 +85,91 @@ function Catering({ user }) {
           user: user['Miembro'],
         }),
       });
-      // Refetch data to ensure UI is in sync with the backend
       await fetchCateringData();
     } catch (error) {
       console.error("Update failed:", error);
       alert("Error: No se pudo realizar la actualización.");
-      setUpdatingCell(null); // Reset on failure
+      setUpdatingCell(null);
     }
   };
 
+  const getStatusClass = (value) => {
+    const lowerCaseValue = String(value).toLowerCase();
+    if (lowerCaseValue === 'sí') return 'status-yes';
+    if (lowerCaseValue === 'no') return 'status-no';
+    if (lowerCaseValue === 'cancelado') return 'status-cancelled';
+    return '';
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setSaturdayFilter(null);
+    setSundayFilter(null);
+    setPaidFilter(null);
+  };
+
+  const filteredData = useMemo(() => {
+    return cateringData.filter(row => {
+      const memberName = row['Miembro'] || '';
+      const saturdayStatus = row['Comida sábado'] || '';
+      const sundayStatus = row['Comida domingo'] || '';
+      const paidStatus = row['¿Pagado?'] || '';
+
+      const searchMatch = memberName.toLowerCase().includes(searchTerm.toLowerCase());
+      const saturdayMatch = !saturdayFilter || saturdayStatus === saturdayFilter.value;
+      const sundayMatch = !sundayFilter || sundayStatus === sundayFilter.value;
+      const paidMatch = !paidFilter || paidStatus === paidFilter.value;
+
+      return searchMatch && saturdayMatch && sundayMatch && paidMatch;
+    });
+  }, [cateringData, searchTerm, saturdayFilter, sundayFilter, paidFilter]);
+
+  const mealStatusOptions = [
+    { value: 'Sí', label: 'Sí' },
+    { value: 'No', label: 'No' },
+    { value: 'Cancelado', label: 'Cancelado' },
+  ];
+
+  const paidStatusOptions = [
+    { value: 'Sí', label: 'Sí' },
+    { value: 'No', label: 'No' },
+  ];
+
+  const customStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      backgroundColor: '#2c2c2c',
+      borderColor: state.isFocused ? '#ffa500' : '#555',
+      boxShadow: state.isFocused ? '0 0 0 1px #ffa500' : 'none',
+      '&:hover': {
+        borderColor: '#ffa500',
+      },
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: '#2c2c2c',
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? '#ffa500' : state.isFocused ? '#444' : '#2c2c2c',
+      color: state.isSelected ? '#1a1a1a' : 'white',
+      '&:active': {
+        backgroundColor: '#ffa500',
+      },
+    }),
+    input: (provided) => ({
+      ...provided,
+      color: 'white',
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: '#ccc',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: 'white',
+    }),
+  };
 
   if (loading && cateringData.length === 0) {
     return (
@@ -103,18 +184,52 @@ function Catering({ user }) {
     return <div className="error-container"><p>{error}</p></div>;
   }
 
-  const getStatusClass = (value) => {
-    const lowerCaseValue = String(value).toLowerCase();
-    if (lowerCaseValue === 'sí') return 'status-yes';
-    if (lowerCaseValue === 'no') return 'status-no';
-    if (lowerCaseValue === 'cancelado') return 'status-cancelled';
-    return '';
-  };
-
   return (
     <div className="catering-container">
       <h2>Listado del Catering</h2>
+
+      <div className="catering-filters">
+        <input
+          type="text"
+          placeholder="Buscar por miembro..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
+        <Select
+          options={mealStatusOptions}
+          onChange={setSaturdayFilter}
+          value={saturdayFilter}
+          placeholder="Comida Sábado"
+          isClearable
+          styles={customStyles}
+          className="filter-select"
+        />
+        <Select
+          options={mealStatusOptions}
+          onChange={setSundayFilter}
+          value={sundayFilter}
+          placeholder="Comida Domingo"
+          isClearable
+          styles={customStyles}
+          className="filter-select"
+        />
+        <Select
+          options={paidStatusOptions}
+          onChange={setPaidFilter}
+          value={paidFilter}
+          placeholder="Pagado"
+          isClearable
+          styles={customStyles}
+          className="filter-select"
+        />
+        <button onClick={handleClearFilters} className="clear-filters-button">
+          Limpiar
+        </button>
+      </div>
+
       <CateringSummary summaryData={summaryData} />
+
       <div className="table-responsive">
         <table className="catering-table">
           <thead>
@@ -127,8 +242,8 @@ function Catering({ user }) {
             </tr>
           </thead>
           <tbody>
-            {cateringData.length > 0 ? (
-              cateringData.map((row) => {
+            {filteredData.length > 0 ? (
+              filteredData.map((row) => {
                 const isUpdatingSaturday = updatingCell?.rowIndex === row.rowIndex && updatingCell?.columnName === 'Comida sábado';
                 const isUpdatingSunday = updatingCell?.rowIndex === row.rowIndex && updatingCell?.columnName === 'Comida domingo';
                 const isUpdatingPaid = updatingCell?.rowIndex === row.rowIndex && updatingCell?.columnName === '¿Pagado?';
@@ -195,7 +310,7 @@ function Catering({ user }) {
               })
             ) : (
               <tr>
-                <td colSpan="5">No hay datos de catering disponibles.</td>
+                <td colSpan="5" style={{ textAlign: 'center' }}>No hay miembros que coincidan con los filtros.</td>
               </tr>
             )}
           </tbody>
