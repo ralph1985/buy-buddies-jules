@@ -125,6 +125,14 @@ function Catering({ user }) {
     });
   }, [cateringData, searchTags, saturdayFilter, sundayFilter, paidFilter]);
 
+  const filteredTotal = useMemo(() => {
+    return filteredData.reduce((acc, row) => {
+      const totalString = String(row['Total'] || '0').replace('€', '').replace(',', '.');
+      const totalValue = parseFloat(totalString);
+      return acc + (isNaN(totalValue) ? 0 : totalValue);
+    }, 0);
+  }, [filteredData]);
+
   const mealStatusOptions = [
     { value: 'Sí', label: 'Sí' },
     { value: 'No', label: 'No' },
@@ -347,6 +355,12 @@ function Catering({ user }) {
               </tr>
             )}
           </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan="3" style={{ textAlign: 'right', fontWeight: 'bold' }}>Total Filtrado:</td>
+              <td colSpan="2" style={{ fontWeight: 'bold' }}>{filteredTotal.toFixed(2).replace('.', ',')}€</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
