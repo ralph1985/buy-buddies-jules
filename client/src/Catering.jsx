@@ -31,11 +31,11 @@ function Catering({ user }) {
   const [updatingCell, setUpdatingCell] = useState(null);
 
   // Filter states
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [saturdayFilter, setSaturdayFilter] = useState(null);
   const [sundayFilter, setSundayFilter] = useState(null);
   const [paidFilter, setPaidFilter] = useState(null);
-
 
   const fetchCateringData = async () => {
     if (cateringData.length === 0) {
@@ -144,6 +144,7 @@ function Catering({ user }) {
       '&:hover': {
         borderColor: '#ffa500',
       },
+      marginBottom: '0.5rem',
     }),
     menu: (provided) => ({
       ...provided,
@@ -157,19 +158,77 @@ function Catering({ user }) {
         backgroundColor: '#ffa500',
       },
     }),
-    input: (provided) => ({
-      ...provided,
-      color: 'white',
-    }),
-    placeholder: (provided) => ({
+    input: (provided) => ({ ...provided, color: 'white' }),
+    placeholder: (provided) => ({ ...provided, color: '#ccc' }),
+    singleValue: (provided) => ({ ...provided, color: 'white' }),
+    multiValue: (provided) => ({ ...provided, backgroundColor: '#444' }),
+    multiValueLabel: (provided) => ({ ...provided, color: 'white' }),
+    multiValueRemove: (provided) => ({
       ...provided,
       color: '#ccc',
-    }),
-    singleValue: (provided) => ({
-      ...provided,
-      color: 'white',
+      '&:hover': { backgroundColor: '#ffa500', color: 'white' },
     }),
   };
+
+  const renderFilterMenu = () => (
+    <>
+      <div
+        className={`filter-menu-overlay ${isFilterMenuOpen ? "is-open" : ""}`}
+        onClick={() => setIsFilterMenuOpen(false)}
+      ></div>
+      <div className={`filter-menu ${isFilterMenuOpen ? "is-open" : ""}`}>
+        <div className="filters-container">
+          <input
+            type="text"
+            placeholder="Buscar por miembro..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          <Select
+            options={mealStatusOptions}
+            onChange={setSaturdayFilter}
+            value={saturdayFilter}
+            placeholder="Comida Sábado"
+            isClearable
+            styles={customStyles}
+            className="filter-select"
+          />
+          <Select
+            options={mealStatusOptions}
+            onChange={setSundayFilter}
+            value={sundayFilter}
+            placeholder="Comida Domingo"
+            isClearable
+            styles={customStyles}
+            className="filter-select"
+          />
+          <Select
+            options={paidStatusOptions}
+            onChange={setPaidFilter}
+            value={paidFilter}
+            placeholder="Pagado"
+            isClearable
+            styles={customStyles}
+            className="filter-select"
+          />
+        </div>
+        <div className="filter-menu-actions">
+          <div className="clear-filters-container">
+            <button onClick={handleClearFilters} className="summary-link-button">
+              Limpiar filtros
+            </button>
+          </div>
+        </div>
+        <button
+          onClick={() => setIsFilterMenuOpen(false)}
+          className="close-menu-button"
+        >
+          Cerrar
+        </button>
+      </div>
+    </>
+  );
 
   if (loading && cateringData.length === 0) {
     return (
@@ -186,45 +245,13 @@ function Catering({ user }) {
 
   return (
     <div className="catering-container">
-      <h2>Listado del Catering</h2>
-
-      <div className="catering-filters">
-        <input
-          type="text"
-          placeholder="Buscar por miembro..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input"
-        />
-        <Select
-          options={mealStatusOptions}
-          onChange={setSaturdayFilter}
-          value={saturdayFilter}
-          placeholder="Comida Sábado"
-          isClearable
-          styles={customStyles}
-          className="filter-select"
-        />
-        <Select
-          options={mealStatusOptions}
-          onChange={setSundayFilter}
-          value={sundayFilter}
-          placeholder="Comida Domingo"
-          isClearable
-          styles={customStyles}
-          className="filter-select"
-        />
-        <Select
-          options={paidStatusOptions}
-          onChange={setPaidFilter}
-          value={paidFilter}
-          placeholder="Pagado"
-          isClearable
-          styles={customStyles}
-          className="filter-select"
-        />
-        <button onClick={handleClearFilters} className="clear-filters-button">
-          Limpiar
+      {renderFilterMenu()}
+      <div className="open-filters-button-container">
+        <button
+          onClick={() => setIsFilterMenuOpen(true)}
+          className="open-filters-button"
+        >
+          Filtros
         </button>
       </div>
 
