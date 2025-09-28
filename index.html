@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BuyBuddies - Mantenimiento</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #333;
+      }
+      
+      .maintenance-container {
+        text-align: center;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        width: 90%;
+        backdrop-filter: blur(10px);
+      }
+      
+      .logo {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 2rem;
+        border-radius: 50%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+      
+      h1 {
+        color: #4a5568;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+      }
+      
+      .subtitle {
+        color: #667eea;
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        font-weight: 500;
+      }
+      
+      .message {
+        color: #718096;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .footer {
+        margin-top: 2rem;
+        color: #a0aec0;
+        font-size: 0.9rem;
+      }
+      
+      @media (max-width: 768px) {
+        .maintenance-container {
+          padding: 2rem 1.5rem;
+        }
+        
+        h1 {
+          font-size: 2rem;
+        }
+        
+        .logo {
+          width: 100px;
+          height: 100px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="maintenance-container">
+      <img src="/logo.png" alt="BuyBuddies Logo" class="logo" />
+      
+      <h1>🔧 Mantenimiento</h1>
+      <p class="subtitle">BuyBuddies</p>
+      
+      <div class="message">
+        <p>Estamos mejorando la aplicación para ofrecerte una mejor experiencia.</p>
+        <p>Volveremos pronto con nuevas funcionalidades.</p>
+      </div>
+      
+      <div class="footer">
+        <p>Gracias por tu paciencia</p>
+      </div>
+    </div>
+  </body>
+</html>
