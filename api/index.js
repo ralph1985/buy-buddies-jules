@@ -151,6 +151,8 @@ export default async function handler(request, response) {
         await handleGetMembers(request, response, sheets);
       } else if (action === "get_sheet_title") {
         await handleGetSheetTitle(request, response, sheets);
+      } else if (action === "get_catering") {
+        await handleGetCatering(request, response, sheets);
       } else {
         await handleGetItems(request, response, sheets);
       }
@@ -181,6 +183,35 @@ async function handleGetSheetTitle(req, res, sheets) {
       details: error.message,
     });
   }
+}
+
+// Fetches all items from the Catering sheet
+async function handleGetCatering(req, res, sheets) {
+  const CATERING_SHEET_NAME = "Catering";
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${CATERING_SHEET_NAME}!A3:E`,
+  });
+
+  const rows = response.data.values;
+  if (!rows || rows.length === 0) {
+    return res.status(200).json([]);
+  }
+
+  const header = rows[0];
+  const data = rows.slice(1).map((row, index) => {
+    const rowData = {};
+    header.forEach((key, i) => {
+      if (key) {
+        rowData[key.trim()] = row[i] || "";
+      }
+    });
+    // Add the actual row index from the sheet
+    rowData.rowIndex = 3 + 1 + index; // 3 (start) + 1 (for header) + index
+    return rowData;
+  });
+
+  res.status(200).json(data);
 }
 
 // Fetches all items and includes their row index
