@@ -1238,7 +1238,7 @@ h2 {
 }
 
 .table-responsive {
-  overflow-x: auto;
+  /* overflow-x: auto; /* Removed to prevent horizontal scroll */
 }
 
 .catering-table {
@@ -1253,6 +1253,8 @@ h2 {
   padding: 8px 12px;
   text-align: left;
   font-size: 0.9rem;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .catering-table thead th {
