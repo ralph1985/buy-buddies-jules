@@ -135,6 +135,8 @@ export default async function handler(request, response) {
         await handleAddNewProduct(response, sheets, body);
       } else if (body.action === "bulk_update") {
         await handleBulkUpdate(response, sheets, body);
+      } else if (body.action === "update_catering_status") {
+        await handleUpdateCateringStatus(response, sheets, body);
       } else {
         // Default POST action is to update status
         await handleUpdateStatus(response, sheets, body);
@@ -706,6 +708,79 @@ async function handleBulkUpdate(res, sheets, body) {
     console.error("Failed to perform bulk update:", error);
     res.status(500).json({
       error: "Failed to perform bulk update.",
+      details: error.message,
+    });
+  }
+}
+
+// Updates the status of a specific cell in the Catering sheet
+async function handleUpdateCateringStatus(res, sheets, body) {
+  const { rowIndex, columnName, newValue, user } = body;
+
+  if (!rowIndex || !columnName || newValue === undefined) {
+    return res
+      .status(400)
+      .json({ error: "rowIndex, columnName, and newValue are required." });
+  }
+
+  const CATERING_SHEET_NAME = "Catering";
+  const columnMap = {
+    "Comida sábado": "B",
+    "Comida domingo": "C",
+    "¿Pagado?": "E",
+  };
+
+  const column = columnMap[columnName];
+  if (!column) {
+    return res.status(400).json({ error: `Invalid column name: ${columnName}` });
+  }
+
+  const range = `${CATERING_SHEET_NAME}!${column}${rowIndex}`;
+  const memberNameRange = `${CATERING_SHEET_NAME}!A${rowIndex}`;
+
+  try {
+    // Fetch member name for logging
+    const memberResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: memberNameRange,
+    });
+    const memberName = memberResponse.data.values?.[0]?.[0] || `Row ${rowIndex}`;
+
+    // Fetch the old value for logging
+    const getResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range,
+    });
+    const oldValue = getResponse.data.values?.[0]?.[0] || "";
+
+    // Update the value in the sheet
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range,
+      valueInputOption: "USER_ENTERED",
+      resource: {
+        values: [[newValue]],
+      },
+    });
+
+    // Log the change if the value has actually changed
+    if (oldValue !== newValue) {
+      await logChange(
+        sheets,
+        user,
+        "Update Catering Status",
+        `Member "${memberName}" - field "${columnName}" changed from "${oldValue}" to "${newValue}"`
+      );
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Row ${rowIndex} column ${columnName} updated to ${newValue}`,
+    });
+  } catch (error) {
+    console.error("Failed to update catering status:", error);
+    res.status(500).json({
+      error: "Failed to update catering status.",
       details: error.message,
     });
   }

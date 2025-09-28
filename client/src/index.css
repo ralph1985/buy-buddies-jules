@@ -1269,7 +1269,8 @@ h2 {
   background-color: #444;
 }
 
-.catering-table td span {
+.catering-table td span,
+.catering-select {
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 0.8rem;
@@ -1278,6 +1279,23 @@ h2 {
   min-width: 50px;
   text-align: center;
   color: white;
+  border: 1px solid transparent;
+}
+
+.catering-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 12px;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+  padding-right: 28px;
+}
+
+.catering-select:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .catering-table .status-yes {

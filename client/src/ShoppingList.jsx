@@ -1160,7 +1160,7 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
           </>
           )}
           {activeView === "members" && <MembersList user={user} />}
-          {activeView === "catering" && <Catering />}
+          {activeView === "catering" && <Catering user={user} />}
         </div>
         <LogoutModal
           isOpen={isLogoutModalOpen}
