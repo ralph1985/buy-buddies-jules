@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Select from 'react-select';
+import CreatableSelect from 'react-select/creatable';
 import './CateringSummary.css';
 
 function Spinner() {
@@ -32,7 +33,7 @@ function Catering({ user }) {
 
   // Filter states
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTags, setSearchTags] = useState([]);
   const [saturdayFilter, setSaturdayFilter] = useState(null);
   const [sundayFilter, setSundayFilter] = useState(null);
   const [paidFilter, setPaidFilter] = useState(null);
@@ -102,7 +103,7 @@ function Catering({ user }) {
   };
 
   const handleClearFilters = () => {
-    setSearchTerm('');
+    setSearchTags([]);
     setSaturdayFilter(null);
     setSundayFilter(null);
     setPaidFilter(null);
@@ -115,14 +116,14 @@ function Catering({ user }) {
       const sundayStatus = row['Comida domingo'] || '';
       const paidStatus = row['¿Pagado?'] || '';
 
-      const searchMatch = memberName.toLowerCase().includes(searchTerm.toLowerCase());
+      const searchMatch = searchTags.length === 0 || searchTags.some(tag => memberName.toLowerCase().includes(tag.value.toLowerCase()));
       const saturdayMatch = !saturdayFilter || saturdayStatus === saturdayFilter.value;
       const sundayMatch = !sundayFilter || sundayStatus === sundayFilter.value;
       const paidMatch = !paidFilter || paidStatus === paidFilter.value;
 
       return searchMatch && saturdayMatch && sundayMatch && paidMatch;
     });
-  }, [cateringData, searchTerm, saturdayFilter, sundayFilter, paidFilter]);
+  }, [cateringData, searchTags, saturdayFilter, sundayFilter, paidFilter]);
 
   const mealStatusOptions = [
     { value: 'Sí', label: 'Sí' },
@@ -178,12 +179,17 @@ function Catering({ user }) {
       ></div>
       <div className={`filter-menu ${isFilterMenuOpen ? "is-open" : ""}`}>
         <div className="filters-container">
-          <input
-            type="text"
+          <CreatableSelect
+            isMulti
+            isClearable
+            options={cateringData.map(row => ({ value: row.Miembro, label: row.Miembro }))}
             placeholder="Buscar por miembro..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
+            value={searchTags}
+            onChange={setSearchTags}
+            styles={customStyles}
+            className="filter-select"
+            formatCreateLabel={(inputValue) => `Buscar "${inputValue}"`}
+            noOptionsMessage={() => 'Escribe para buscar o añadir un miembro'}
           />
           <Select
             options={mealStatusOptions}
