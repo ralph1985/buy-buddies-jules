@@ -1,11 +1,30 @@
 import React, { useState, useEffect } from 'react';
+import './CateringSummary.css';
 
 function Spinner() {
   return <div className="spinner"></div>;
 }
 
+function CateringSummary({ summaryData }) {
+  if (!summaryData || summaryData.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="catering-summary-container">
+      {summaryData.map((item, index) => (
+        <div key={index} className="summary-card">
+          <div className="summary-card-label">{item.label}</div>
+          <div className="summary-card-value">{item.value}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function Catering() {
   const [cateringData, setCateringData] = useState([]);
+  const [summaryData, setSummaryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -13,12 +32,20 @@ function Catering() {
     const fetchCateringData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api?action=get_catering');
-        if (!response.ok) {
+        const [cateringRes, summaryRes] = await Promise.all([
+          fetch('/api?action=get_catering'),
+          fetch('/api?action=get_catering_summary'),
+        ]);
+
+        if (!cateringRes.ok || !summaryRes.ok) {
           throw new Error('Network response was not ok');
         }
-        const data = await response.json();
-        setCateringData(data);
+
+        const catering = await cateringRes.json();
+        const summary = await summaryRes.json();
+
+        setCateringData(catering);
+        setSummaryData(summary);
         setError(null);
       } catch (err) {
         console.error("Failed to fetch catering data:", err);
@@ -44,23 +71,18 @@ function Catering() {
     return <div className="error-container"><p>{error}</p></div>;
   }
 
-  const getCellClassName = (value) => {
+  const getStatusClass = (value) => {
     const lowerCaseValue = String(value).toLowerCase();
-    if (lowerCaseValue === 'sí') {
-      return 'status-yes';
-    }
-    if (lowerCaseValue === 'no') {
-      return 'status-no';
-    }
-    if (lowerCaseValue === 'cancelado') {
-      return 'status-cancelled';
-    }
+    if (lowerCaseValue === 'sí') return 'status-yes';
+    if (lowerCaseValue === 'no') return 'status-no';
+    if (lowerCaseValue === 'cancelado') return 'status-cancelled';
     return '';
   };
 
   return (
     <div className="catering-container">
       <h2>Listado del Catering</h2>
+      <CateringSummary summaryData={summaryData} />
       <div className="table-responsive">
         <table className="catering-table">
           <thead>
@@ -76,16 +98,22 @@ function Catering() {
             {cateringData.length > 0 ? (
               cateringData.map((row) => (
                 <tr key={row.rowIndex}>
-                  <td data-label="Miembro">{row['Miembro']}</td>
-                  <td data-label="Comida Sábado" className={getCellClassName(row['Comida sábado'])}>
-                    {row['Comida sábado']}
+                  <td>{row['Miembro']}</td>
+                  <td>
+                    <span className={getStatusClass(row['Comida sábado'])}>
+                      {row['Comida sábado']}
+                    </span>
                   </td>
-                  <td data-label="Comida Domingo" className={getCellClassName(row['Comida domingo'])}>
-                    {row['Comida domingo']}
+                  <td>
+                    <span className={getStatusClass(row['Comida domingo'])}>
+                      {row['Comida domingo']}
+                    </span>
                   </td>
-                  <td data-label="Total">{row['Total']}</td>
-                  <td data-label="¿Pagado?" className={getCellClassName(row['¿Pagado?'])}>
-                    {row['¿Pagado?']}
+                  <td>{row['Total']}</td>
+                  <td>
+                    <span className={getStatusClass(row['¿Pagado?'])}>
+                      {row['¿Pagado?']}
+                    </span>
                   </td>
                 </tr>
               ))

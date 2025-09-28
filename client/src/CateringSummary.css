@@ -1,0 +1,31 @@
+.catering-summary-container {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #2c2c2c;
+  border-radius: 8px;
+}
+
+.summary-card {
+  background-color: #3a3a3a;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  flex-grow: 1;
+  border: 1px solid #555;
+}
+
+.summary-card-label {
+  font-size: 0.9rem;
+  color: #ccc;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.summary-card-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffa500;
+}
