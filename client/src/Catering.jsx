@@ -127,8 +127,10 @@ function Catering({ user }) {
 
   const filteredTotal = useMemo(() => {
     return filteredData.reduce((acc, row) => {
-      const totalString = String(row['Total'] || '0').replace('€', '').replace(',', '.');
-      const totalValue = parseFloat(totalString);
+      // Robustly parse number from currency string
+      const totalString = String(row['Total'] || '0');
+      const cleanedString = totalString.replace(/[€$]/g, '').replace(/\./g, '').replace(',', '.').trim();
+      const totalValue = parseFloat(cleanedString);
       return acc + (isNaN(totalValue) ? 0 : totalValue);
     }, 0);
   }, [filteredData]);
