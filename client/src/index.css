@@ -1078,7 +1078,7 @@ h2 {
   .main-view-container {
     flex-grow: 1;
     height: auto;
-    overflow: visible;
+    overflow: visible; /* Ensure sticky headers can work */
   }
 
   .right-sidebar {
@@ -1250,9 +1250,9 @@ h2 {
 .catering-table th,
 .catering-table td {
   border: 1px solid #555;
-  padding: 8px 12px;
+  padding: 6px 10px;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   white-space: normal;
   word-break: break-word;
 }
