@@ -151,6 +151,8 @@ export default async function handler(request, response) {
         await handleGetMembers(request, response, sheets);
       } else if (action === "get_catering") {
         await handleGetCatering(request, response, sheets);
+      } else if (action === "get_catering_summary") {
+        await handleGetCateringSummary(request, response, sheets);
       } else if (action === "get_sheet_title") {
         await handleGetSheetTitle(request, response, sheets);
       } else {
@@ -731,6 +733,47 @@ async function handleGetSummary(req, res, sheets) {
     .filter((item) => item.label && item.value); // Filter out rows without a label or a value
 
   res.status(200).json(summaryData);
+}
+
+// Fetches and parses the catering summary from the top of the sheet
+async function handleGetCateringSummary(req, res, sheets) {
+  const CATERING_SHEET_NAME = "Catering";
+  try {
+    // Based on the user's screenshot, the summary data is in row 2.
+    // Labels: Comida sábado, Comida domingo, Total
+    // Values are in the same row, columns B, C, D.
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${CATERING_SHEET_NAME}!B2:D2`,
+    });
+
+    const rows = response.data.values;
+    if (!rows || rows.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    const header = ["Comida sábado", "Comida domingo", "Total"];
+    const values = rows[0];
+
+    const summaryData = header.map((label, index) => ({
+      label: label,
+      value: values[index] || "",
+    }));
+
+    res.status(200).json(summaryData);
+  } catch (error) {
+    console.error("Failed to get catering summary:", error);
+    if (error.message.includes("Unable to parse range")) {
+      return res.status(404).json({
+        error: `The sheet '${CATERING_SHEET_NAME}' was not found. Please check the sheet name.`,
+        details: error.message,
+      });
+    }
+    res.status(500).json({
+      error: "Failed to get catering summary.",
+      details: error.message,
+    });
+  }
 }
 
 // Fetches all items from the Catering sheet
