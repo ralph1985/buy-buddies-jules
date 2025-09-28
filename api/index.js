@@ -149,6 +149,8 @@ export default async function handler(request, response) {
         await handleGetHash(request, response, sheets);
       } else if (action === "get_members") {
         await handleGetMembers(request, response, sheets);
+      } else if (action === "get_catering") {
+        await handleGetCatering(request, response, sheets);
       } else if (action === "get_sheet_title") {
         await handleGetSheetTitle(request, response, sheets);
       } else {
@@ -729,6 +731,56 @@ async function handleGetSummary(req, res, sheets) {
     .filter((item) => item.label && item.value); // Filter out rows without a label or a value
 
   res.status(200).json(summaryData);
+}
+
+// Fetches all items from the Catering sheet
+async function handleGetCatering(req, res, sheets) {
+  const CATERING_SHEET_NAME = "Catering";
+  try {
+    // Data starts from row 4. Headers are inferred from the image.
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${CATERING_SHEET_NAME}!A4:E`,
+    });
+
+    const rows = response.data.values;
+    if (!rows || rows.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    // Manually define headers based on the screenshot for robustness
+    const header = [
+      "Miembro",
+      "Comida sábado",
+      "Comida domingo",
+      "Total",
+      "¿Pagado?",
+    ];
+
+    const data = rows.map((row, index) => {
+      const rowData = {};
+      header.forEach((key, i) => {
+        rowData[key.trim()] = row[i] || "";
+      });
+      // Add the actual row index from the sheet for potential future updates
+      rowData.rowIndex = 4 + index; // Data starts at row 4
+      return rowData;
+    });
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Failed to get catering data:", error);
+    if (error.message.includes("Unable to parse range")) {
+      return res.status(404).json({
+        error: `The sheet '${CATERING_SHEET_NAME}' was not found. Please check the sheet name.`,
+        details: error.message,
+      });
+    }
+    res.status(500).json({
+      error: "Failed to get catering data.",
+      details: error.message,
+    });
+  }
 }
 
 // Fetches members from the members sheet
