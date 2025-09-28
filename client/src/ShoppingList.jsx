@@ -9,6 +9,7 @@ import ChangesModal from "./ChangesModal";
 import LogoutModal from "./LogoutModal";
 import HelpModal from "./HelpModal"; // Import the new modal
 import MembersList from "./components/Members/MembersList";
+import Catering from "./Catering"; // Import the new Catering component
 import { trackEvent } from './analytics';
 import { validateDecimal } from "./utils/validation";
 import { usePrevious } from './hooks/usePrevious';
@@ -799,8 +800,8 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
 
       <div className="desktop-layout-container">
         {activeView === "shopping" && renderFilterMenu()}
-        <div className={`main-view-container ${activeView === 'shopping' ? 'shopping-view' : 'members-view'}`}>
-          {activeView === "shopping" ? (
+        <div className={`main-view-container ${activeView}-view`}>
+          {activeView === "shopping" && (
             <>
               <div className="main-content">
                 <div className="open-filters-button-container">
@@ -1157,9 +1158,9 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
               )}
             </div>
           </>
-        ) : (
-          <MembersList user={user} />
-        )}
+          )}
+          {activeView === "members" && <MembersList user={user} />}
+          {activeView === "catering" && <Catering />}
         </div>
         <LogoutModal
           isOpen={isLogoutModalOpen}
@@ -1199,6 +1200,15 @@ function ShoppingList({ user, onLogout, onLoginRedirect, onOpenCookieSettings })
                 }}
               >
                 Miembros
+              </button>
+              <button
+                className={`sidebar-button ${activeView === 'catering' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveView('catering');
+                  setIsSidebarOpen(false);
+                }}
+              >
+                Catering
               </button>
             </div>
             <div className="sidebar-section">
