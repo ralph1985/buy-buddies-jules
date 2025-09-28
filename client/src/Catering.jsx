@@ -109,8 +109,9 @@ function Catering({ user }) {
     setPaidFilter(null);
   };
 
-  const filteredData = useMemo(() => {
-    return cateringData.filter(row => {
+  const { filteredData, filteredTotal } = useMemo(() => {
+    let total = 0;
+    const data = cateringData.filter(row => {
       const memberName = row['Miembro'] || '';
       const saturdayStatus = row['Comida sábado'] || '';
       const sundayStatus = row['Comida domingo'] || '';
@@ -121,19 +122,20 @@ function Catering({ user }) {
       const sundayMatch = !sundayFilter || sundayStatus === sundayFilter.value;
       const paidMatch = !paidFilter || paidStatus === paidFilter.value;
 
-      return searchMatch && saturdayMatch && sundayMatch && paidMatch;
-    });
-  }, [cateringData, searchTags, saturdayFilter, sundayFilter, paidFilter]);
+      const isMatch = searchMatch && saturdayMatch && sundayMatch && paidMatch;
 
-  const filteredTotal = useMemo(() => {
-    return filteredData.reduce((acc, row) => {
-      // Robustly parse number from currency string
-      const totalString = String(row['Total'] || '0');
-      const cleanedString = totalString.replace(/[€$]/g, '').replace(/\./g, '').replace(',', '.').trim();
-      const totalValue = parseFloat(cleanedString);
-      return acc + (isNaN(totalValue) ? 0 : totalValue);
-    }, 0);
-  }, [filteredData]);
+      if (isMatch) {
+        const totalString = String(row['Total'] || '0');
+        const cleanedString = totalString.replace(/[€$]/g, '').replace(/\./g, '').replace(',', '.').trim();
+        const totalValue = parseFloat(cleanedString);
+        total += isNaN(totalValue) ? 0 : totalValue;
+      }
+
+      return isMatch;
+    });
+
+    return { filteredData: data, filteredTotal: total };
+  }, [cateringData, searchTags, saturdayFilter, sundayFilter, paidFilter]);
 
   const mealStatusOptions = [
     { value: 'Sí', label: 'Sí' },
