@@ -271,97 +271,87 @@ function Catering({ user }) {
 
       <CateringSummary summaryData={summaryData} />
 
-      <div className="table-responsive">
-        <table className="catering-table">
-          <thead>
-            <tr>
-              <th>Miembro</th>
-              <th>Comida Sábado</th>
-              <th>Comida Domingo</th>
-              <th>Total</th>
-              <th>¿Pagado?</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.length > 0 ? (
-              filteredData.map((row) => {
-                const isUpdatingSaturday = updatingCell?.rowIndex === row.rowIndex && updatingCell?.columnName === 'Comida sábado';
-                const isUpdatingSunday = updatingCell?.rowIndex === row.rowIndex && updatingCell?.columnName === 'Comida domingo';
-                const isUpdatingPaid = updatingCell?.rowIndex === row.rowIndex && updatingCell?.columnName === '¿Pagado?';
+      <div className="catering-card-container">
+        {filteredData.length > 0 ? (
+          filteredData.map((row) => {
+            const isUpdatingSaturday = updatingCell?.rowIndex === row.rowIndex && updatingCell?.columnName === 'Comida sábado';
+            const isUpdatingSunday = updatingCell?.rowIndex === row.rowIndex && updatingCell?.columnName === 'Comida domingo';
+            const isUpdatingPaid = updatingCell?.rowIndex === row.rowIndex && updatingCell?.columnName === '¿Pagado?';
 
-                return (
-                  <tr key={row.rowIndex}>
-                    <td>{row['Miembro']}</td>
-                    <td>
-                      {isUpdatingSaturday ? <Spinner /> : user ? (
-                        <select
-                          value={row['Comida sábado'] || ''}
-                          onChange={(e) => handleCateringUpdate(row.rowIndex, 'Comida sábado', e.target.value)}
-                          disabled={!!updatingCell}
-                          className={`catering-select ${getStatusClass(row['Comida sábado'])}`}
-                        >
-                          <option value="Sí">Sí</option>
-                          <option value="No">No</option>
-                          <option value="Cancelado">Cancelado</option>
-                        </select>
-                      ) : (
-                        <span className={getStatusClass(row['Comida sábado'])}>
-                          {row['Comida sábado']}
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      {isUpdatingSunday ? <Spinner /> : user ? (
-                        <select
-                          value={row['Comida domingo'] || ''}
-                          onChange={(e) => handleCateringUpdate(row.rowIndex, 'Comida domingo', e.target.value)}
-                          disabled={!!updatingCell}
-                          className={`catering-select ${getStatusClass(row['Comida domingo'])}`}
-                        >
-                          <option value="Sí">Sí</option>
-                          <option value="No">No</option>
-                          <option value="Cancelado">Cancelado</option>
-                        </select>
-                      ) : (
-                        <span className={getStatusClass(row['Comida domingo'])}>
-                          {row['Comida domingo']}
-                        </span>
-                      )}
-                    </td>
-                    <td>{row['Total']}</td>
-                    <td>
-                      {isUpdatingPaid ? <Spinner /> : user ? (
-                        <select
-                          value={row['¿Pagado?'] || ''}
-                          onChange={(e) => handleCateringUpdate(row.rowIndex, '¿Pagado?', e.target.value)}
-                          disabled={!!updatingCell}
-                          className={`catering-select ${getStatusClass(row['¿Pagado?'])}`}
-                        >
-                          <option value="Sí">Sí</option>
-                          <option value="No">No</option>
-                        </select>
-                      ) : (
-                        <span className={getStatusClass(row['¿Pagado?'])}>
-                          {row['¿Pagado?']}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan="5" style={{ textAlign: 'center' }}>No hay miembros que coincidan con los filtros.</td>
-              </tr>
-            )}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colSpan="3" style={{ textAlign: 'right', fontWeight: 'bold' }}>Total Filtrado:</td>
-              <td colSpan="2" style={{ fontWeight: 'bold' }}>{filteredTotal.toFixed(2).replace('.', ',')}€</td>
-            </tr>
-          </tfoot>
-        </table>
+            return (
+              <div key={row.rowIndex} className="catering-card">
+                <div className="card-header">
+                  <span className="card-member-name">{row['Miembro']}</span>
+                  <span className="card-total">{row['Total']}</span>
+                </div>
+                <div className="card-body">
+                  <div className="card-field">
+                    <label>Comida Sábado</label>
+                    {isUpdatingSaturday ? <Spinner /> : user ? (
+                      <select
+                        value={row['Comida sábado'] || ''}
+                        onChange={(e) => handleCateringUpdate(row.rowIndex, 'Comida sábado', e.target.value)}
+                        disabled={!!updatingCell}
+                        className={`catering-select ${getStatusClass(row['Comida sábado'])}`}
+                      >
+                        <option value="Sí">Sí</option>
+                        <option value="No">No</option>
+                        <option value="Cancelado">Cancelado</option>
+                      </select>
+                    ) : (
+                      <span className={getStatusClass(row['Comida sábado'])}>
+                        {row['Comida sábado']}
+                      </span>
+                    )}
+                  </div>
+                  <div className="card-field">
+                    <label>Comida Domingo</label>
+                    {isUpdatingSunday ? <Spinner /> : user ? (
+                      <select
+                        value={row['Comida domingo'] || ''}
+                        onChange={(e) => handleCateringUpdate(row.rowIndex, 'Comida domingo', e.target.value)}
+                        disabled={!!updatingCell}
+                        className={`catering-select ${getStatusClass(row['Comida domingo'])}`}
+                      >
+                        <option value="Sí">Sí</option>
+                        <option value="No">No</option>
+                        <option value="Cancelado">Cancelado</option>
+                      </select>
+                    ) : (
+                      <span className={getStatusClass(row['Comida domingo'])}>
+                        {row['Comida domingo']}
+                      </span>
+                    )}
+                  </div>
+                  <div className="card-field">
+                    <label>¿Pagado?</label>
+                    {isUpdatingPaid ? <Spinner /> : user ? (
+                      <select
+                        value={row['¿Pagado?'] || ''}
+                        onChange={(e) => handleCateringUpdate(row.rowIndex, '¿Pagado?', e.target.value)}
+                        disabled={!!updatingCell}
+                        className={`catering-select ${getStatusClass(row['¿Pagado?'])}`}
+                      >
+                        <option value="Sí">Sí</option>
+                        <option value="No">No</option>
+                      </select>
+                    ) : (
+                      <span className={getStatusClass(row['¿Pagado?'])}>
+                        {row['¿Pagado?']}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <p>No hay miembros que coincidan con los filtros.</p>
+        )}
+      </div>
+      <div className="catering-sticky-footer">
+        <span>Total Filtrado:</span>
+        <span>{filteredTotal.toFixed(2).replace('.', ',')}€</span>
       </div>
     </div>
   );

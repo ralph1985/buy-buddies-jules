@@ -1241,55 +1241,67 @@ h2 {
   /* overflow-x: auto; /* Removed to prevent horizontal scroll */
 }
 
-.catering-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
+.catering-card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  padding: 1rem 0;
 }
 
-.catering-table th,
-.catering-table td {
-  border: 1px solid #555;
-  padding: 6px 10px;
-  text-align: left;
-  font-size: 0.85rem;
-  white-space: normal;
-  word-break: break-word;
-}
-
-.catering-table thead th {
+.catering-card {
   background-color: #2c2c2c;
-  color: #ffa500;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid #444;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid #555;
+  padding-bottom: 0.5rem;
+}
+
+.card-member-name {
   font-weight: bold;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.catering-table tfoot td {
-  position: sticky;
-  bottom: 0;
-  background-color: #2c2c2c;
+  font-size: 1.1rem;
   color: #ffa500;
-  border-top: 2px solid #ffa500;
 }
 
-.catering-table tbody tr:nth-child(even) {
-  background-color: #2c2c2c;
+.card-total {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: white;
 }
 
-.catering-table tbody tr:hover {
-  background-color: #444;
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.catering-table td span,
+.card-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-field label {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
 .catering-select {
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 0.8rem;
   font-weight: bold;
   display: inline-block;
-  min-width: 50px;
+  min-width: 100px;
   text-align: center;
   color: white;
   border: 1px solid transparent;
@@ -1366,4 +1378,19 @@ h2 {
 .loading-container p {
     margin-top: 1rem;
     font-weight: bold;
+}
+
+.catering-sticky-footer {
+  position: sticky;
+  bottom: 0;
+  background-color: #1a1a1a;
+  padding: 0.75rem;
+  border-top: 2px solid #ffa500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ffa500;
+  z-index: 20;
 }
