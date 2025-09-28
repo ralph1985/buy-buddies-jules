@@ -116,7 +116,7 @@ function Catering({ user }) {
       const sundayStatus = row['Comida domingo'] || '';
       const paidStatus = row['¿Pagado?'] || '';
 
-      const searchMatch = searchTags.length === 0 || searchTags.some(tag => memberName.toLowerCase().includes(tag.value.toLowerCase()));
+      const searchMatch = searchTags.length === 0 || searchTags.some(tag => memberName === tag.value);
       const saturdayMatch = !saturdayFilter || saturdayStatus === saturdayFilter.value;
       const sundayMatch = !sundayFilter || sundayStatus === sundayFilter.value;
       const paidMatch = !paidFilter || paidStatus === paidFilter.value;

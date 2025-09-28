@@ -1323,16 +1323,16 @@ h2 {
   cursor: not-allowed;
 }
 
-.catering-table .status-yes {
-  background-color: #28a745; /* Green */
+.status-yes {
+  background-color: #28a745 !important; /* Green */
 }
 
-.catering-table .status-no {
-  background-color: #dc3545; /* Red */
+.status-no {
+  background-color: #dc3545 !important; /* Red */
 }
 
-.catering-table .status-cancelled {
-  background-color: #6c757d; /* Gray */
+.status-cancelled {
+  background-color: #6c757d !important; /* Gray */
   text-decoration: line-through;
 }
 
